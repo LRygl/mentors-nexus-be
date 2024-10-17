@@ -16,7 +16,7 @@ public interface AuthenticationService {
     String authenticate(User authenticateUser);
 
     void requestUserPasswordReset(String email) throws IOException, MessagingException;
-    HttpResponse confirmUserPasswordReset(UUID operationId, UUID userId) throws MessagingException, IOException;
+    //HttpResponse confirmUserPasswordReset(UUID operationId, UUID userId) throws MessagingException, IOException;
     HttpResponse activateNewUser(UUID decodedUserUUID) throws MessagingException, IOException;
 
     void createAdminUser() throws IOException;

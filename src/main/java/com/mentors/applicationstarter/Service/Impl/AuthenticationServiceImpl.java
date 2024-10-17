@@ -80,14 +80,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (generateUserPasswordOnRegistration) {
             LOGGER.info("GENERATING RANDOM PASSWORD FOR USER: " + registerUser.getEmail());
-            newUser.setPassword(encryptAndSaltUserPassword(generateRandomUserPassword()));
+            final String randomPassword = generateRandomUserPassword();
+            newUser.setPassword(encryptAndSaltUserPassword(randomPassword));
 
             //SEND EMAIL WITH PASSWORD TO USER
+            Map<String, String> templateVariables = new HashMap<>();
+            templateVariables.put("userEmail", newUser.getEmail());
+            templateVariables.put("userLoginPassword", randomPassword);
+            emailServiceUtils.sendEmail(newUser.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
+
             userRepository.save(newUser);
 
         } else {
             LOGGER.info("USING PROVIDED PASSWORD FOR USER: " + registerUser.getEmail());
             newUser.setPassword(encryptAndSaltUserPassword(registerUser.getPassword()));
+            // TODO Send confirmation email to user
             userRepository.save(newUser);
 
         }
@@ -120,7 +127,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setLastLoginDate(new Date());
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
-
         return jwtToken;
     }
 
@@ -157,13 +163,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
     }
 
-    @Override
-    public HttpResponse confirmUserPasswordReset(UUID operationId, UUID userId) throws MessagingException, IOException {
+    public HttpResponse changeUserPassword(User passwordResetUser) throws MessagingException, IOException {
+        User user = userRepository.findByEmail(passwordResetUser.getEmail()).orElseThrow();
+        user.setPassword(encryptAndSaltUserPassword(passwordResetUser.getPassword()));
+        userRepository.save(user);
+
         return null;
     }
 
     @Override
     public HttpResponse activateNewUser(UUID decodedUserUUID) throws MessagingException, IOException {
+        //TODO implement user activation - this action should be only accessible by the admin
         return null;
     }
 
