@@ -1,0 +1,33 @@
+name: mentors-dev
+services:
+  db:
+    image: postgres
+    container_name: mentors-dev
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: lubomir.rygl@mentors.cz
+      PGADMIN_DEFAULT_PASSWORD: pgadmin4
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+networks:
+  postgres:
+    driver: bridge
+
+
+volumes:
+  local_pgdata:
+  pgadmin-data:
