@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1 style="font-size:45px;color:#36bda5;font-weight:600">MůjPoukaz.cz - Registrace nového uživatele</h1>
+<p>Dobrý den,</p>
+<br>
+
+<button class="button">Aktivovat uživatele</button>
+<br/><br/>
+<small>
+  <p>Pokud není možno použít tlačítko, klikněte na následující odkaz pro aktivaci uživatele.</p>
+  <a th:href="${userActivateLink}">
+    <span th:text="${userActivateLink}"></span>
+  </a>
+</small>
+</body>
+</html>
