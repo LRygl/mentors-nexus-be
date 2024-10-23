@@ -106,36 +106,46 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
         if(reguireRegisteredUserEmailConfirmation == true) {
-            if(reguireRegisteredUserAdminApproval == true) {
-                //Set account as locked until it is approved by the admin
-                newUser.setIsAccountNonLocked(false);
-                String encodedUserUUID = Base64.getUrlEncoder().encodeToString(newUser.getUUID().toString().getBytes());
+            newUser.setIsAccountNonLocked(false);
+            Map<String, String> templateVariables = new HashMap<>();
+            templateVariables.put("activationLink", MAIL_APPLICATION_ACTIVATE_USER_URL + newUser.getUUID());
+            LOGGER.info("SENDING EMAIL TO USER FOR ACCOUNT ACTIVATION: " + registerUser.getEmail());
+            emailServiceUtils.sendEmail(newUser.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER_CONFIRMATION_REQUIRED, templateVariables, MAIL_REGISTER_NEW_USER_CONFIRMATION);
+        } else {
+            newUser.setIsAccountNonLocked(false);
+            // TODO Send Mail to user with actiovation details - account was created
+            String encodedUserUUID = Base64.getUrlEncoder().encodeToString(newUser.getUUID().toString().getBytes());
 
-                //Send email to admin with activation link for user account
-                Map<String, String> templateVariables = new HashMap<>();
-                templateVariables.put("userActivateLink", MAIL_APPLICATION_ACTIVATE_USER_URL + encodedUserUUID);
-                LOGGER.info("SENDING EMAIL TO ADMIN FOR USER APPROVAL: " + registerUser.getEmail());
-                emailServiceUtils.sendEmail(MAIL_APPLICATION_ROOT_EMAIL, MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_REGISTER_NEW_USER_ADMIN_CONFIRMATION);
+            //SEND EMAIL TO USER WIT ACTIVATION LINK
+            Map<String, String> templateVariables = new HashMap<>();
+            templateVariables.put("userActivateLink", MAIL_APPLICATION_ACTIVATE_USER_URL + encodedUserUUID);
+            LOGGER.info("SENDING EMAIL TO USER FOR ACCOUNT ACTIVATION: " + registerUser.getEmail());
+            emailServiceUtils.sendEmail(newUser.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_REGISTER_NEW_USER_CONFIRMATION);
+        }
 
-            } else {
-                newUser.setIsAccountNonLocked(false);
-                // TODO Send Mail to user with actiovation details - account was created
-                String encodedUserUUID = Base64.getUrlEncoder().encodeToString(newUser.getUUID().toString().getBytes());
 
-                //SEND EMAIL TO USER WIT ACTIVATION LINK
-                Map<String, String> templateVariables = new HashMap<>();
-                templateVariables.put("userActivateLink", MAIL_APPLICATION_ACTIVATE_USER_URL + encodedUserUUID);
-                LOGGER.info("SENDING EMAIL TO USER FOR ACCOUNT ACTIVATION: " + registerUser.getEmail());
-                emailServiceUtils.sendEmail(newUser.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_REGISTER_NEW_USER_CONFIRMATION);
-            }
+
+        if(reguireRegisteredUserAdminApproval == true) {
+            //Set account as locked until it is approved by the admin
+            newUser.setIsAccountNonLocked(false);
+            String encodedUserUUID = Base64.getUrlEncoder().encodeToString(newUser.getUUID().toString().getBytes());
+
+            //Send email to admin with activation link for user account
+            Map<String, String> templateVariables = new HashMap<>();
+            templateVariables.put("userActivateLink", MAIL_APPLICATION_ACTIVATE_USER_URL + encodedUserUUID);
+            LOGGER.info("SENDING EMAIL TO ADMIN FOR USER APPROVAL: " + registerUser.getEmail());
+            emailServiceUtils.sendEmail(MAIL_APPLICATION_ROOT_EMAIL, MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_REGISTER_NEW_USER_ADMIN_CONFIRMATION);
 
         } else {
             newUser.setIsAccountNonLocked(false);
-            // TODO Send Mail to user - account was created
-            //SEND WELCOME
-            Map<String, String> templateVariables = new HashMap<>();
-            emailServiceUtils.sendEmail(newUser.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
+            // TODO Send Mail to user with actiovation details - account was created
+            String encodedUserUUID = Base64.getUrlEncoder().encodeToString(newUser.getUUID().toString().getBytes());
 
+            //SEND EMAIL TO USER WIT ACTIVATION LINK
+            Map<String, String> templateVariables = new HashMap<>();
+            templateVariables.put("userActivateLink", MAIL_APPLICATION_ACTIVATE_USER_URL + encodedUserUUID);
+            LOGGER.info("SENDING EMAIL TO USER FOR ACCOUNT ACTIVATION: " + registerUser.getEmail());
+            emailServiceUtils.sendEmail(newUser.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_REGISTER_NEW_USER_CONFIRMATION);
         }
 
         userRepository.save(newUser);
