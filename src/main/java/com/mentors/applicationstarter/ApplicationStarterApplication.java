@@ -39,7 +39,7 @@ public class ApplicationStarterApplication {
 		return args -> {
 			if(applicationConfig.isRegisterAdminUserOnStartup()) {
 				LOGGER.info("Admin user generation is enabled property isGenerateAdminUserOnApplicationStartup = " + applicationConfig.isRegisterAdminUserOnStartup() );
-				if (userService.getUserById(1L) == null) {
+				if (userService.getUserById(1L).isEmpty()) {
 					LOGGER.info("User with ID = 1 does not exist in the database - creating new ADMIN user with default application credentials");
 					authenticationService.createAdminUser();
 				} else {

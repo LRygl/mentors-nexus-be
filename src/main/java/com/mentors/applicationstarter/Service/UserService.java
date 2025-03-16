@@ -5,10 +5,14 @@ import com.mentors.applicationstarter.Model.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public interface UserService {
     List<User> getUserList();
 
-    User getUserById(Long userId) throws ResourceNotFoundException;
+    Optional<User> getUserByEmail(String userEmail);
+    Optional<User> getUserByUUID(UUID userUUID);
+    Optional<User> getUserById(Long userId) throws ResourceNotFoundException;
 }
