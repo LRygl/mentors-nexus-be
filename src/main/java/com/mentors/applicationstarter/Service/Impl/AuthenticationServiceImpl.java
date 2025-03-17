@@ -300,7 +300,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
             eventService.storeEvent(event);
-
+            eventService.generateEvent(user.getUUID(),"New User Register");
             Path userFolder = Paths.get(USER_FOLDER + user.getUUID()).toAbsolutePath().normalize();
             Files.createDirectories(userFolder);
         }
