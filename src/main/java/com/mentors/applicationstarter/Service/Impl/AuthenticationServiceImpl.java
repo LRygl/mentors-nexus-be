@@ -76,8 +76,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // ELSE Create directly
 
 
-
-
     @Override
     public ResponseEntity<HttpResponse> register(User registerUser, HttpServletRequest request) throws Exception {
         if(userExistsByEmail(registerUser.getEmail())) {
@@ -97,6 +95,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         newUser.setMarketing(registerUser.getMarketing());
         newUser.setPersonalDataProcessing(registerUser.getPersonalDataProcessing());
         newUser.setPersonalDataPublishing(registerUser.getPersonalDataPublishing());
+
 
 
         //if(reguireRegisteredUserEmailConfirmation)
@@ -194,16 +193,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .httpResponseData(Map.of("user", newUser)) // Include user data or other relevant data
                 .build();
 
-
-        Event event = Event.builder()
-                .UUID(UUID.randomUUID())
-                .resourceUUID(newUser.getUUID())
-                .name("New User Registered")
-                .category(EventCategory.COURSE)
-                .origin(this.getClass().getSimpleName())
-                .build();
-
-        eventService.storeEvent(event);
+        eventService.generateEvent(newUser.getUUID(),EVENT_A ,EventCategory.USER,this.getClass().getSimpleName());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -221,6 +211,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setLastLoginDate(new Date());
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
+        eventService.generateEvent(user.getUUID(),"User Authentication Request",EventCategory.USER,this.getClass().getSimpleName());
+
         return jwtToken;
     }
 
@@ -268,6 +260,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public HttpResponse activateNewUser(UUID decodedUserUUID) throws MessagingException, IOException {
         //TODO implement user activation - this action should be only accessible by the admin
+        eventService.generateEvent(decodedUserUUID,"User Account Activated",EventCategory.USER,this.getClass().getSimpleName());
+
         return null;
     }
 
@@ -289,18 +283,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             userRepository.save(user);
 
-            Event event = Event.builder()
-                    .UUID(UUID.randomUUID())
-                    .resourceUUID(user.getUUID())
-                    .name("New User Registered")
-                    .category(EventCategory.COURSE)
-                    .origin(this.getClass().getSimpleName())
-                    .build();
-
-
-
-            eventService.storeEvent(event);
-            eventService.generateEvent(user.getUUID(),"New User Register");
+            eventService.generateEvent(user.getUUID(),"New User Registered",EventCategory.USER,this.getClass().getSimpleName());
             Path userFolder = Paths.get(USER_FOLDER + user.getUUID()).toAbsolutePath().normalize();
             Files.createDirectories(userFolder);
         }

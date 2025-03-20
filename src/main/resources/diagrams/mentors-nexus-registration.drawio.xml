@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0" version="26.1.1">
+  <diagram name="Page-1" id="ME3vYmYg6_C-p_DtovBJ">
+    <mxGraphModel dx="4324" dy="3571" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="3" target="7" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="305" y="220" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="NEW USER" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="285" y="180" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="7" target="16" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="7" target="19" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="Require User Email Confirmation?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="340" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="9" target="13" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="&lt;div&gt;Send Activation&amp;nbsp;&lt;/div&gt;&lt;div&gt;Email to User&lt;/div&gt;&amp;nbsp;with redirect" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="441" y="1026" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="10" value="Y" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="335" y="448" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="13" target="13" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="401" y="1126" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="331" y="1211" />
+              <mxPoint x="331" y="1116" />
+              <mxPoint x="501" y="1116" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="13" target="26" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="13" value="&lt;div&gt;Was Account&amp;nbsp;&lt;/div&gt;&lt;div&gt;Activated by&amp;nbsp;&lt;/div&gt;&lt;div&gt;the user?&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="421" y="1156" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="16" target="31" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="16" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="330" y="890" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="616" y="560" />
+              <mxPoint x="331" y="560" />
+              <mxPoint x="331" y="890" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="16" value="Require Admin Email Confirmation?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="536" y="340" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="19" target="9" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="19" target="43" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="19" value="PASSWORD CHANGE ON REGISTRATION?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="251" y="890" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="20" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="401" y="1216" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="21" value="Y" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="506" y="1264" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="22" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="408" y="365" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="24" target="39" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="91" y="1570" />
+              <mxPoint x="326" y="1570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="24" value="&lt;div&gt;Use User Provided&lt;/div&gt;&lt;div&gt;Password&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="31" y="1350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="26" target="39" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="499" y="1490" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="499" y="1570" />
+              <mxPoint x="326" y="1570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="26" value="Change User Password" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="439" y="1350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="27" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="586" y="450" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="28" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="231" y="910" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="29" value="Y - Redirect" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="396" y="910" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="31" target="35" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="31" value="&lt;div&gt;Send Activation&amp;nbsp;&lt;/div&gt;&lt;div&gt;Email to Admin&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="746" y="530" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="32" value="Y" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="696" y="360" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="35" target="35" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="906" y="610" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="926" y="715" />
+              <mxPoint x="926" y="620" />
+              <mxPoint x="806" y="620" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="35" target="19" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="35" value="&lt;div&gt;Was Account&amp;nbsp;&lt;/div&gt;&lt;div&gt;Activated by&amp;nbsp;&lt;/div&gt;&lt;div&gt;the Admin?&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="726" y="660" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="36" value="Send Notification Email to User" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="746" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="37" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="886" y="720" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="38" value="Y" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="716" y="680" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="39" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="301" y="1660" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="40" value="REGISTERED USER" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="256" y="1720" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="41" value="Email Password Change" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="439" y="1450" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="43" target="46" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43" value="&lt;div&gt;Send Activation&amp;nbsp;&lt;/div&gt;&lt;div&gt;Email to User&lt;/div&gt;&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="31" y="1026" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" source="46" target="24" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="46" target="46" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-89" y="1160" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-49" y="1211" />
+              <mxPoint x="-49" y="1110" />
+              <mxPoint x="91" y="1110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="46" value="&lt;div&gt;Was Account&amp;nbsp;&lt;/div&gt;&lt;div&gt;Activated by&amp;nbsp;&lt;/div&gt;&lt;div&gt;the user?&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="11" y="1156" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="47" value="Y" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="101" y="1270" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="48" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-9" y="1216" width="30" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
