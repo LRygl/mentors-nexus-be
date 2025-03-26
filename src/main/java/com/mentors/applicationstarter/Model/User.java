@@ -42,13 +42,17 @@ public class User implements UserDetails {
     private Date lastUpdatedDate;
     private UUID passwordResetOperationUUID;
     private Date passwordResetExpiryDate;
-    private Boolean isAccountNonLocked;
 
+    @Builder.Default
+    private Boolean isAccountNonLocked = false;
 
     //USER CONSENT DETAILS
-    private Boolean personalDataProcessing;
-    private Boolean personalDataPublishing;
-    private Boolean marketing;
+    @Builder.Default
+    private Boolean personalDataProcessing = false;
+    @Builder.Default
+    private Boolean personalDataPublishing = false;
+    @Builder.Default
+    private Boolean marketing = false;
 
     @NonNull
     @Enumerated(EnumType.STRING)

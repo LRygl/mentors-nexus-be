@@ -14,6 +14,7 @@ import com.mentors.applicationstarter.Enum.Role;
 import com.mentors.applicationstarter.Utils.EmailServiceUtils;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,79 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Override
+    public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException {
+        String passwordGenerationStrategy = "generateUserPasswordsStrategy";
+        boolean requireUserEmailConfirmation = true;
+
+        if (userExistsByEmail(registeredUser.getEmail())) {
+            throw new ResourceAlreadyExistsException(ErrorCodes.USER_ALREADY_REGISTERED, registeredUser.getEmail());
+        }
+
+        //Could be moved to saveUser() directly and map the whole user class?
+        User user = User.builder()
+                .firstName(registeredUser.getFirstName())
+                .lastName(registeredUser.getLastName())
+                .email(registeredUser.getEmail())
+                .telephoneNumber(registeredUser.getTelephoneNumber())
+                .UUID(UUID.randomUUID())
+                .isAccountNonLocked(false)
+                .registerDate(new Date())
+                .role(Role.USER)
+                .marketing(registeredUser.getMarketing())
+                .personalDataProcessing(registeredUser.getPersonalDataProcessing())
+                .personalDataPublishing(registeredUser.getPersonalDataPublishing())
+                .build();
+
+        if (saveUser(user)) {
+            //Process registration based on the selected password generation strategy
+            switch (passwordGenerationStrategy) {
+                case "generateUserPasswordsStrategy":
+                    String generatedSecurePassword = generateRandomUserPassword();
+                    user.setPassword(encryptAndSaltUserPassword(generatedSecurePassword));
+                    if(requireUserEmailConfirmation) {
+                        //Generate activation URL for this user
+                        //TODO
+                        //Send email with password and confirmation link - account remains blocked until activation link is user - separate method + endpoint
+                        Map<String, String> templateVariables = new HashMap<>();
+                        templateVariables.put("userEmail", user.getEmail());
+                        templateVariables.put("userLoginPassword", generatedSecurePassword);
+                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
+                    } else {
+                        //Activate user account
+                        user.setIsAccountNonLocked(true);
+                        //Send email with password
+                        Map<String, String> templateVariables = new HashMap<>();
+                        templateVariables.put("userEmail", user.getEmail());
+                        templateVariables.put("userLoginPassword", generatedSecurePassword);
+                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
+                    }
+                    saveUser(user);
+                    break;
+                case "useProvidedPassword":
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + passwordGenerationStrategy);
+            }
+        } else {
+
+            return null;
+        }
+        return null;
+    }
+
+    @Transactional
+    private boolean saveUser(User user) {
+        try {
+            userRepository.save(user);
+            LOGGER.info("USER SAVED TO DATABASE");
+            return user.getId() != null;
+        } catch (Exception e) {
+            LOGGER.error("USER WAS NOT SAVED TO DATABASE!");
+            return false;
+        }
+    }
+
+    @Override
     public ResponseEntity<HttpResponse> register(User registerUser, HttpServletRequest request) throws Exception {
         if(userExistsByEmail(registerUser.getEmail())) {
             throw new ResourceAlreadyExistsException(ErrorCodes.USER_ALREADY_REGISTERED, registerUser.getEmail());
@@ -95,23 +169,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         newUser.setMarketing(registerUser.getMarketing());
         newUser.setPersonalDataProcessing(registerUser.getPersonalDataProcessing());
         newUser.setPersonalDataPublishing(registerUser.getPersonalDataPublishing());
-
-
-
-        //if(reguireRegisteredUserEmailConfirmation)
-            //newUser.setIsAccountNonLocked(false);
-            //sendAdminNewUserNotification();
-        //else
-            // if Generate password = true
-            // generateUserPassword()
-            // else Generate password = false
-            // use user provided password
-
-
-        //ApproveUserRegiostration(){
-        // setNotLocker
-        // sendNotificationEmail()
-        // }
 
         //User Password will be generated by the application during the registration process
         if (generateUserPasswordOnRegistration) {
@@ -267,7 +324,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void createAdminUser() throws IOException {
-
         Optional<User> adminUser = userRepository.findById(1L);
         if (adminUser.isEmpty()) {
             User user = new User();
@@ -282,7 +338,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             user.setRole(Role.ROLE_ADMIN);
 
             userRepository.save(user);
-
             eventService.generateEvent(user.getUUID(),"New User Registered",EventCategory.USER,this.getClass().getSimpleName());
             Path userFolder = Paths.get(USER_FOLDER + user.getUUID()).toAbsolutePath().normalize();
             Files.createDirectories(userFolder);
@@ -295,6 +350,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<User> user = userRepository.findByEmail((userEmail));
         return userRepository.findByEmail(userEmail).isPresent();
     }
+
+    public void activateUserAccount(User user) {
+        user.setIsAccountNonLocked(true);
+        userRepository.save(user);
+    }
+
+    public void deactivateUserAccount(User user) {
+        user.setIsAccountNonLocked(false);
+        userRepository.save(user);
+    }
+
 
     private String generateRandomUserPassword() {
         SecureRandom secureRandom = new SecureRandom();

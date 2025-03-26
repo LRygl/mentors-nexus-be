@@ -1,0 +1,29 @@
+@startuml
+start
+switch (passwordGenerationStrategy?)
+  case (generateUserPasswordStrategy)
+    :Generate user password;
+    :Send activation email with credentials;
+  case (userProvidedPasswordStrategy)
+    :Use user-provided password;
+    :Send activation email;
+  case (forcedPasswordChangeStrategy)
+    :Generate password reset UUID (Base64);
+    :Set INIT flag on request;
+    :Send activation email with password reset link;
+endswitch
+
+if (requireUserEmailConfirmation?) then (yes)
+  :Block user account;
+  repeat while (Email Confirmed by User?) is (no) not (yes)
+  :Set user as Active;
+end if
+
+if (passwordGenerationStrategy? == forcedPasswordChangeStrategy) then (yes)
+  :Redirect to Password Change Page;
+  :User changes password;
+end if
+
+:Send account registration confirmation;
+stop
+@enduml
