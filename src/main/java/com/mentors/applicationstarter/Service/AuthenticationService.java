@@ -13,6 +13,7 @@ import java.util.UUID;
 @Service
 public interface AuthenticationService {
     ResponseEntity<HttpResponse> register(User registerUser, HttpServletRequest request) throws Exception;
+    ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws Exception;
     String authenticate(User authenticateUser);
 
     void requestUserPasswordReset(String email) throws IOException, MessagingException;

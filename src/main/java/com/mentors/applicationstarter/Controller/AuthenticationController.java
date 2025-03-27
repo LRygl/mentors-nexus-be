@@ -36,9 +36,9 @@ public class AuthenticationController {
     private Boolean allowPublicUserRegistration;
 
     @PostMapping("/register")
-    public ResponseEntity<HttpResponse> register(@RequestBody User registerUser, HttpServletRequest request) throws Exception {
+    public ResponseEntity<HttpResponse> register(@RequestBody User user, HttpServletRequest request) throws Exception {
         if(allowPublicUserRegistration) {
-            return authenticationService.register(registerUser, request);
+            return authenticationService.handleUserRegistrationRequest(user, request);
         } else {
             throw new ResourceImmutableException(ErrorCodes.REGISTRATION_NOT_ALLOWED);
         }

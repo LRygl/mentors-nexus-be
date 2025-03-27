@@ -11,6 +11,7 @@ import com.mentors.applicationstarter.Service.AuthenticationService;
 import com.mentors.applicationstarter.Service.EventService;
 import com.mentors.applicationstarter.Service.JwtService;
 import com.mentors.applicationstarter.Enum.Role;
+import com.mentors.applicationstarter.Utils.Base64Utils;
 import com.mentors.applicationstarter.Utils.EmailServiceUtils;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,9 +32,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.*;
 
+import static com.mentors.applicationstarter.Constant.ApplicationConstant.APP_URL;
 import static com.mentors.applicationstarter.Constant.EmailServiceConstant.*;
+import static com.mentors.applicationstarter.Constant.EventConstant.EVENT_AUTH_USER_REGISTERED;
 import static com.mentors.applicationstarter.Constant.FileConstant.USER_FOLDER;
 import static com.mentors.applicationstarter.Constant.SecurityConstant.PASSOWRD_GENERATOR_STRING;
 import static com.mentors.applicationstarter.Constant.SecurityConstant.PASSWORD_GENERATOR_LENGTH;
@@ -50,6 +54,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final EmailServiceUtils emailServiceUtils;
     private final EventService eventService;
+    private final Base64Utils base64Utils;
 
     @Value("${generateUserPasswordOnRegistration}")
     private Boolean generateUserPasswordOnRegistration;
@@ -107,27 +112,49 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 case "generateUserPasswordsStrategy":
                     String generatedSecurePassword = generateRandomUserPassword();
                     user.setPassword(encryptAndSaltUserPassword(generatedSecurePassword));
+
+                    //Activate user account
+                    user.setIsAccountNonLocked(true);
+                    //Send email with password
+                    Map<String, String> generatePasswordTemplateVariables = new HashMap<>();
+                    generatePasswordTemplateVariables.put("userEmail", user.getEmail());
+                    generatePasswordTemplateVariables.put("userLoginPassword", generatedSecurePassword);
+                    emailServiceUtils.sendEmail(
+                            user.getEmail(),
+                            MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER,
+                            generatePasswordTemplateVariables,
+                            MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD
+                    );
+
+                    saveUser(user);
+                    break;
+
+                case "useProvidedPassword":
                     if(requireUserEmailConfirmation) {
+                        //Lock user account until it is activated
+                        user.setIsAccountNonLocked(false);
                         //Generate activation URL for this user
+                        Instant timestamp = Instant.now();
+                        String userAccountActivationString = String.format("%s+%s", user.getUUID(), timestamp);
+                        String base64EncodedActivationString = base64Utils.encodeStringToUrlSafeBase64(userAccountActivationString);
+                        String userAccountActivationUrl = String.format("%s/%s%s", APP_URL,"/auth/activate?activationId=", base64EncodedActivationString);
                         //TODO
-                        //Send email with password and confirmation link - account remains blocked until activation link is user - separate method + endpoint
-                        Map<String, String> templateVariables = new HashMap<>();
-                        templateVariables.put("userEmail", user.getEmail());
-                        templateVariables.put("userLoginPassword", generatedSecurePassword);
-                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
+                        //Send email with password and confirmation link - account remains blocked until activation link is used - separate method + endpoint
+                        Map<String, String> providedPasswordTemplateVariables = new HashMap<>();
+                        providedPasswordTemplateVariables.put("userEmail", user.getEmail());
+                        providedPasswordTemplateVariables.put("userActivationUrl", userAccountActivationUrl);
+                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, providedPasswordTemplateVariables, MAIL_TEMPLATE_REGISTER_PROVIDED_USER_PASSWORD_ACTIVATION);
                     } else {
                         //Activate user account
                         user.setIsAccountNonLocked(true);
                         //Send email with password
-                        Map<String, String> templateVariables = new HashMap<>();
-                        templateVariables.put("userEmail", user.getEmail());
-                        templateVariables.put("userLoginPassword", generatedSecurePassword);
-                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, templateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
+                        Map<String, String> providedPasswordTemplateVariables = new HashMap<>();
+                        providedPasswordTemplateVariables.put("userEmail", user.getEmail());
+                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, providedPasswordTemplateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
                     }
                     saveUser(user);
                     break;
-                case "useProvidedPassword":
-                    break;
+
                 default:
                     throw new IllegalStateException("Unexpected value: " + passwordGenerationStrategy);
             }
@@ -250,7 +277,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .httpResponseData(Map.of("user", newUser)) // Include user data or other relevant data
                 .build();
 
-        eventService.generateEvent(newUser.getUUID(),EVENT_A ,EventCategory.USER,this.getClass().getSimpleName());
+        eventService.generateEvent(newUser.getUUID(),EVENT_AUTH_USER_REGISTERED ,EventCategory.USER,this.getClass().getSimpleName());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
