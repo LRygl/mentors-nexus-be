@@ -84,7 +84,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException {
-        String passwordGenerationStrategy = "generateUserPasswordsStrategy";
+        String passwordGenerationStrategy = "useProvidedPassword";
         boolean requireUserEmailConfirmation = true;
 
         if (userExistsByEmail(registeredUser.getEmail())) {
@@ -342,8 +342,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public HttpResponse activateNewUser(UUID decodedUserUUID) throws MessagingException, IOException {
+    public HttpResponse activateNewUser(String activationString) throws MessagingException, IOException {
         //TODO implement user activation - this action should be only accessible by the admin
+        String[] securityString = activationString.split("\\+",2);
+        String activationUUID = securityString[0];
+        String activationTimestamp = securityString[1];
         eventService.generateEvent(decodedUserUUID,"User Account Activated",EventCategory.USER,this.getClass().getSimpleName());
 
         return null;

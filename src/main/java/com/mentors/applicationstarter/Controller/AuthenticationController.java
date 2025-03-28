@@ -66,6 +66,12 @@ public class AuthenticationController {
         return new ResponseEntity<>(null, null, HttpStatus.OK);
     }
 
+    @GetMapping("/activate")
+    public ResponseEntity<HttpResponse> validateUserEmailAddress(@RequestParam String activationString) throws MessagingException, IOException {
+        authenticationService.activateNewUser(activationString);
+        return new ResponseEntity<>(null, null, HttpStatus.OK);
+    }
+
 //    @GetMapping("/confirm-password-reset")
 //    public ResponseEntity<HttpResponse> confirmResetPassword(@RequestParam("operationId") String operationId, @RequestParam("userId") String userId) throws MessagingException, IOException {
 //        UUID decodedOperationUUID = UUID.fromString(new String(Base64.getUrlDecoder().decode(operationId)));
