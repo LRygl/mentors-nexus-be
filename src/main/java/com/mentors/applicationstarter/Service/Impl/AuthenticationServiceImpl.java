@@ -347,7 +347,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String[] securityString = activationString.split("\\+",2);
         String activationUUID = securityString[0];
         String activationTimestamp = securityString[1];
-        eventService.generateEvent(decodedUserUUID,"User Account Activated",EventCategory.USER,this.getClass().getSimpleName());
+        eventService.generateEvent(UUID.fromString(activationUUID),"User Account Activated",EventCategory.USER,this.getClass().getSimpleName());
 
         return null;
     }
