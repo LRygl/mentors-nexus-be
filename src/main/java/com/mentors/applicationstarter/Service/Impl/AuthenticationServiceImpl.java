@@ -162,7 +162,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             return null;
         }
-        return null;
+
+        // Build success response
+        HttpResponse response = HttpResponse.builder()
+                .httpTimestamp(new Date())
+                .httpStatusCode(HttpStatus.CREATED.value())
+                .httpStatus(HttpStatus.CREATED)
+                .httpStatusReason(HttpStatus.CREATED.getReasonPhrase())
+                .httpStatusMessage("User created successfully")
+                .httpDeveloperMessage("The user with email " + user.getEmail() + " has been created.")
+                .httpPath(request.getRequestURI())
+                .httpResponseData(Map.of("user", user)) // Include user data or other relevant data
+                .build();
+
+        eventService.generateEvent(user.getUUID(),EVENT_AUTH_USER_REGISTERED ,EventCategory.USER,this.getClass().getSimpleName());
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @Transactional
@@ -265,19 +280,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userRepository.save(newUser);
 
-        // Build success response
-        HttpResponse response = HttpResponse.builder()
-                .httpTimestamp(new Date())
-                .httpStatusCode(HttpStatus.CREATED.value())
-                .httpStatus(HttpStatus.CREATED)
-                .httpStatusReason(HttpStatus.CREATED.getReasonPhrase())
-                .httpStatusMessage("User created successfully")
-                .httpDeveloperMessage("The user with email " + registerUser.getEmail() + " has been created.")
-                .httpPath(request.getRequestURI())
-                .httpResponseData(Map.of("user", newUser)) // Include user data or other relevant data
-                .build();
 
-        eventService.generateEvent(newUser.getUUID(),EVENT_AUTH_USER_REGISTERED ,EventCategory.USER,this.getClass().getSimpleName());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
