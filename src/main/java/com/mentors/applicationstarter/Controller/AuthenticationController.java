@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,9 +68,9 @@ public class AuthenticationController {
     }
 
     @GetMapping("/activate")
-    public ResponseEntity<HttpResponse> validateUserEmailAddress(@RequestParam String activationString) throws MessagingException, IOException {
-        authenticationService.activateNewUser(activationString);
-        return new ResponseEntity<>(null, null, HttpStatus.OK);
+    public ResponseEntity<HttpResponse> validateUserEmailAddress(@RequestParam String activationId) throws MessagingException, IOException {
+        HttpResponse response = authenticationService.activateNewUser(activationId);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getHttpStatusCode()));
     }
 
 //    @GetMapping("/confirm-password-reset")
