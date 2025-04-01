@@ -18,10 +18,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static com.mentors.applicationstarter.Constant.SecurityConstant.JWT_TOKEN_SECRET;
+
 @Service
 public class JwtService {
-
-    private static final String SECRET_KEY = "544D4B62576358367976794D335757447842566A7478753441746A796C3177616F4C2F584674592F466C55434C74763332325276664346585949633252775A42";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -78,7 +78,7 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(JWT_TOKEN_SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

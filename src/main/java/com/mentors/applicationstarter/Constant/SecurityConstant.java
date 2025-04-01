@@ -4,6 +4,7 @@ public class SecurityConstant {
     public static final long EXPIRATION_TIME = 86_400_000; //24Hours Token Expiration time in miliseconds
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String JWT_TOKEN_HEADER = "Jwt-Token";
+    public static final String JWT_TOKEN_SECRET = "544D4B62576358367976794D335757447842566A7478753441746A796C3177616F4C2F584674592F466C55434C74763332325276664346585949633252775A42";
     public static final String TOKEN_CANNOT_BE_VERIFIED = "Token cannot be verified";
     public static final String TOKEN_ISSUER_NAME = "E-Voucher";
     public static final String TOKEN_ADMINISTRATION = "E-Voucher User Management Service";

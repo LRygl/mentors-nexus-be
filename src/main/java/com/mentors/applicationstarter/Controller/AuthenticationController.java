@@ -73,11 +73,11 @@ public class AuthenticationController {
         return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getHttpStatusCode()));
     }
 
-//    @GetMapping("/confirm-password-reset")
-//    public ResponseEntity<HttpResponse> confirmResetPassword(@RequestParam("operationId") String operationId, @RequestParam("userId") String userId) throws MessagingException, IOException {
-//        UUID decodedOperationUUID = UUID.fromString(new String(Base64.getUrlDecoder().decode(operationId)));
-//        UUID decodedUserUUID = UUID.fromString(new String(Base64.getUrlDecoder().decode(userId)));
-//        return ResponseEntity.ok(authenticationService.confirmUserPasswordReset(decodedOperationUUID, decodedUserUUID));
-//    }
+    @GetMapping("/confirm-password-reset")
+    public ResponseEntity<HttpResponse> confirmResetPassword(@RequestParam("operationId") String operationId, @RequestParam("userId") String userId) throws MessagingException, IOException {
+        UUID decodedOperationUUID = UUID.fromString(new String(Base64.getUrlDecoder().decode(operationId)));
+        UUID decodedUserUUID = UUID.fromString(new String(Base64.getUrlDecoder().decode(userId)));
+        return ResponseEntity.ok(authenticationService.confirmUserPasswordReset(decodedOperationUUID, decodedUserUUID));
+    }
 
 }

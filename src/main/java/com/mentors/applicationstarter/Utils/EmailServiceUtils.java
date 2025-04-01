@@ -35,7 +35,7 @@ public class EmailServiceUtils {
 
     @Async
     public void sendEmail(String to, String subject, Map<String, String> templateVariables, String templateFilePath) {
-        LOGGER.info("Sending email");
+        LOGGER.info("Sending email using template - " + templateFilePath);
 
         //Configure properties for smtp mail sender
         Properties props = new Properties();
@@ -67,7 +67,6 @@ public class EmailServiceUtils {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-
     }
 
     // loadAndProcessTemplate is used to load a correct template and replace variables with values from templateVariables

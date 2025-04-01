@@ -58,6 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EventService eventService;
     private final Base64Utils base64Utils;
 
+    //TODO Load from AWS PARAMETER STORE
     @Value("${generateUserPasswordOnRegistration}")
     private Boolean generateUserPasswordOnRegistration;
 
@@ -76,18 +77,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${reguireRegisteredUserAdminApproval}")
     private Boolean reguireRegisteredUserAdminApproval;
 
-
-    //TODO
-    // IF ADMIN ConfirmationRequired
-        // IF 
-
-    // ELSE Create directly
-
-
     @Override
     public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException {
         String passwordGenerationStrategy = "useProvidedPassword";
-        boolean requireUserEmailConfirmation = true;
+        boolean requireUserEmailConfirmation = false;
 
         if (userExistsByEmail(registeredUser.getEmail())) {
             throw new ResourceAlreadyExistsException(ErrorCodes.USER_ALREADY_REGISTERED, registeredUser.getEmail());
@@ -151,7 +144,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         //Send email with password
                         Map<String, String> providedPasswordTemplateVariables = new HashMap<>();
                         providedPasswordTemplateVariables.put("userEmail", user.getEmail());
-                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, providedPasswordTemplateVariables, MAIL_TEMPLATE_REGISTER_NEW_USER_PASSWORD);
+                        emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_REGISTER_NEW_USER, providedPasswordTemplateVariables, MAIL_TEMPLATE_REGISTER_PROVIDED_USER_PASSWORD);
                     }
                     user.setPassword(encryptAndSaltUserPassword(registeredUser.getPassword()));
                     saveUser(user);
@@ -212,26 +205,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void requestUserPasswordReset(String email) throws IOException, MessagingException {
 
-        Date currentDate = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentDate);
-        calendar.add(Calendar.HOUR_OF_DAY, 24);
-        Date expirationDate = calendar.getTime();
+        Instant resetLimit = Instant.now().plus(Duration.ofHours(24));
+        UUID operationID = UUID.randomUUID();
 
         User user = userRepository.findByEmail(email).orElseThrow();
-        user.setPasswordResetOperationUUID(UUID.randomUUID());
-        user.setPasswordResetExpiryDate(expirationDate);
+        user.setPasswordResetOperationUUID(operationID);
+        user.setPasswordResetExpiryDate(Date.from(resetLimit));
         userRepository.save(user);
 
-        String operationId = user.getPasswordResetOperationUUID().toString();
-        String encodedOperationId = Base64.getUrlEncoder().encodeToString(operationId.getBytes());
-        String userId = user.getUUID().toString();
-        String encodedUserId = Base64.getUrlEncoder().encodeToString(userId.getBytes());
-
-        //TODO change to debug for PROD
-        LOGGER.info("Operation UUID = " + user.getPasswordResetOperationUUID() + " BASE64 String encodedOperationId = " + encodedOperationId);
-        LOGGER.info("User UUID = " + user.getUUID() + " BASE64 String encodedUserId = " + encodedUserId);
-
+        String encodedOperationId = base64Utils.encodeStringToUrlSafeBase64(String.valueOf(operationID));
+        String encodedUserId = base64Utils.encodeStringToUrlSafeBase64(user.getUUID().toString());
         String passwordResetLinkString = MAIL_APPLICATION_BASE_URL + "?operationId=" + encodedOperationId + "&userId=" + encodedUserId;
 
         Map<String, String> templateVariables = new HashMap<>();
@@ -240,6 +223,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_PASSWORD_RESET_REQUEST, templateVariables, MAIL_TEMPLATE_RESET_USER_PASSWORD_REQUEST);
 
         userRepository.save(user);
+    }
+
+
+    public HttpResponse confirmUserPasswordReset(UUID operationId, UUID userId) {
+
+        userRepository.findByUUID(userId).map(user -> {
+            Instant expiryDate = user.getPasswordResetExpiryDate().toInstant();
+            Instant now = Instant.now();
+            if(now.isBefore(expiryDate) && operationId == user.getPasswordResetOperationUUID()){
+                 String password = generateRandomUserPassword();
+                 LOGGER.debug("New user password generated: {}", password);
+                 user.setPassword(encryptAndSaltUserPassword(password));
+                 user.setPasswordResetExpiryDate(null);
+                 user.setPasswordResetOperationUUID(null);
+                 userRepository.save(user);
+            }
+
+
+            return null;
+        });
+
+        return null;
     }
 
     public HttpResponse changeUserPassword(User passwordResetUser) throws MessagingException, IOException {
@@ -300,6 +305,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
+
+
+
     @Override
     public void createAdminUser() throws IOException {
         Optional<User> adminUser = userRepository.findById(1L);
@@ -322,8 +330,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
     }
+    /* -------------------------------------------------------------------------------------------------------------- */
+    /* ---------------------------------------- PRIVATE METHODS ----------------------------------------------------- */
+    /* -------------------------------------------------------------------------------------------------------------- */
 
-    /* PRIVATE METHODS */
     private Boolean userExistsByEmail(String userEmail) {
         Optional<User> user = userRepository.findByEmail((userEmail));
         return userRepository.findByEmail(userEmail).isPresent();
@@ -338,7 +348,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setIsAccountNonLocked(false);
         userRepository.save(user);
     }
-
 
     private String generateRandomUserPassword() {
         SecureRandom secureRandom = new SecureRandom();
