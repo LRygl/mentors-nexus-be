@@ -63,8 +63,8 @@ public class AuthenticationController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<HttpResponse> requestResetPassword(@RequestBody User user) throws MessagingException, IOException {
-        authenticationService.requestUserPasswordReset(user.getEmail());
-        return new ResponseEntity<>(null, null, HttpStatus.OK);
+        HttpResponse response = authenticationService.requestUserPasswordReset(user.getEmail());
+        return new ResponseEntity<>(response, null, response.getHttpStatusCode());
     }
 
     @GetMapping("/activate")

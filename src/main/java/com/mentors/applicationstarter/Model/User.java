@@ -42,6 +42,7 @@ public class User implements UserDetails {
     private Date lastUpdatedDate;
     private UUID passwordResetOperationUUID;
     private Date passwordResetExpiryDate;
+    //TODO ADD private Boolean forcePasswordChangeOnLogin;
 
     @Builder.Default
     private Boolean isAccountNonLocked = false;

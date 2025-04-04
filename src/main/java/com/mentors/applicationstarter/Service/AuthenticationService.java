@@ -15,7 +15,7 @@ public interface AuthenticationService {
     ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws Exception;
     String authenticate(User authenticateUser);
 
-    void requestUserPasswordReset(String email) throws IOException, MessagingException;
+    HttpResponse requestUserPasswordReset(String email) throws IOException, MessagingException;
     HttpResponse confirmUserPasswordReset(UUID operationId, UUID userId) throws MessagingException, IOException;
     HttpResponse activateNewUser(String activationString) throws MessagingException, IOException;
 

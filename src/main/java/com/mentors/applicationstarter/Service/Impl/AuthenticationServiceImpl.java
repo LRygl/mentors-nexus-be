@@ -13,6 +13,7 @@ import com.mentors.applicationstarter.Service.JwtService;
 import com.mentors.applicationstarter.Enum.Role;
 import com.mentors.applicationstarter.Utils.Base64Utils;
 import com.mentors.applicationstarter.Utils.EmailServiceUtils;
+import com.mentors.applicationstarter.Utils.HttpResponseFactory;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -203,7 +204,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void requestUserPasswordReset(String email) throws IOException, MessagingException {
+    public HttpResponse requestUserPasswordReset(String email) throws IOException, MessagingException {
 
         Instant resetLimit = Instant.now().plus(Duration.ofHours(24));
         UUID operationID = UUID.randomUUID();
@@ -223,8 +224,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         emailServiceUtils.sendEmail(user.getEmail(), MAIL_APPLICATION_SUBJECT_NAME + MAIL_SUBJECT_PASSWORD_RESET_REQUEST, templateVariables, MAIL_TEMPLATE_RESET_USER_PASSWORD_REQUEST);
 
         userRepository.save(user);
-    }
 
+        return HttpResponse.builder()
+                .httpTimestamp(new Date())
+                .httpStatusCode(HttpStatus.OK.value())
+                .httpStatus(HttpStatus.OK)
+                .httpStatusReason(HttpStatus.OK.getReasonPhrase())
+                .httpStatusMessage("Password Change request processed")
+                .httpDeveloperMessage("Password change request for " + user.getEmail())
+                .httpResponseData(Map.of("user", user)) // Include user data
+                .build();
+    }
 
     public HttpResponse confirmUserPasswordReset(UUID operationId, UUID userId) {
 
@@ -238,13 +248,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                  user.setPasswordResetExpiryDate(null);
                  user.setPasswordResetOperationUUID(null);
                  userRepository.save(user);
+
+                return HttpResponseFactory.ok(
+                        "Password change request was confirmed",
+                        "Password reset OK",
+                        Map.of("user",user)
+                );
+
+            } else {
+                return HttpResponseFactory.notFound(
+                        "Time Expired",
+                        "Token validity expired. Expiry: " + expiryDate + ", Now: " + now + " or password reset ID: " + operationId +" was not found. Request is invalid."
+                );
             }
 
-
-            return null;
         });
 
-        return null;
+        return HttpResponseFactory.notFound(
+                "User password reset request not processed - User was not found",
+                "ERROR: UserID: " + userId + " was not found. Request is invalid."
+        );
     }
 
     public HttpResponse changeUserPassword(User passwordResetUser) throws MessagingException, IOException {
