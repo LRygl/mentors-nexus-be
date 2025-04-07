@@ -17,6 +17,7 @@ public class EmailServiceConstant {
     public static final String MAIL_SUBJECT_REGISTER_NEW_USER = "Registrace nového uživatele";
     public static final String MAIL_SUBJECT_REGISTER_NEW_USER_CONFIRMATION_REQUIRED = "Potvrzení nového uživatelského účtu";
     public static final String MAIL_SUBJECT_PASSWORD_RESET_REQUEST = "Žádost o reset uživatelského hesla";
+    public static final String MAIL_SUBJECT_PASSWORD_RESET_NEW_PASSWORD = "Nové uživatelské heslo";
 
 
 
@@ -26,12 +27,7 @@ public class EmailServiceConstant {
     public static final String MAIL_TEMPLATE_REGISTER_PROVIDED_USER_PASSWORD = "mail-register-provided-user-password";
 
 
-
-
-
-
-
     public static final String MAIL_TEMPLATE_RESET_USER_PASSWORD_REQUEST = "mail-reset-password-request";
-    public static final String MAIL_REGISTER_NEW_USER_ADMIN_CONFIRMATION = "mail-register-new-user-admin-confirmation";
-    public static final String MAIL_REGISTER_NEW_USER_CONFIRMATION = "mail-register-new-user-confirmation";
+    public static final String MAIL_TEMPLATE_PASSWORD_RESET_NEW_PASSWORD = "mail-reset-password-new-password";
+
 }

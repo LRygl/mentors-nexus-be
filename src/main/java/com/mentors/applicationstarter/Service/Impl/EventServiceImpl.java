@@ -5,6 +5,7 @@ import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Repository.EventRepository;
 import com.mentors.applicationstarter.Service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
     @Override
+    @Async
     public void generateEvent(UUID resourceUUID, String eventName, EventCategory eventCategory, String origin) {
         Event event = Event.builder()
                 .UUID(UUID.randomUUID())

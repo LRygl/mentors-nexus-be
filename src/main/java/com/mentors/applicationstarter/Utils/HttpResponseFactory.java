@@ -24,6 +24,18 @@ public class HttpResponseFactory {
                 .build();
     }
 
+    public static HttpResponse created(String message, String developerMessage, Map<?, ?> data) {
+        return HttpResponse.builder()
+                .httpTimestamp(new Date())
+                .httpStatusCode(HttpStatus.CREATED.value())
+                .httpStatus(HttpStatus.CREATED)
+                .httpStatusReason(HttpStatus.CREATED.getReasonPhrase())
+                .httpStatusMessage(message)
+                .httpDeveloperMessage(developerMessage)
+                .httpResponseData(data)
+                .build();
+    }
+
     public static HttpResponse notFound(String message, String developerMessage) {
         return HttpResponse.builder()
                 .httpTimestamp(new Date())
@@ -35,4 +47,15 @@ public class HttpResponseFactory {
                 .build();
     }
 
+
+    public static HttpResponse badRequest(String message, String developerMessage) {
+        return HttpResponse.builder()
+                .httpTimestamp(new Date())
+                .httpStatusCode(HttpStatus.BAD_REQUEST.value())
+                .httpStatus(HttpStatus.BAD_REQUEST)
+                .httpStatusReason(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .httpStatusMessage(message)
+                .httpDeveloperMessage(developerMessage)
+                .build();
+    }
 }

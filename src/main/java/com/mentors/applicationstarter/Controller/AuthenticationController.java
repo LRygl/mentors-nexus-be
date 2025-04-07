@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Controller;
 
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceImmutableException;
+import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.Response.HttpResponse;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.UserRepository;
@@ -62,7 +63,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<HttpResponse> requestResetPassword(@RequestBody User user) throws MessagingException, IOException {
+    public ResponseEntity<HttpResponse> requestResetPassword(@RequestBody User user) throws MessagingException, IOException, ResourceNotFoundException {
         HttpResponse response = authenticationService.requestUserPasswordReset(user.getEmail());
         return new ResponseEntity<>(response, null, response.getHttpStatusCode());
     }

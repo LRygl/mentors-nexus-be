@@ -35,7 +35,7 @@ public class EmailServiceUtils {
 
     @Async
     public void sendEmail(String to, String subject, Map<String, String> templateVariables, String templateFilePath) {
-        LOGGER.info("Sending email using template - " + templateFilePath);
+        LOGGER.info("Sending email using template - {} ", templateFilePath);
 
         //Configure properties for smtp mail sender
         Properties props = new Properties();

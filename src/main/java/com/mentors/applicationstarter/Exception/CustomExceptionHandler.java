@@ -27,14 +27,6 @@ public class CustomExceptionHandler {
                 );
     }
 
-//    @ExceptionHandler(ResourceNotFoundException.class)
-//    public ResponseEntity<HttpErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
-//        String developerMessage = ex.getDeveloperMessage();
-//        String httpErrorMessage = ex.getErrorMessage();
-//        LOGGER.error(developerMessage);
-//        return createErrorHttpResponse(HttpStatus.NOT_FOUND, httpErrorMessage, developerMessage );
-//    }
-//
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<HttpErrorResponse> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
         LOGGER.error(ex.getDeveloperMessage());
@@ -46,5 +38,12 @@ public class CustomExceptionHandler {
         LOGGER.error(ex.getDeveloperMessage());
         return createErrorHttpResponse(HttpStatus.CONFLICT, ex.getErrorCode().getCode(), ex.getMessage());
     }
+    
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<HttpErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        LOGGER.error(ex.getDeveloperMessage());
+        return createErrorHttpResponse(HttpStatus.NOT_FOUND, ex.getErrorCode().getCode(), ex.getMessage());
+    }
+
 
 }

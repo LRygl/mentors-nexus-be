@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service;
 
+import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.Response.HttpResponse;
 import com.mentors.applicationstarter.Model.User;
 import jakarta.mail.MessagingException;
@@ -15,7 +16,7 @@ public interface AuthenticationService {
     ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws Exception;
     String authenticate(User authenticateUser);
 
-    HttpResponse requestUserPasswordReset(String email) throws IOException, MessagingException;
+    HttpResponse requestUserPasswordReset(String email) throws IOException, MessagingException, ResourceNotFoundException;
     HttpResponse confirmUserPasswordReset(UUID operationId, UUID userId) throws MessagingException, IOException;
     HttpResponse activateNewUser(String activationString) throws MessagingException, IOException;
 

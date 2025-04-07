@@ -6,8 +6,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCodes {
     REGISTRATION_NOT_ALLOWED(550, "User registration is not allowed","Application is configured to not allow user registration"),
-    USER_ALREADY_REGISTERED(551, "User with email: %s already exists", "User already exists with email: %s");
-
+    USER_ALREADY_REGISTERED(551, "User with email: %s already exists", "User already exists with email: %s"),
+    USER_DOES_NOT_EXIST(552, "User does not exists", "User does not exist");
     @Getter
     private final int code;
     @Getter
