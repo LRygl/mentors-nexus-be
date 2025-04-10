@@ -48,4 +48,7 @@ public class UserController {
         }
     }
 
+
+    //TODO Consent Management Endpoint
+
 }
