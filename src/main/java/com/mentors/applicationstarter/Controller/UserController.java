@@ -1,15 +1,13 @@
 package com.mentors.applicationstarter.Controller;
 
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.ConsentHistory;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,5 +48,16 @@ public class UserController {
 
 
     //TODO Consent Management Endpoint
+    @PutMapping("/{id}/consent")
+    public ResponseEntity<?> updateUserConsents(
+            @PathVariable Long id,
+            @RequestBody User
+    )
+    //TODO Consent history of all users
 
+    //TODO Consent history for each user
+    @GetMapping("/{id}/consent/history")
+    public List<ConsentHistory>getConsentHistory(@PathVariable Long id){
+        return null;
+    }
 }
