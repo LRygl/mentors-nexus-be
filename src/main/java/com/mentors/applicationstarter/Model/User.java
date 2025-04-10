@@ -55,6 +55,10 @@ public class User implements UserDetails {
     private Boolean personalDataPublishing = false;
     @Builder.Default
     private Boolean marketing = false;
+    @Builder.Default
+    private Boolean cookiePolicyConsent = false;
+
+
 
     @NonNull
     @Enumerated(EnumType.STRING)

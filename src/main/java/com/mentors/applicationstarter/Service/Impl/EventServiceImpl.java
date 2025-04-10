@@ -1,6 +1,7 @@
 package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.Enum.EventCategory;
+import com.mentors.applicationstarter.Enum.EventType;
 import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Repository.EventRepository;
 import com.mentors.applicationstarter.Service.EventService;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,19 +23,20 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Async
-    public void generateEvent(UUID resourceUUID, String eventName, EventCategory eventCategory, String origin) {
+    public void generateEvent(UUID resourceUUID, String eventName,String value, EventCategory eventCategory, EventType eventType, String origin) {
         Event event = Event.builder()
                 .UUID(UUID.randomUUID())
                 .resourceUUID(resourceUUID)
                 .name(eventName)
+                .value(value)
                 .category(eventCategory)
+                .type(eventType)
                 .origin(origin)
-                .timestamp(LocalDateTime.now()
+                .timestamp(Instant.now()
                 )
                 .build();
 
         eventRepository.save(event);
-
     }
 
     public List<Event> getAllEvents(){

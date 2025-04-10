@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.EventCategory;
+import com.mentors.applicationstarter.Enum.EventType;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.Event;
@@ -169,7 +170,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     Map.of("user", user)
             );
 
-        eventService.generateEvent(user.getUUID(),EVENT_AUTH_USER_REGISTERED ,EventCategory.USER,this.getClass().getSimpleName());
+        eventService.generateEvent(user.getUUID(),EVENT_AUTH_USER_REGISTERED ,user.getEmail(),EventCategory.USER, EventType.REGISTRATION,this.getClass().getSimpleName());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -199,7 +200,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setLastLoginDate(new Date());
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        eventService.generateEvent(user.getUUID(),"User Authentication Request",EventCategory.USER,this.getClass().getSimpleName());
+        eventService.generateEvent(user.getUUID(),"User Authentication Request",user.getEmail(),EventCategory.USER,EventType.AUTH,this.getClass().getSimpleName());
 
         return jwtToken;
     }
@@ -281,7 +282,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String[] securityString = base64DecodedString.split("\\+",2);
         String activationUUID = securityString[0];
         String activationTimestamp = securityString[1];
-        eventService.generateEvent(UUID.fromString(activationUUID),"User Account Activated",EventCategory.USER,this.getClass().getSimpleName());
+        eventService.generateEvent(UUID.fromString(activationUUID),"User Account Activated",base64DecodedString,EventCategory.USER,EventType.ACTIVATION,this.getClass().getSimpleName());
 
         Instant timestamp = Instant.parse(activationTimestamp);
         Instant now = Instant.now();
@@ -333,7 +334,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             user.setRole(Role.ROLE_ADMIN);
 
             userRepository.save(user);
-            eventService.generateEvent(user.getUUID(),"New User Registered",EventCategory.USER,this.getClass().getSimpleName());
+            eventService.generateEvent(user.getUUID(),"New User Registered",user.getEmail(),EventCategory.USER,EventType.REGISTRATION,this.getClass().getSimpleName());
             Path userFolder = Paths.get(USER_FOLDER + user.getUUID()).toAbsolutePath().normalize();
             Files.createDirectories(userFolder);
         }

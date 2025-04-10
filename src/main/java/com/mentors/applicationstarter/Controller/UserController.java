@@ -2,8 +2,10 @@ package com.mentors.applicationstarter.Controller;
 
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.ConsentHistory;
+import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,8 +53,13 @@ public class UserController {
     @PutMapping("/{id}/consent")
     public ResponseEntity<?> updateUserConsents(
             @PathVariable Long id,
-            @RequestBody User
-    )
+            @RequestBody UserConsentUpdateRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        userService.updateConsents(id,request, httpRequest);
+        return null;
+    }
+
     //TODO Consent history of all users
 
     //TODO Consent history for each user

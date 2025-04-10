@@ -1,7 +1,9 @@
 package com.mentors.applicationstarter.Service;
 
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,4 +17,6 @@ public interface UserService {
     Optional<User> getUserByEmail(String userEmail);
     Optional<User> getUserByUUID(UUID userUUID);
     Optional<User> getUserById(Long userId) throws ResourceNotFoundException;
+
+    void updateConsents(Long id, UserConsentUpdateRequest request, HttpServletRequest httpRequest);
 }

@@ -1,6 +1,7 @@
 package com.mentors.applicationstarter.Model;
 
 import com.mentors.applicationstarter.Enum.EventCategory;
+import com.mentors.applicationstarter.Enum.EventType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,8 +30,10 @@ public class Event {
     private UUID UUID;
     private UUID resourceUUID;
     private String name;
+    private String value;
     private EventCategory category;
+    private EventType type;
     private String origin;
     @CreationTimestamp
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 }
