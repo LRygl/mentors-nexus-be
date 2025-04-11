@@ -1,7 +1,7 @@
 package com.mentors.applicationstarter.Controller;
 
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
-import com.mentors.applicationstarter.Model.ConsentHistory;
+import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Service.UserService;
@@ -64,7 +64,8 @@ public class UserController {
 
     //TODO Consent history for each user
     @GetMapping("/{id}/consent/history")
-    public List<ConsentHistory>getConsentHistory(@PathVariable Long id){
+    public List<Event>getConsentEvents(@PathVariable Long id) {
+        userService.getUserConsentEvents(id);
         return null;
     }
 }

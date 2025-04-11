@@ -4,6 +4,7 @@ import com.mentors.applicationstarter.Enum.ConsentType;
 import com.mentors.applicationstarter.Enum.EventCategory;
 import com.mentors.applicationstarter.Enum.EventType;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.UserRepository;
@@ -98,6 +99,11 @@ public class UserServiceImpl implements UserService {
         if (changed) {
             userRepository.save(user);
         }
+    }
+
+    @Override
+    public List<Event> getUserConsentEvents(Long id) {
+        return eventService.getEventListByUserID(id, EventType.CONSENT_UPDATE);
     }
 
 

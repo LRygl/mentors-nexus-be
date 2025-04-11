@@ -47,4 +47,9 @@ public class EventServiceImpl implements EventService {
     public Optional<List<Event>> getEventList(UUID resourceUUID) {
         return eventRepository.findByResourceUUID(resourceUUID);
     }
+
+    @Override
+    public List<Event> getEventListByUserID(Long id, EventType type) {
+        return eventRepository.findByIdAndEventType(id,type);
+    }
 }

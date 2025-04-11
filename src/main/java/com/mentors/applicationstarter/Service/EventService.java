@@ -15,4 +15,7 @@ public interface EventService {
     void generateEvent(UUID resourceUUID, String eventName, String value, EventCategory eventCategory, EventType eventType, String origin);
     List<Event> getAllEvents();
     Optional<List<Event>> getEventList(UUID resourceUUID);
+
+
+    List<Event> getEventListByUserID(Long id, EventType type);
 }

@@ -31,7 +31,9 @@ public class Event {
     private UUID resourceUUID;
     private String name;
     private String value;
+    @Enumerated(EnumType.STRING)
     private EventCategory category;
+    @Enumerated(EnumType.STRING)
     private EventType type;
     private String origin;
     @CreationTimestamp
