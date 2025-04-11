@@ -17,5 +17,5 @@ public interface EventService {
     Optional<List<Event>> getEventList(UUID resourceUUID);
 
 
-    List<Event> getEventListByUserID(Long id, EventType type);
+    List<Event> findByResourceUUIDAndEventType(UUID id, EventType type);
 }

@@ -103,8 +103,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<Event> getUserConsentEvents(Long id) {
-        return eventService.getEventListByUserID(id, EventType.CONSENT_UPDATE);
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return eventService.findByResourceUUIDAndEventType(user.getUUID(), EventType.CONSENT_UPDATE);
     }
-
 
 }

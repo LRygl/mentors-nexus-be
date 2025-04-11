@@ -64,8 +64,8 @@ public class UserController {
 
     //TODO Consent history for each user
     @GetMapping("/{id}/consent/history")
-    public List<Event>getConsentEvents(@PathVariable Long id) {
-        userService.getUserConsentEvents(id);
-        return null;
+    public ResponseEntity<List<Event>>getConsentEvents(@PathVariable Long id) {
+        ;
+        return new ResponseEntity<>(userService.getUserConsentEvents(id),HttpStatus.OK);
     }
 }

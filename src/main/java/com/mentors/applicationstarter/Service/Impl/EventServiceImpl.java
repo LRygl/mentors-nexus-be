@@ -49,7 +49,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Event> getEventListByUserID(Long id, EventType type) {
-        return eventRepository.findByIdAndEventType(id,type);
+    public List<Event> findByResourceUUIDAndEventType(UUID uuid, EventType type) {
+        return eventRepository.findByResourceUUIDAndType(uuid,type);
     }
 }
