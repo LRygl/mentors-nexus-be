@@ -48,7 +48,6 @@ public class UserController {
         }
     }
 
-
     //TODO Consent Management Endpoint
     @PutMapping("/{id}/consent")
     public ResponseEntity<?> updateUserConsents(
@@ -57,15 +56,31 @@ public class UserController {
             HttpServletRequest httpRequest
     ) {
         userService.updateConsents(id,request, httpRequest);
-        return null;
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    //TODO Consent history of all users
-
-    //TODO Consent history for each user
+    @GetMapping("/consent/history")
+    public ResponseEntity<List<Event>>getConsentEvents() {
+        return new ResponseEntity<>(userService.getConsentEvents(),HttpStatus.OK);
+    }
     @GetMapping("/{id}/consent/history")
-    public ResponseEntity<List<Event>>getConsentEvents(@PathVariable Long id) {
-        ;
+    public ResponseEntity<List<Event>>getUserConsentEvents(@PathVariable Long id) {
         return new ResponseEntity<>(userService.getUserConsentEvents(id),HttpStatus.OK);
     }
+
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<User> activateUser(@PathVariable Long id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.activateUser(id),HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<User> deactivateUser(@PathVariable Long id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.deactivateUser(id),HttpStatus.OK);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<User> deleteUser(@PathVariable Long id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.deleteUser(id),HttpStatus.GONE);
+    }
+
 }

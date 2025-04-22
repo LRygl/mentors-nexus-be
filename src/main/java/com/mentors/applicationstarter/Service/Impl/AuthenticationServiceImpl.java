@@ -5,7 +5,6 @@ import com.mentors.applicationstarter.Enum.EventCategory;
 import com.mentors.applicationstarter.Enum.EventType;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
-import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Response.HttpResponse;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.UserRepository;
@@ -37,7 +36,6 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import static com.mentors.applicationstarter.Constant.ApplicationConstant.APP_EXPIRY_DURATION_24H;
@@ -84,7 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private Boolean forcePasswordResetOnLogin;
 
     @Override
-    public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException {
+    public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException, IOException {
         String passwordGenerationStrategy = "useProvidedPassword";
         boolean requireUserEmailConfirmation = false;
 
@@ -169,7 +167,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     "The user with email " + user.getEmail() + " has been created.",
                     Map.of("user", user)
             );
-
+        generateUserFolder(user.getUUID());
         eventService.generateEvent(user.getUUID(),EVENT_AUTH_USER_REGISTERED ,user.getEmail(),EventCategory.USER, EventType.REGISTRATION,this.getClass().getSimpleName());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -335,8 +333,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             userRepository.save(user);
             eventService.generateEvent(user.getUUID(),"New User Registered",user.getEmail(),EventCategory.USER,EventType.REGISTRATION,this.getClass().getSimpleName());
-            Path userFolder = Paths.get(USER_FOLDER + user.getUUID()).toAbsolutePath().normalize();
-            Files.createDirectories(userFolder);
+            generateUserFolder(user.getUUID());
+
         }
 
     }
@@ -372,6 +370,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private String encryptAndSaltUserPassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    private void generateUserFolder(UUID userUUID) throws IOException {
+        Path userFolder = Paths.get(USER_FOLDER + userUUID).toAbsolutePath().normalize();
+        Files.createDirectories(userFolder);
     }
 
 }

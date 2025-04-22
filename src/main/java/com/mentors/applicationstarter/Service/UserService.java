@@ -22,4 +22,10 @@ public interface UserService {
     void updateConsents(Long id, UserConsentUpdateRequest request, HttpServletRequest httpRequest);
 
     List<Event> getUserConsentEvents(Long id);
+    List<Event> getConsentEvents();
+
+    User activateUser(Long id) throws ResourceNotFoundException;
+    User deactivateUser(Long id) throws ResourceNotFoundException;
+
+    User deleteUser(Long id) throws ResourceNotFoundException;
 }

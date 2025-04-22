@@ -1,6 +1,6 @@
 package com.mentors.applicationstarter.Service.Impl;
 
-import com.mentors.applicationstarter.Enum.ConsentType;
+import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.EventCategory;
 import com.mentors.applicationstarter.Enum.EventType;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
@@ -107,4 +107,55 @@ public class UserServiceImpl implements UserService {
         return eventService.findByResourceUUIDAndEventType(user.getUUID(), EventType.CONSENT_UPDATE);
     }
 
+    @Override
+    public List<Event> getConsentEvents() {
+        return eventService.findAllEventsByType(EventType.CONSENT_UPDATE);
+    }
+
+    @Override
+    public User activateUser(Long id) throws ResourceNotFoundException {
+        User user = findUser(id);
+        activate(user);
+        return user;
+    }
+
+    @Override
+    public User deactivateUser(Long id) throws ResourceNotFoundException {
+        User user = findUser(id);
+        deactivate(user);
+        return user;
+    }
+
+    @Override
+    public User deleteUser(Long id) throws ResourceNotFoundException {
+        User user = findUser(id);
+        if (user.getId() != 1L){
+            userRepository.deleteById(id);
+            return user;
+        }
+        throw new RuntimeException("Cannot delete user");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////// PRIVATE METHODS ///////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private void activate(User user) {
+        user.setIsAccountNonLocked(true);
+        userRepository.save(user);
+    }
+
+    private void deactivate(User user) {
+        user.setIsAccountNonLocked(false);
+        userRepository.save(user);
+    }
+
+    private <T> User findUser(T identifier) throws ResourceNotFoundException {
+        return switch (identifier) {
+            case Long l -> userRepository.findById(l).orElseThrow(()-> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+            case UUID uuid -> userRepository.findByUUID(uuid).orElseThrow(()-> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+            case String s -> userRepository.findByEmail(s).orElseThrow(()-> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+            case null, default -> throw new RuntimeException("Invalid identifier");
+        };
+    }
 }

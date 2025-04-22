@@ -5,7 +5,7 @@ public class FileConstant {
     public static final String USER_IMAGE_PATH = "/user";
     public static final String JPG_EXTENSION = "jpg";
     public static final String PNG_EXTENSION = "png";
-    public static final String APPLICATION_ROOT_PATH = "/evoucher";
+    public static final String APPLICATION_ROOT_PATH = "/mentors";
     public static final String USER_FOLDER = System.getProperty("user.home") + APPLICATION_ROOT_PATH + "/user/";
     public static final String DIRECTORY_CREATED = "Created directory for: ";
     public static final String DEFAULT_USER_IMAGE_PATH = "/user/image/";

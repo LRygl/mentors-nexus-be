@@ -18,4 +18,6 @@ public interface EventService {
 
 
     List<Event> findByResourceUUIDAndEventType(UUID id, EventType type);
+
+    List<Event> findAllEventsByType(EventType type);
 }
