@@ -20,6 +20,6 @@ public class HttpErrorResponse {
     private Date httpTimestamp;
     private int httpStatusCode;
     private HttpStatus httpStatus;
-    private int applicationErrorCode;
+    private String applicationErrorCode;
     private String applicationErrorMessage;
 }

@@ -5,15 +5,15 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public enum ErrorCodes {
-    REGISTRATION_NOT_ALLOWED(550, "User registration is not allowed","Application is configured to not allow user registration"),
-    USER_ALREADY_REGISTERED(551, "User with email: %s already exists", "User already exists with email: %s"),
-    USER_DOES_NOT_EXIST(552, "User does not exists", "User does not exist");
+    REGISTRATION_NOT_ALLOWED("UserRegistrationNotAllowed", "User registration is not allowed","Application is configured to not allow user registration"),
+    USER_ALREADY_REGISTERED("UserAlreadyRegistered", "User with email: %s already exists", "User already exists with email: %s"),
+    USER_DOES_NOT_EXIST("UserDoesNotExist", "User does not exists", "User does not exist"),
 
-
-
+    CATEGORY_EMPTY("CategoryCannotBeEmpty", "Category name cannot be empty", "Request to create category was received but the 'name' parameter is empty after trimming the data."),
+    CATEGORY_EXISTS("CategoryAlreadyExists", "Category already exists", "Category with this name already exists and cannot be created again");
 
     @Getter
-    private final int code;
+    private final String code;
     @Getter
     private final String customerMessage;
     @Getter

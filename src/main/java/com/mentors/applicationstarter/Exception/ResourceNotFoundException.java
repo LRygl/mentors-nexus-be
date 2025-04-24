@@ -4,7 +4,7 @@ import com.mentors.applicationstarter.Enum.ErrorCodes;
 import lombok.Getter;
 
 @Getter
-public class ResourceNotFoundException extends Exception {
+public class ResourceNotFoundException extends RuntimeException {
 
     private final ErrorCodes errorCode;
     private final String developerMessage;

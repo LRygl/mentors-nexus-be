@@ -13,7 +13,7 @@ import java.util.Date;
 @ControllerAdvice
 public class CustomExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomExceptionHandler.class);
-    private ResponseEntity<HttpErrorResponse> createErrorHttpResponse(HttpStatus httpStatus, int applicationErrorCode, String applicationErrorMessage) {
+    private ResponseEntity<HttpErrorResponse> createErrorHttpResponse(HttpStatus httpStatus, String applicationErrorCode, String applicationErrorMessage) {
         // Construct your response body using the error message and custom messages
         return ResponseEntity
                 .status(HttpStatus.resolve(httpStatus.value()))
@@ -41,6 +41,12 @@ public class CustomExceptionHandler {
     
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<HttpErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        LOGGER.error(ex.getDeveloperMessage());
+        return createErrorHttpResponse(HttpStatus.NOT_FOUND, ex.getErrorCode().getCode(), ex.getMessage());
+    }
+
+    @ExceptionHandler(ResourceNotEmptyException.class)
+    public ResponseEntity<HttpErrorResponse> handleResourceNotemptyException(ResourceNotEmptyException ex) {
         LOGGER.error(ex.getDeveloperMessage());
         return createErrorHttpResponse(HttpStatus.NOT_FOUND, ex.getErrorCode().getCode(), ex.getMessage());
     }
