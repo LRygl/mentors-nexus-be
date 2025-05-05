@@ -1,12 +1,12 @@
 package com.mentors.applicationstarter.Model;
 
+import com.mentors.applicationstarter.Enum.CourseVisibility;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -23,11 +23,11 @@ public class Course {
     private Long id;
     private UUID UUID;
     private String name;
-    private String labels;
+
     //TODO Create CRUD for Category Management
     private String category;
     //TODO Separate in public, private, unpublished
-    private String status;
+    private CourseVisibility visibility;
     private String price;
 
     private Instant created;
@@ -38,5 +38,28 @@ public class Course {
     private String students;
     private String lessons;
 
+    // RELATIONS Definitions
 
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "course_label",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "label_id")
+    )
+    @Builder.Default
+    @ToString.Exclude
+    private Set<Label> labels = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return id != null && id.equals(course.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31;
+    }
 }

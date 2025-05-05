@@ -10,8 +10,10 @@ public enum ErrorCodes {
     USER_DOES_NOT_EXIST("UserDoesNotExist", "User does not exists", "User does not exist"),
 
     CATEGORY_EMPTY("CategoryCannotBeEmpty", "Category name cannot be empty", "Request to create category was received but the 'name' parameter is empty after trimming the data."),
-    CATEGORY_EXISTS("CategoryAlreadyExists", "Category already exists", "Category with this name already exists and cannot be created again");
+    CATEGORY_EXISTS("CategoryAlreadyExists", "Category already exists", "Category with this name already exists and cannot be created again"),
 
+
+    COURSE_DOES_NOT_EXIST("CourseDoesNotExist","Course was not found", "Could not find course based on the request data provided");
     @Getter
     private final String code;
     @Getter
