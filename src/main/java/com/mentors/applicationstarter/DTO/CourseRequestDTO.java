@@ -7,6 +7,7 @@ import java.util.Set;
 
 @Data
 public class CourseRequestDTO {
+    private Long id;
     private String name;
     private String category;
     private String status;

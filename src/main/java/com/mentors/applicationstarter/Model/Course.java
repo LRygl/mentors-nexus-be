@@ -1,6 +1,6 @@
 package com.mentors.applicationstarter.Model;
 
-import com.mentors.applicationstarter.Enum.CourseVisibility;
+import com.mentors.applicationstarter.Enum.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,7 +27,7 @@ public class Course {
     //TODO Create CRUD for Category Management
     private String category;
     //TODO Separate in public, private, unpublished
-    private CourseVisibility visibility;
+    private CourseStatus status;
     private String price;
 
     private Instant created;

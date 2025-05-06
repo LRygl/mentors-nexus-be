@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Controller;
 
 import com.mentors.applicationstarter.DTO.CourseRequestDTO;
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
+import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Service.CourseService;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +25,28 @@ public ResponseEntity<List<CourseResponseDTO>> getAllCoursees(){
     return new ResponseEntity<>(courseService.getAllCourses(),HttpStatus.OK);
 }
 
-    @GetMapping("/{courseId}")
-    public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable Long courseId) {
-        return new ResponseEntity<>(courseService.getCourseById(courseId), HttpStatus.FOUND);
+    @GetMapping("/{id}")
+    public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable Long id) {
+        return new ResponseEntity<>(courseService.getCourseById(id), HttpStatus.FOUND);
     }
 
     @PostMapping
     public ResponseEntity<CourseResponseDTO> createNewCourse(@RequestBody CourseRequestDTO course) {
         return new ResponseEntity<>(courseService.createCourse(course), HttpStatus.CREATED);
+    }
+
+    @PutMapping
+    public ResponseEntity<CourseResponseDTO> updateCourse(@RequestBody CourseRequestDTO courseRequestDTO) {
+        return new ResponseEntity<>(courseService.updateCourse(courseRequestDTO), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<CourseResponseDTO> updateCourseStatus(@PathVariable Long id, @RequestBody CourseStatusDTO courseStatusDTO) {
+        return new ResponseEntity<>(courseService.updateCourseStatus(id,courseStatusDTO),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<CourseResponseDTO> deleteCourse(@PathVariable Long id) {
+        return new ResponseEntity<>(courseService.deleteCourse(id), HttpStatus.GONE);
     }
 }

@@ -1,6 +1,6 @@
 package com.mentors.applicationstarter.Enum;
 
-public enum CourseVisibility {
+public enum CourseStatus {
     PUBLISHED,
     UNPUBLISHED,
     HIDDEN,
