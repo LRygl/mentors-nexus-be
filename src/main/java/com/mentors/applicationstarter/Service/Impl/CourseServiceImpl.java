@@ -6,8 +6,10 @@ import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.Category;
 import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.Label;
+import com.mentors.applicationstarter.Repository.CategoryRepository;
 import com.mentors.applicationstarter.Repository.CourseRepository;
 import com.mentors.applicationstarter.Repository.LabelRepository;
 import com.mentors.applicationstarter.Service.CourseService;
@@ -28,10 +30,12 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     private final LabelRepository labelRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public CourseResponseDTO createCourse(CourseRequestDTO request) {
         Set<Label> labels = resolveLabels(request.getLabels());
+        Set<Category> categories = resolveCategories(request.getCategories());
 
         Course course = Course.builder()
                 .UUID(UUID.randomUUID())
@@ -39,6 +43,7 @@ public class CourseServiceImpl implements CourseService {
                 .created(Instant.now())
                 .status(CourseStatus.UNPUBLISHED)
                 .price(request.getPrice())
+                .categories((categories))
                 .labels(labels)
                 .build();
 
@@ -70,6 +75,7 @@ public class CourseServiceImpl implements CourseService {
         course.setName(dto.getName());
         course.setUpdated(Instant.now());
         course.setLabels(resolveLabels(dto.getLabels()));
+        course.setCategories(resolveCategories(dto.getCategories()));
 
         Course updatedCourse = courseRepository.save(course);
         return mapObjectToDTO(updatedCourse);
@@ -97,7 +103,8 @@ public class CourseServiceImpl implements CourseService {
         if(course.getStatus() == CourseStatus.PUBLISHED && newStatus == CourseStatus.PUBLISHED){
             return mapObjectToDTO(course);
         }
-//TODO Course has to have a category when published
+
+        //TODO Course has to have a category when published
         switch (newStatus) {
             case PUBLISHED, HIDDEN, PRIVATE -> {
                 if(course.getPublished() == null) {
@@ -135,6 +142,24 @@ public class CourseServiceImpl implements CourseService {
         return allLabels;
     }
 
+    private Set<Category> resolveCategories(Set<String> requestedCategoryNames) {
+        List<Category> existingCategories = categoryRepository.findByNameIn(requestedCategoryNames);
+        Set<String> existingNames = existingCategories.stream()
+                .map(Category::getName)
+                .collect(Collectors.toSet());
+
+        Set<Category> newCategories = requestedCategoryNames.stream()
+                .filter(name-> !existingNames.contains(name))
+                .map(name -> Category.builder().name(name).build())
+                .collect(Collectors.toSet());
+
+        List<Category> savedNewCategories = categoryRepository.saveAll(newCategories);
+
+        Set<Category> allCategories = new HashSet<>(existingCategories);
+        allCategories.addAll(savedNewCategories);
+        return allCategories;
+    }
+
     private void detachCourseFromLabels(Course course) {
         for (Label label : course.getLabels()) {
             label.getCourses().remove(course);
@@ -148,6 +173,9 @@ public class CourseServiceImpl implements CourseService {
                 .name(course.getName())
                 .labels(course.getLabels().stream()
                         .map(Label::getName)
+                        .collect(Collectors.toSet()))
+                .categories(course.getCategories().stream()
+                        .map(Category::getName)
                         .collect(Collectors.toSet()))
                 .created(course.getCreated())
                 .published(course.getPublished())

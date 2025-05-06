@@ -40,6 +40,7 @@ public class Course {
 
     // RELATIONS Definitions
 
+    // LABEL JOIN
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinTable(
             name = "course_label",
@@ -49,6 +50,20 @@ public class Course {
     @Builder.Default
     @ToString.Exclude
     private Set<Label> labels = new HashSet<>();
+
+    // CATEGORY JOIN
+    @ManyToMany
+    @JoinTable(
+            name = "course_category",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    @Builder.Default
+    @ToString.Exclude
+    private Set<Category> categories = new HashSet<>();
+
+
+
 
     @Override
     public boolean equals(Object o) {

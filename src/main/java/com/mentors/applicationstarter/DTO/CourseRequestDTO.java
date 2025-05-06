@@ -15,4 +15,5 @@ public class CourseRequestDTO {
     private Instant published;
     private String courseOwner;
     private Set<String> labels;  // Label names
+    private Set<String> categories;
 }

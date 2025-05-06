@@ -17,4 +17,5 @@ public class CourseResponseDTO {
     private String status;
     private String name;
     private Set<String> labels;
+    private Set<String> categories;
 }
