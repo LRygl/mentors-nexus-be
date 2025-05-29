@@ -6,11 +6,16 @@ import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Service.CourseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/course")
@@ -20,10 +25,23 @@ public class CourseController {
     private final CourseService courseService;
 
 
-@GetMapping
-public ResponseEntity<List<CourseResponseDTO>> getAllCoursees(){
+    @GetMapping("/all")
+    public ResponseEntity<List<CourseResponseDTO>> getAllCoursees(){
     return new ResponseEntity<>(courseService.getAllCourses(),HttpStatus.OK);
-}
+    }
+
+    @GetMapping
+    public Page<CourseResponseDTO> getPageCourses(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Set<String> categoryName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int size,
+            @RequestParam(defaultValue = "id,asc") String[] sort
+    ) {
+        Sort.Direction direction = Sort.Direction.fromString(sort[1]);
+        Pageable pageable = PageRequest.of(page,size,Sort.by(direction, sort[0]));
+        return courseService.getPagedCourses(name,categoryName ,pageable);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable Long id) {

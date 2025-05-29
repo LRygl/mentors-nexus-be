@@ -52,6 +52,8 @@ public class ApplicationStarterApplication {
 				LOGGER.info("Admin user generation is disabled");
 			}
 
+			//TODO CREATE DEFAULT CATEGORY
+
 		};
 	}
 }

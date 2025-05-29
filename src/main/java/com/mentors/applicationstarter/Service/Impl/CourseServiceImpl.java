@@ -6,6 +6,7 @@ import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Mapper.CourseMapper;
 import com.mentors.applicationstarter.Model.Category;
 import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.Label;
@@ -13,10 +14,14 @@ import com.mentors.applicationstarter.Repository.CategoryRepository;
 import com.mentors.applicationstarter.Repository.CourseRepository;
 import com.mentors.applicationstarter.Repository.LabelRepository;
 import com.mentors.applicationstarter.Service.CourseService;
+import com.mentors.applicationstarter.Specification.CourseSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -66,6 +71,9 @@ public class CourseServiceImpl implements CourseService {
                 .map(this::mapObjectToDTO)
                 .collect(Collectors.toList());
     }
+
+
+
 
     @Override
     public CourseResponseDTO updateCourse(CourseRequestDTO dto) {
@@ -122,6 +130,15 @@ public class CourseServiceImpl implements CourseService {
 
     }
 
+    @Override
+    public Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryName, Pageable pageable) {
+        Specification<Course> specification = Specification.where(CourseSpecification.hasName(name))
+                .and(CourseSpecification.hasCategories(categoryName));
+        Page<Course> coursePage = courseRepository.findAll(specification, pageable);
+
+        return coursePage.map(CourseMapper::toDto);
+
+    }
     // PRIVATE METHODS
 
     private Set<Label> resolveLabels(Set<String> requestedLabelNames) {

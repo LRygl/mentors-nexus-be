@@ -62,7 +62,11 @@ public class Course {
     @ToString.Exclude
     private Set<Category> categories = new HashSet<>();
 
+    //OWNER JOIN - MANYTOONE
 
+    //STUDENTS JOIN - MANYTOMANY
+
+    //LESSONS JOIN - ONETOMANY
 
 
     @Override

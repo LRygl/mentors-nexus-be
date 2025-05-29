@@ -4,9 +4,12 @@ import com.mentors.applicationstarter.DTO.CourseRequestDTO;
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Model.Course;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public interface CourseService {
@@ -21,4 +24,6 @@ public interface CourseService {
     CourseResponseDTO deleteCourse(Long courseId);
 
     CourseResponseDTO updateCourseStatus(Long id, CourseStatusDTO courseStatusDTO);
+
+    Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryNames, Pageable pageable);
 }
