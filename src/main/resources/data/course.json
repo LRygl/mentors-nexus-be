@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Excel pro začátečníky",
+    "published": "2025-05-05T16:47:47Z",
+    "price": "13.55",
+    "label": ["Word"],
+    "category": ["Microsoft","Office","Office 365"]
+  },
+  {
+    "name": "PowerPoint for Business",
+    "published": "2025-04-25T12:00:00Z",
+    "price": "25.00",
+    "label": ["PowerPoint"],
+    "category": ["Microsoft", "Office"]
+  },
+  {
+    "name": "Photoshop Essentials",
+    "published": "2025-05-01T09:30:00Z",
+    "price": "45.99",
+    "label": ["Photoshop","Digital Photography"],
+    "category": ["Adobe"]
+  }
+]

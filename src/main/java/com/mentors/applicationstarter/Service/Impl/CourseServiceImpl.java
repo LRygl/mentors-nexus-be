@@ -82,8 +82,12 @@ public class CourseServiceImpl implements CourseService {
 
         course.setName(dto.getName());
         course.setUpdated(Instant.now());
-        course.setLabels(resolveLabels(dto.getLabels()));
-        course.setCategories(resolveCategories(dto.getCategories()));
+        if (dto.getLabels() != null){
+            course.setLabels(resolveLabels(dto.getLabels()));
+        }
+        if (dto.getCategories() != null){
+            course.setCategories(resolveCategories(dto.getCategories()));
+        }
 
         Course updatedCourse = courseRepository.save(course);
         return mapObjectToDTO(updatedCourse);
@@ -124,6 +128,7 @@ public class CourseServiceImpl implements CourseService {
 
         course.setStatus(courseStatusDTO.getStatus());
         course.setUpdated(Instant.now());
+        course.setPublished(courseStatusDTO.getPublished());
 
         courseRepository.save(course);
         return mapObjectToDTO(course);
@@ -196,6 +201,7 @@ public class CourseServiceImpl implements CourseService {
                         .collect(Collectors.toSet()))
                 .created(course.getCreated())
                 .published(course.getPublished())
+                .updated(course.getUpdated())
                 .status(String.valueOf(course.getStatus()))
                 .build();
     }

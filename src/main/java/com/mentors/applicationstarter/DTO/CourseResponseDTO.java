@@ -17,6 +17,7 @@ public class CourseResponseDTO {
     private Long id;
     private UUID uuid;
     private Instant created;
+    private Instant updated;
     private Instant published;
     private String status;
     private String name;
