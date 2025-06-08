@@ -1,6 +1,8 @@
 package com.mentors.applicationstarter.Service;
 
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
@@ -13,7 +15,7 @@ import java.util.UUID;
 
 @Service
 public interface UserService {
-    List<User> getUserList();
+    List<UserResponseDTO> getUserList();
 
     Optional<User> getUserByEmail(String userEmail);
     Optional<User> getUserByUUID(UUID userUUID);
@@ -28,4 +30,8 @@ public interface UserService {
     User deactivateUser(Long id) throws ResourceNotFoundException;
 
     User deleteUser(Long id) throws ResourceNotFoundException;
+
+    User changeUserRole(Long id, String role);
+
+    Course getUserCourses(Long userId);
 }

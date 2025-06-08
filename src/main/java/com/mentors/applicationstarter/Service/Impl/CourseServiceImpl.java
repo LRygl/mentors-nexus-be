@@ -3,16 +3,21 @@ package com.mentors.applicationstarter.Service.Impl;
 import com.mentors.applicationstarter.DTO.CourseRequestDTO;
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseStatusDTO;
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
+import com.mentors.applicationstarter.Enum.Role;
+import com.mentors.applicationstarter.Exception.BusinessRuleViolationException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.CourseMapper;
 import com.mentors.applicationstarter.Model.Category;
 import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.Label;
+import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.CategoryRepository;
 import com.mentors.applicationstarter.Repository.CourseRepository;
 import com.mentors.applicationstarter.Repository.LabelRepository;
+import com.mentors.applicationstarter.Repository.UserRepository;
 import com.mentors.applicationstarter.Service.CourseService;
 import com.mentors.applicationstarter.Specification.CourseSpecification;
 import jakarta.transaction.Transactional;
@@ -34,6 +39,7 @@ public class CourseServiceImpl implements CourseService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CourseServiceImpl.class);
 
     private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
     private final LabelRepository labelRepository;
     private final CategoryRepository categoryRepository;
 
@@ -42,14 +48,17 @@ public class CourseServiceImpl implements CourseService {
         Set<Label> labels = resolveLabels(request.getLabels());
         Set<Category> categories = resolveCategories(request.getCategories());
 
+        User owner = getCourseOwner(request.getCourseOwnerId());
+
         Course course = Course.builder()
-                .UUID(UUID.randomUUID())
+                .uuid(UUID.randomUUID())
                 .name(request.getName())
                 .created(Instant.now())
                 .status(CourseStatus.UNPUBLISHED)
                 .price(request.getPrice())
                 .categories((categories))
                 .labels(labels)
+                .owner(owner)
                 .build();
 
         Course savedCourse = courseRepository.save(course);
@@ -60,8 +69,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public CourseResponseDTO getCourseById(Long courseId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+        Course course = findCourseById(courseId);
         return mapObjectToDTO(course);
     }
 
@@ -72,21 +80,23 @@ public class CourseServiceImpl implements CourseService {
                 .collect(Collectors.toList());
     }
 
-
-
-
     @Override
     public CourseResponseDTO updateCourse(CourseRequestDTO dto) {
-        Course course = courseRepository.findById(dto.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+        Course course = findCourseById(dto.getId());
 
-        course.setName(dto.getName());
+        if(dto.getName() != null){
+            course.setName(dto.getName());
+        }
         course.setUpdated(Instant.now());
         if (dto.getLabels() != null){
             course.setLabels(resolveLabels(dto.getLabels()));
         }
         if (dto.getCategories() != null){
             course.setCategories(resolveCategories(dto.getCategories()));
+        }
+        if (dto.getCourseOwnerId() != null) {
+            User owner = getCourseOwner(dto.getCourseOwnerId());
+            course.setOwner(owner);
         }
 
         Course updatedCourse = courseRepository.save(course);
@@ -96,8 +106,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public CourseResponseDTO deleteCourse(Long courseId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+        Course course = findCourseById(courseId);
 
         detachCourseFromLabels(course);
         courseRepository.delete(course);
@@ -107,9 +116,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDTO updateCourseStatus(Long id, CourseStatusDTO courseStatusDTO) {
-        Course course = courseRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
-
+        Course course = findCourseById(id);
         CourseStatus newStatus = courseStatusDTO.getStatus();
 
         if(course.getStatus() == CourseStatus.PUBLISHED && newStatus == CourseStatus.PUBLISHED){
@@ -130,6 +137,7 @@ public class CourseServiceImpl implements CourseService {
         course.setUpdated(Instant.now());
         course.setPublished(courseStatusDTO.getPublished());
 
+
         courseRepository.save(course);
         return mapObjectToDTO(course);
 
@@ -144,7 +152,30 @@ public class CourseServiceImpl implements CourseService {
         return coursePage.map(CourseMapper::toDto);
 
     }
+
+    @Override
+    @Transactional
+    public void enrollUserToCourse(Long courseId, UUID userUUID) {
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow( () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+
+        User user = userRepository.findByUUID(userUUID)
+                .orElseThrow( () -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+        course.getStudents().add(user);
+        courseRepository.save(course);
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PRIVATE METHODS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private Course findCourseById(Long courseId){
+        return courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+    }
 
     private Set<Label> resolveLabels(Set<String> requestedLabelNames) {
         List<Label> existingLabels = labelRepository.findByNameIn(requestedLabelNames);
@@ -172,7 +203,12 @@ public class CourseServiceImpl implements CourseService {
 
         Set<Category> newCategories = requestedCategoryNames.stream()
                 .filter(name-> !existingNames.contains(name))
-                .map(name -> Category.builder().name(name).build())
+                .map(name -> Category.builder()
+                        .name(name)
+                        .UUID(UUID.randomUUID())
+                        .created(Instant.now())
+                        .build()
+                )
                 .collect(Collectors.toSet());
 
         List<Category> savedNewCategories = categoryRepository.saveAll(newCategories);
@@ -188,10 +224,23 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
+    private User getCourseOwner(Long ownerId){
+        User owner = null;
+        if (ownerId != null) {
+            owner = userRepository.findById(ownerId)
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+            if(owner.getRole() == Role.USER) {
+                throw new BusinessRuleViolationException(ErrorCodes.COURSE_CANNOT_BE_ASSIGNED);
+            }
+        }
+        return owner;
+    }
+
     private CourseResponseDTO mapObjectToDTO(Course course) {
         return CourseResponseDTO.builder()
                 .id(course.getId())
-                .uuid(course.getUUID())
+                .uuid(course.getUuid())
                 .name(course.getName())
                 .labels(course.getLabels().stream()
                         .map(Label::getName)
@@ -200,6 +249,15 @@ public class CourseServiceImpl implements CourseService {
                         .map(Category::getName)
                         .collect(Collectors.toSet()))
                 .created(course.getCreated())
+                .owner(
+                        course.getOwner() == null ? null :
+                        UserResponseDTO.builder()
+                                .id(course.getOwner().getId())
+                                .firstName(course.getOwner().getFirstName())
+                                .lastName(course.getOwner().getLastName())
+                                .email(course.getOwner().getEmail())
+                                .build()
+                )
                 .published(course.getPublished())
                 .updated(course.getUpdated())
                 .status(String.valueOf(course.getStatus()))

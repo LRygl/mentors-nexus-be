@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public interface CourseService {
@@ -26,4 +27,6 @@ public interface CourseService {
     CourseResponseDTO updateCourseStatus(Long id, CourseStatusDTO courseStatusDTO);
 
     Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryNames, Pageable pageable);
+
+    void enrollUserToCourse(Long courseId, UUID userUUID);
 }

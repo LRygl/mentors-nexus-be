@@ -1,9 +1,13 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.EventCategory;
 import com.mentors.applicationstarter.Enum.EventType;
+import com.mentors.applicationstarter.Enum.Role;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
@@ -14,12 +18,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +36,15 @@ public class UserServiceImpl implements UserService {
     private final EventService eventService;
 
     @Override
-    public List<User> getUserList() {
-        List<User> userList = userRepository.findAll().stream().toList();
-        LOGGER.info("Returning list of application users: {}", userList.size());
-        return userList;
+    public List<UserResponseDTO> getUserList() {
+        //List<User> userList = userRepository.findAll().stream().toList();
+        //LOGGER.info("Returning list of application users: {}", userList.size());
+
+        return userRepository.findAll().stream()
+                .map(this::mapUserToDTO)
+                .collect(Collectors.toList());
+
+        //return userList;
     }
 
     //TODO Paginated user list
@@ -136,6 +147,26 @@ public class UserServiceImpl implements UserService {
         throw new RuntimeException("Cannot delete user");
     }
 
+    @Override
+    public User changeUserRole(Long id, String roleString) {
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+        Role role;
+        try {
+            role = Role.valueOf(roleString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role");
+        }
+        user.setRole(role);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Course getUserCourses(Long userId) {
+        User user = findUser(userId);
+        return null;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////// PRIVATE METHODS ///////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,4 +189,43 @@ public class UserServiceImpl implements UserService {
             case null, default -> throw new RuntimeException("Invalid identifier");
         };
     }
+
+    private UserResponseDTO mapUserToDTO(User user) {
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .UUID(user.getUUID())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .telephoneNumber(user.getTelephoneNumber())
+                .lastLoginDateDisplay(user.getLastLoginDateDisplay())
+                .registerDate(user.getRegisterDate())
+                .lastUpdatedDate(user.getLastUpdatedDate())
+                .isAccountNonLocked(user.getIsAccountNonLocked())
+                .forcePasswordChangeOnLogin(user.getForcePasswordChangeOnLogin())
+                .personalDataProcessing(user.getPersonalDataProcessing())
+                .personalDataPublishing(user.getPersonalDataPublishing())
+                .marketing(user.getMarketing())
+                .cookiePolicyConsent(user.getCookiePolicyConsent())
+                .role(user.getRoleName())
+                .ownedCourses(user.getOwnedCourses().stream()
+                        .map(course -> CourseSummaryDTO.builder()
+                                .id(course.getId())
+                                .name(course.getName())
+                                .status(course.getStatus().name())
+                                .uuid(course.getUuid())
+                                .build())
+                        .collect(Collectors.toSet()))
+                .joinedCourses(user.getJoinedCourses().stream()
+                        .map(course -> CourseSummaryDTO.builder()
+                                .id(course.getId())
+                                .name(course.getName())
+                                .status(course.getStatus().name())
+                                .uuid(course.getUuid())
+                                .build())
+                        .collect(Collectors.toSet()))
+                .build();
+    }
+
+
 }

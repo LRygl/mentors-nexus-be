@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,7 +22,7 @@ public class Course {
     @SequenceGenerator(name = "courseGenerator", sequenceName = "application_course_sequence", allocationSize = 50)
     @Column(nullable = false, updatable = false)
     private Long id;
-    private UUID UUID;
+    private UUID uuid;
     private String name;
 
     //TODO Create CRUD for Category Management
@@ -34,9 +35,6 @@ public class Course {
     private Instant updated;
     private Instant published;
 
-    private String courseOwner;
-    private String students;
-    private String lessons;
 
     // RELATIONS Definitions
 
@@ -63,10 +61,23 @@ public class Course {
     private Set<Category> categories = new HashSet<>();
 
     //OWNER JOIN - MANYTOONE
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    @JsonIgnore
+    private User owner;
 
     //STUDENTS JOIN - MANYTOMANY
+    @ManyToMany
+    @JoinTable(
+            name = "course_student",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> students = new HashSet<>();
 
     //LESSONS JOIN - ONETOMANY
+    private String lessons;
 
 
     @Override

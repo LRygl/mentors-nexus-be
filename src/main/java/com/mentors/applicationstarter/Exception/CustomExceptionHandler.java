@@ -51,5 +51,11 @@ public class CustomExceptionHandler {
         return createErrorHttpResponse(HttpStatus.NOT_FOUND, ex.getErrorCode().getCode(), ex.getMessage());
     }
 
+    @ExceptionHandler(BusinessRuleViolationException.class)
+    public ResponseEntity<HttpErrorResponse> handleBusinessRuleViolationException(BusinessRuleViolationException ex) {
+        LOGGER.error(ex.getDeveloperMessage());
+        return createErrorHttpResponse(HttpStatus.CONFLICT, ex.getErrorCode().getCode(), ex.getMessage());
+    }
+
 
 }

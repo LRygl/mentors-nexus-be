@@ -23,4 +23,5 @@ public class CourseResponseDTO {
     private String name;
     private Set<String> labels;
     private Set<String> categories;
+    private UserResponseDTO owner;
 }

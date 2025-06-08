@@ -13,7 +13,7 @@ public class CourseMapper {
     public static CourseResponseDTO toDto(Course course) {
         return CourseResponseDTO.builder()
                 .id(course.getId())
-                .uuid(course.getUUID())
+                .uuid(course.getUuid())
                 .created(course.getCreated())
                 .published(course.getPublished())
                 .status(course.getStatus() != null ? course.getStatus().name() : null)

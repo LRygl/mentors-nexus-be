@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/course")
@@ -46,6 +47,12 @@ public class CourseController {
     @GetMapping("/{id}")
     public ResponseEntity<CourseResponseDTO> getCourseById(@PathVariable Long id) {
         return new ResponseEntity<>(courseService.getCourseById(id), HttpStatus.FOUND);
+    }
+
+    @PostMapping("/{courseId}/enroll")
+    public ResponseEntity<Void> enrollCourse(@PathVariable Long courseId, @RequestParam UUID userUUID) {
+        courseService.enrollUserToCourse(courseId,userUUID);
+        return null;
     }
 
     @PostMapping

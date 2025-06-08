@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class Label {
     @ManyToMany(mappedBy = "labels")
     @Builder.Default
     @ToString.Exclude
+    @JsonIgnore
     private Set<Course> courses = new HashSet<>();
 
     @Override

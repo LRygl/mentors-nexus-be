@@ -1,6 +1,8 @@
 package com.mentors.applicationstarter.Controller;
 
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
@@ -23,9 +25,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<User>> listAllUsers() {
-        List<User> userList = userService.getUserList();
-        return new ResponseEntity<>(userList, HttpStatus.OK);
+    public ResponseEntity<List<UserResponseDTO>> listAllUsers() {
+        return new ResponseEntity<>(userService.getUserList(), HttpStatus.OK);
     }
 
     @GetMapping("/filter")
@@ -48,6 +49,12 @@ public class UserController {
         }
     }
 
+    @GetMapping("/{id}/course")
+    public ResponseEntity<Course> getUserCourses(@PathVariable Long userId){
+        return new ResponseEntity<>(userService.getUserCourses(userId),HttpStatus.OK);
+    }
+
+
     //TODO Consent Management Endpoint
     @PutMapping("/{id}/consent")
     public ResponseEntity<?> updateUserConsents(
@@ -66,6 +73,11 @@ public class UserController {
     @GetMapping("/{id}/consent/history")
     public ResponseEntity<List<Event>>getUserConsentEvents(@PathVariable Long id) {
         return new ResponseEntity<>(userService.getUserConsentEvents(id),HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<User> changeUserRole(@PathVariable Long id, @RequestBody User request) {
+        return new ResponseEntity<>(userService.changeUserRole(id, request.getRoleName()), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/activate")
