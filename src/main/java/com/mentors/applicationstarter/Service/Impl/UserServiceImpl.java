@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
@@ -217,7 +218,7 @@ public class UserServiceImpl implements UserService {
                                 .build())
                         .collect(Collectors.toSet()))
                 .joinedCourses(user.getJoinedCourses().stream()
-                        .map(course -> CourseSummaryDTO.builder()
+                        .map(course -> CourseResponseDTO.builder()
                                 .id(course.getId())
                                 .name(course.getName())
                                 .status(course.getStatus().name())

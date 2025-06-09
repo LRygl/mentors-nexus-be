@@ -1,6 +1,8 @@
 package com.mentors.applicationstarter.Mapper;
 
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
+import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Model.Category;
 import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.Label;
@@ -14,12 +16,35 @@ public class CourseMapper {
         return CourseResponseDTO.builder()
                 .id(course.getId())
                 .uuid(course.getUuid())
-                .created(course.getCreated())
-                .published(course.getPublished())
-                .status(course.getStatus() != null ? course.getStatus().name() : null)
                 .name(course.getName())
-                .labels(mapLabels(course.getLabels()))
-                .categories(mapCategories(course.getCategories()))
+                .labels(course.getLabels().stream()
+                        .map(Label::getName)
+                        .collect(Collectors.toSet()))
+                .categories(course.getCategories().stream()
+                        .map(Category::getName)
+                        .collect(Collectors.toSet()))
+                .created(course.getCreated())
+                .owner(
+                        course.getOwner() == null ? null :
+                                UserResponseDTO.builder()
+                                        .id(course.getOwner().getId())
+                                        .firstName(course.getOwner().getFirstName())
+                                        .lastName(course.getOwner().getLastName())
+                                        .email(course.getOwner().getEmail())
+                                        .build()
+                )
+                .published(course.getPublished())
+                .updated(course.getUpdated())
+                .status(String.valueOf(course.getStatus()))
+                .build();
+    }
+
+    public static CourseSummaryDTO toSummaryDto(Course course) {
+        return CourseSummaryDTO.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .status(course.getStatus() != null ? course.getStatus().name() : null)
+                .uuid(course.getUuid())
                 .build();
     }
 

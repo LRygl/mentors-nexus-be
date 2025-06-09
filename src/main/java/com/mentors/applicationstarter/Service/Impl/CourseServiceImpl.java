@@ -63,20 +63,20 @@ public class CourseServiceImpl implements CourseService {
 
         Course savedCourse = courseRepository.save(course);
 
-        return mapObjectToDTO(savedCourse);
+        return CourseMapper.toDto(savedCourse);
     }
 
     @Override
     @Transactional
     public CourseResponseDTO getCourseById(Long courseId) {
         Course course = findCourseById(courseId);
-        return mapObjectToDTO(course);
+        return CourseMapper.toDto(course);
     }
 
     @Override
     public List<CourseResponseDTO> getAllCourses() {
         return courseRepository.findAll().stream()
-                .map(this::mapObjectToDTO)
+                .map(CourseMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -100,7 +100,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         Course updatedCourse = courseRepository.save(course);
-        return mapObjectToDTO(updatedCourse);
+        return CourseMapper.toDto(updatedCourse);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class CourseServiceImpl implements CourseService {
         detachCourseFromLabels(course);
         courseRepository.delete(course);
 
-        return mapObjectToDTO(course);
+        return CourseMapper.toDto(course);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class CourseServiceImpl implements CourseService {
         CourseStatus newStatus = courseStatusDTO.getStatus();
 
         if(course.getStatus() == CourseStatus.PUBLISHED && newStatus == CourseStatus.PUBLISHED){
-            return mapObjectToDTO(course);
+            return CourseMapper.toDto(course);
         }
 
         //TODO Course has to have a category when published
@@ -139,7 +139,7 @@ public class CourseServiceImpl implements CourseService {
 
 
         courseRepository.save(course);
-        return mapObjectToDTO(course);
+        return CourseMapper.toDto(course);
 
     }
 
@@ -236,33 +236,5 @@ public class CourseServiceImpl implements CourseService {
         }
         return owner;
     }
-
-    private CourseResponseDTO mapObjectToDTO(Course course) {
-        return CourseResponseDTO.builder()
-                .id(course.getId())
-                .uuid(course.getUuid())
-                .name(course.getName())
-                .labels(course.getLabels().stream()
-                        .map(Label::getName)
-                        .collect(Collectors.toSet()))
-                .categories(course.getCategories().stream()
-                        .map(Category::getName)
-                        .collect(Collectors.toSet()))
-                .created(course.getCreated())
-                .owner(
-                        course.getOwner() == null ? null :
-                        UserResponseDTO.builder()
-                                .id(course.getOwner().getId())
-                                .firstName(course.getOwner().getFirstName())
-                                .lastName(course.getOwner().getLastName())
-                                .email(course.getOwner().getEmail())
-                                .build()
-                )
-                .published(course.getPublished())
-                .updated(course.getUpdated())
-                .status(String.valueOf(course.getStatus()))
-                .build();
-    }
-
 
 }

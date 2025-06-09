@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.DTO;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,5 +40,5 @@ public class UserResponseDTO {
 
     // To avoid recursion and infinite loops:
     private Set<CourseSummaryDTO> ownedCourses;
-    private Set<CourseSummaryDTO> joinedCourses;
+    private Set<CourseResponseDTO> joinedCourses;
 }
