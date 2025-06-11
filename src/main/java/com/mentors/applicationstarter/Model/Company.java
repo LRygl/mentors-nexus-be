@@ -30,7 +30,7 @@ public class Company {
     private Instant createdDate;
     private Instant updatedDate;
 
-    private Boolean aresData;
+    private Boolean forceVatNumFromRegister;
 
     private String billingInfo;
     private String currentPlan;

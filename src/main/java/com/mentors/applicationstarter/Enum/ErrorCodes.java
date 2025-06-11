@@ -14,7 +14,10 @@ public enum ErrorCodes {
 
 
     COURSE_DOES_NOT_EXIST("CourseDoesNotExist","Course was not found", "Could not find course based on the request data provided"),
-    COURSE_CANNOT_BE_ASSIGNED("CourseCannotBeAssigned", "User cannot be course owner", "Ordinary users cannot be owning a course. Elevate user Role to assign him to course.");
+    COURSE_CANNOT_BE_ASSIGNED("CourseCannotBeAssigned", "User cannot be course owner", "Ordinary users cannot be owning a course. Elevate user Role to assign him to course."),
+
+    COMPANY_DOES_NOT_EXIST("","","");
+
 
     @Getter
     private final String code;
