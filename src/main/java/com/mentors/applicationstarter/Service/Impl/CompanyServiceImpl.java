@@ -72,6 +72,9 @@ public class CompanyServiceImpl implements CompanyService {
         return CompanyMapper.toCompanyDto(company);
     }
 
+    //1. Get company data from ARES
+    //2. Review company data in FE No Edit Allowed
+    //3. Create Company
     @Override
     public CompanyResponseDTO createCompany(CompanyRequestDTO request) {
 
