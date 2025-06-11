@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.DTO.AresResponseDTO;
 import com.mentors.applicationstarter.DTO.CompanyRequestDTO;
 import com.mentors.applicationstarter.DTO.CompanyResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
@@ -10,8 +11,8 @@ import com.mentors.applicationstarter.Mapper.CompanyMapper;
 import com.mentors.applicationstarter.Model.Company;
 import com.mentors.applicationstarter.Repository.CompanyRepository;
 import com.mentors.applicationstarter.Service.CompanyService;
+import com.mentors.applicationstarter.Utils.AresService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final AresService aresService;
 
     @Override
     public List<CompanyResponseDTO> getAllCourses() {
@@ -48,7 +51,18 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CompanyResponseDTO getCompanyAresData(Long companyId, String companyVAT) {
-        return null;
+        AresResponseDTO response = aresService.getCompanyInfo(companyVAT).block();
+
+        Company company = Company.builder()
+                .UUID(UUID.randomUUID())
+                .name(response.getObchodniJmeno())
+                .registrationNumber(response.getDic())
+                .vatNumber(response.getIco())
+                .createdDate(Instant.now())
+                .billingAddress(response.getSidlo().getTextovaAdresa())
+                .build();
+
+        return CompanyMapper.toCompanyDto(company);
     }
 
     @Override

@@ -33,6 +33,7 @@ public class Company {
     private Boolean forceVatNumFromRegister;
 
     private String billingInfo;
+    private String billingAddress;
     private String currentPlan;
     private String invoice;
 
