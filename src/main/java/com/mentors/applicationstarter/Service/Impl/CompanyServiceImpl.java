@@ -3,12 +3,15 @@ package com.mentors.applicationstarter.Service.Impl;
 import com.mentors.applicationstarter.DTO.CompanyRequestDTO;
 import com.mentors.applicationstarter.DTO.CompanyResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
+import com.mentors.applicationstarter.Exception.InvalidRequestException;
+import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.CompanyMapper;
 import com.mentors.applicationstarter.Model.Company;
 import com.mentors.applicationstarter.Repository.CompanyRepository;
 import com.mentors.applicationstarter.Service.CompanyService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -57,8 +60,16 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CompanyResponseDTO createCompany(CompanyRequestDTO request) {
-//todo vat number is mandatory
-        //todo validate if exists by vatno
+
+        if(request.getVatNumber() == null || request.getVatNumber().isBlank()){
+            throw new InvalidRequestException(ErrorCodes.COMPANY_REQUEST_VAT_REQUIRED);
+        }
+
+        companyRepository.findByVatNumber(request.getVatNumber())
+                .ifPresent(company -> {
+                    throw new ResourceAlreadyExistsException(ErrorCodes.COMPANY_ALLREADY_EXISTS_BY_VAT);
+                });
+
         Company company = Company.builder()
                 .UUID(UUID.randomUUID())
                 .name(request.getName())

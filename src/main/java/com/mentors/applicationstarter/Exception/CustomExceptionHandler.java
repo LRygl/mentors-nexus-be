@@ -57,5 +57,10 @@ public class CustomExceptionHandler {
         return createErrorHttpResponse(HttpStatus.CONFLICT, ex.getErrorCode().getCode(), ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<HttpErrorResponse> handleInvalidRequestException(InvalidRequestException ex) {
+        LOGGER.error(ex.getDeveloperMessage());
+        return createErrorHttpResponse(HttpStatus.BAD_REQUEST, ex.getErrorCode().getCode(), ex.getMessage());
+    }
 
 }
