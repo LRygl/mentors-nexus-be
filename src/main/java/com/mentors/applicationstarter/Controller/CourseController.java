@@ -60,6 +60,11 @@ public class CourseController {
         return new ResponseEntity<>(courseService.createCourse(course), HttpStatus.CREATED);
     }
 
+    @PostMapping("/{courseId}/lesson/{lessonId}")
+    public ResponseEntity<CourseResponseDTO> addLesson(@PathVariable Long courseId, @PathVariable Long lessonId) {
+        return new ResponseEntity<>(courseService.addLessonToCourse(courseId,lessonId),HttpStatus.OK);
+    }
+
     @PutMapping
     public ResponseEntity<CourseResponseDTO> updateCourse(@RequestBody CourseRequestDTO courseRequestDTO) {
         return new ResponseEntity<>(courseService.updateCourse(courseRequestDTO), HttpStatus.OK);

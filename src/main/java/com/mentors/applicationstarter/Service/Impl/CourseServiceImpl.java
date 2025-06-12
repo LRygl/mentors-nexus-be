@@ -10,15 +10,10 @@ import com.mentors.applicationstarter.Enum.Role;
 import com.mentors.applicationstarter.Exception.BusinessRuleViolationException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.CourseMapper;
-import com.mentors.applicationstarter.Model.Category;
-import com.mentors.applicationstarter.Model.Course;
-import com.mentors.applicationstarter.Model.Label;
-import com.mentors.applicationstarter.Model.User;
-import com.mentors.applicationstarter.Repository.CategoryRepository;
-import com.mentors.applicationstarter.Repository.CourseRepository;
-import com.mentors.applicationstarter.Repository.LabelRepository;
-import com.mentors.applicationstarter.Repository.UserRepository;
+import com.mentors.applicationstarter.Model.*;
+import com.mentors.applicationstarter.Repository.*;
 import com.mentors.applicationstarter.Service.CourseService;
+import com.mentors.applicationstarter.Service.LessonService;
 import com.mentors.applicationstarter.Specification.CourseSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +37,8 @@ public class CourseServiceImpl implements CourseService {
     private final UserRepository userRepository;
     private final LabelRepository labelRepository;
     private final CategoryRepository categoryRepository;
+    private final LessonService lessonService;
+    private final LessonRepository lessonRepository;
 
     @Override
     public CourseResponseDTO createCourse(CourseRequestDTO request) {
@@ -137,7 +134,6 @@ public class CourseServiceImpl implements CourseService {
         course.setUpdated(Instant.now());
         course.setPublished(courseStatusDTO.getPublished());
 
-
         courseRepository.save(course);
         return CourseMapper.toDto(course);
 
@@ -156,7 +152,6 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public void enrollUserToCourse(Long courseId, UUID userUUID) {
-
         Course course = courseRepository.findById(courseId)
                 .orElseThrow( () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
 
@@ -165,7 +160,20 @@ public class CourseServiceImpl implements CourseService {
 
         course.getStudents().add(user);
         courseRepository.save(course);
+    }
 
+    @Override
+    public CourseResponseDTO addLessonToCourse(Long courseId, Long lessonId) {
+        Course course = findCourseById(courseId);
+        Lesson lesson = lessonService.getLessonById(lessonId);
+
+        lesson.setCourse(course);
+        course.getLessons().add(lesson);
+
+        lessonRepository.save(lesson);
+        courseRepository.save(course);
+
+        return CourseMapper.toDto(course);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

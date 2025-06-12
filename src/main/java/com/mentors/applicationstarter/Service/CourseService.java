@@ -29,4 +29,6 @@ public interface CourseService {
     Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryNames, Pageable pageable);
 
     void enrollUserToCourse(Long courseId, UUID userUUID);
+
+    CourseResponseDTO addLessonToCourse(Long courseId, Long lessonId);
 }

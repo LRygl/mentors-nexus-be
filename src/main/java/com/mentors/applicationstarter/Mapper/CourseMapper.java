@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Mapper;
 
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
+import com.mentors.applicationstarter.DTO.LessonDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Model.Category;
 import com.mentors.applicationstarter.Model.Course;
@@ -36,7 +37,22 @@ public class CourseMapper {
                 .published(course.getPublished())
                 .updated(course.getUpdated())
                 .status(String.valueOf(course.getStatus()))
+                .lessons(
+                        course.getLessons() == null ? null :
+                                course.getLessons().stream()
+                                        .map(lesson -> LessonDTO.builder()
+                                                .id(lesson.getId())
+                                                .title(lesson.getTitle())
+                                                .description(lesson.getDescription())
+                                                .videoUrl(lesson.getVideoUrl())
+                                                .duration(lesson.getLength())
+                                                .orderIndex(lesson.getOrderIndex())
+                                                .build()
+                                        )
+                                        .collect(Collectors.toList())
+                )
                 .build();
+
     }
 
     public static CourseSummaryDTO toSummaryDto(Course course) {

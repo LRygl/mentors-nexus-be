@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,6 +24,7 @@ public class CourseResponseDTO {
     private String name;
     private Set<String> labels;
     private Set<String> categories;
+    private List<LessonDTO> lessons;
     private UserResponseDTO owner;
     private int students;
 }

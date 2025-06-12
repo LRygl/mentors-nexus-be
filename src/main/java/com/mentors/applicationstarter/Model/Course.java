@@ -77,7 +77,9 @@ public class Course {
     private Set<User> students = new HashSet<>();
 
     //LESSONS JOIN - ONETOMANY
-    private String lessons;
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Lesson> lessons = new HashSet<>();
 
 
     @Override
