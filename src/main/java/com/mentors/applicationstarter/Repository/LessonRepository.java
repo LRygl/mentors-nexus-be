@@ -1,0 +1,8 @@
+package com.mentors.applicationstarter.Repository;
+
+import com.mentors.applicationstarter.Model.Lesson;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface LessonRepository extends JpaRepository<Lesson, Long> {
+
+}

@@ -18,8 +18,9 @@ public enum ErrorCodes {
 
     COMPANY_DOES_NOT_EXIST("","",""),
     COMPANY_ALLREADY_EXISTS_BY_VAT("CompanyDuplicateVATRecord","VAT value for the company is allready used",""),
-    COMPANY_REQUEST_VAT_REQUIRED("CompanyRequestVATMandatory","VAT is a mandatory value for company registration","");
+    COMPANY_REQUEST_VAT_REQUIRED("CompanyRequestVATMandatory","VAT is a mandatory value for company registration",""),
 
+    INVOICE_DOES_NOT_EXIST("InvoiceDoesNotExist","Invoice lookup failed - invoice with this identification does not exist","");
     @Getter
     private final String code;
     @Getter
