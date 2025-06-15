@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Mapper;
 
+import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
 import com.mentors.applicationstarter.DTO.LessonDTO;
 import com.mentors.applicationstarter.Model.Lesson;
 
@@ -13,7 +14,11 @@ public class LessonMapper {
                 .description(lesson.getDescription())
                 .videoUrl(lesson.getVideoUrl())
                 .duration(lesson.getLength())
-                .courseName(lesson.getCourse() != null ? lesson.getCourse().getName() : null)
+                .course(lesson.getCourse() != null ? CourseSummaryDTO.builder()
+                        .id(lesson.getCourse().getId())
+                        .uuid(lesson.getCourse().getUuid())
+                        .name(lesson.getCourse().getName())
+                        .build() : null)
                 .build();
     }
 }

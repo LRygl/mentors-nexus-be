@@ -17,4 +17,5 @@ public class CourseSummaryDTO {
     private String name;
     private String status;
     private UUID uuid;
+    //private Float courseRating
 }

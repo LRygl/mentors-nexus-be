@@ -9,6 +9,7 @@ public enum ErrorCodes {
     USER_ALREADY_REGISTERED("UserAlreadyRegistered", "User with email: %s already exists", "User already exists with email: %s"),
     USER_DOES_NOT_EXIST("UserDoesNotExist", "User does not exists", "User does not exist"),
 
+    CATEGORY_DOES_NOT_EXIST("CategoryDoesNotExist","Category does not exist","Category does not exist"),
     CATEGORY_EMPTY("CategoryCannotBeEmpty", "Category name cannot be empty", "Request to create category was received but the 'name' parameter is empty after trimming the data."),
     CATEGORY_EXISTS("CategoryAlreadyExists", "Category already exists", "Category with this name already exists and cannot be created again"),
 

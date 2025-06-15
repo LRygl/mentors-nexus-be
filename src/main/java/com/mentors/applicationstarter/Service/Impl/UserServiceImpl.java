@@ -218,11 +218,11 @@ public class UserServiceImpl implements UserService {
                                 .build())
                         .collect(Collectors.toSet()))
                 .joinedCourses(user.getJoinedCourses().stream()
-                        .map(course -> CourseResponseDTO.builder()
+                        .map(course -> CourseSummaryDTO.builder()
                                 .id(course.getId())
                                 .name(course.getName())
-                                .status(course.getStatus().name())
                                 .uuid(course.getUuid())
+                                .status(course.getStatus().name())
                                 .build())
                         .collect(Collectors.toSet()))
                 .build();

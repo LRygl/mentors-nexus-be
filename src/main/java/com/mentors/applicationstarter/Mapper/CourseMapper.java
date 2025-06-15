@@ -47,10 +47,16 @@ public class CourseMapper {
                                                 .videoUrl(lesson.getVideoUrl())
                                                 .duration(lesson.getLength())
                                                 .orderIndex(lesson.getOrderIndex())
+                                                .course(CourseSummaryDTO.builder()
+                                                        .id(lesson.getCourse().getId())
+                                                        .uuid(lesson.getCourse().getUuid())
+                                                        .name(lesson.getCourse().getName())
+                                                        .build())
                                                 .build()
                                         )
                                         .collect(Collectors.toList())
                 )
+                .students(course.getStudents().size())
                 .build();
 
     }

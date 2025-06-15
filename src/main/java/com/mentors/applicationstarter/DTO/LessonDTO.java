@@ -20,5 +20,5 @@ public class LessonDTO {
     private String videoUrl;
     private Duration duration;
     private Integer orderIndex;
-    private String courseName;
+    private CourseSummaryDTO course;
 }
