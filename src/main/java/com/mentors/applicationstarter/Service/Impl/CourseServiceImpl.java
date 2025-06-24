@@ -41,6 +41,29 @@ public class CourseServiceImpl implements CourseService {
     private final LessonRepository lessonRepository;
 
     @Override
+    public Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryName, Pageable pageable) {
+        Specification<Course> specification = Specification.where(CourseSpecification.hasName(name))
+                .and(CourseSpecification.hasCategories(categoryName));
+        Page<Course> coursePage = courseRepository.findAll(specification, pageable);
+
+        return coursePage.map(CourseMapper::toDto);
+    }
+
+    @Override
+    public List<CourseResponseDTO> getAllCourses() {
+        return courseRepository.findAll().stream()
+                .map(CourseMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public CourseResponseDTO getCourseById(Long courseId) {
+        Course course = findCourseById(courseId);
+        return CourseMapper.toDto(course);
+    }
+
+    @Override
     public CourseResponseDTO createCourse(CourseRequestDTO request) {
         Set<Label> labels = resolveLabels(request.getLabels());
         Set<Category> categories = resolveCategories(request.getCategories());
@@ -61,20 +84,6 @@ public class CourseServiceImpl implements CourseService {
         Course savedCourse = courseRepository.save(course);
 
         return CourseMapper.toDto(savedCourse);
-    }
-
-    @Override
-    @Transactional
-    public CourseResponseDTO getCourseById(Long courseId) {
-        Course course = findCourseById(courseId);
-        return CourseMapper.toDto(course);
-    }
-
-    @Override
-    public List<CourseResponseDTO> getAllCourses() {
-        return courseRepository.findAll().stream()
-                .map(CourseMapper::toDto)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -139,15 +148,7 @@ public class CourseServiceImpl implements CourseService {
 
     }
 
-    @Override
-    public Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryName, Pageable pageable) {
-        Specification<Course> specification = Specification.where(CourseSpecification.hasName(name))
-                .and(CourseSpecification.hasCategories(categoryName));
-        Page<Course> coursePage = courseRepository.findAll(specification, pageable);
 
-        return coursePage.map(CourseMapper::toDto);
-
-    }
 
     @Override
     @Transactional

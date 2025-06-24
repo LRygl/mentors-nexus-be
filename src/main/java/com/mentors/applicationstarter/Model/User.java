@@ -62,6 +62,11 @@ public class User implements UserDetails {
     @Builder.Default
     private Set<Course> joinedCourses = new HashSet<>();
 
+    //Employee Company
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
     @NonNull
     @Enumerated(EnumType.STRING)
     private Role role;

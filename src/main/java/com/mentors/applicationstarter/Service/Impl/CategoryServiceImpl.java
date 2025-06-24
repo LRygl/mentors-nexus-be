@@ -1,19 +1,26 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.DTO.CategoryDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotEmptyException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Mapper.CategoryMapper;
 import com.mentors.applicationstarter.Model.Category;
 import com.mentors.applicationstarter.Repository.CategoryRepository;
 import com.mentors.applicationstarter.Service.CategoryService;
+import com.mentors.applicationstarter.Specification.CategorySpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -22,9 +29,27 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+
     @Override
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public Page<CategoryDTO> getPagedCategories(String name, Pageable pageable) {
+        Specification<Category> specification = Specification.where(CategorySpecification.hasName(name));
+        Page<Category> categoryPage = categoryRepository.findAll(specification, pageable);
+        return categoryPage.map(CategoryMapper::toCategoryWithCoursesDto);
+    }
+
+
+    @Override
+    public List<CategoryDTO> getAllCategories() {
+        return categoryRepository.findAll().stream()
+                .map(CategoryMapper::toCategoryWithCoursesDto)
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public CategoryDTO getCategoryById(Long categoryId) {
+        Category category = categoryRepository.findWithCoursesById(categoryId);
+        return CategoryMapper.toCategoryWithCoursesDto(category);
     }
 
     @Override
@@ -75,10 +100,7 @@ public class CategoryServiceImpl implements CategoryService {
         return category;
     }
 
-    @Override
-    public Category getCategoryById(Long categoryId) {
-        return findCategoryById(categoryId);
-    }
+
 
 
     private Category findCategoryById(Long id) {

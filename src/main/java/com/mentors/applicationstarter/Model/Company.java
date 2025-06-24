@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -36,5 +38,9 @@ public class Company {
     private String billingAddress;
     private String currentPlan;
     private String invoice;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = false)
+    @Builder.Default
+    private Set<User> companyMembers = new HashSet<>();
 
 }

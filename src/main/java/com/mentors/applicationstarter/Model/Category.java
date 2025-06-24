@@ -29,7 +29,7 @@ public class Category {
     private Instant created;
     private Instant updated;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "categories")
     @Builder.Default
     @ToString.Exclude
     private Set<Course> courses = new HashSet<>();

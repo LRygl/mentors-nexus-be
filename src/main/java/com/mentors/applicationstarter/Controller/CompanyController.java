@@ -41,7 +41,6 @@ public class CompanyController {
         return companyService.getPagedCompanies(pageable);
     }
 
-
     @GetMapping("/{companyId}")
     public ResponseEntity<CompanyResponseDTO> getCompany(@PathVariable Long companyId) {
         return new ResponseEntity<>(companyService.getCompanyById(companyId), HttpStatus.OK);
@@ -55,6 +54,11 @@ public class CompanyController {
     @PostMapping
     public ResponseEntity<CompanyResponseDTO> createCompany(@RequestBody CompanyRequestDTO request) {
         return new ResponseEntity<>(companyService.createCompany(request), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{companyId}/enroll/{userId}")
+    public ResponseEntity<CompanyResponseDTO> enrollUserToCompany(@PathVariable Long companyId, @PathVariable Long userId) {
+        return new ResponseEntity<>(companyService.enrollUserToCompany(companyId,userId), HttpStatus.OK);
     }
 
     @PutMapping("/{companyId}")

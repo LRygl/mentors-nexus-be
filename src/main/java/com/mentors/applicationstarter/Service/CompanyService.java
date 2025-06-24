@@ -25,4 +25,6 @@ public interface CompanyService {
     CompanyResponseDTO deleteCompany(Long companyId);
 
     Page<CompanyResponseDTO> getPagedCompanies(Pageable pageable);
+
+    CompanyResponseDTO enrollUserToCompany(Long companyId, Long userId);
 }

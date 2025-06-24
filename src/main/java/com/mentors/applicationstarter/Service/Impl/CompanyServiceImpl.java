@@ -4,12 +4,15 @@ import com.mentors.applicationstarter.DTO.AresResponseDTO;
 import com.mentors.applicationstarter.DTO.CompanyRequestDTO;
 import com.mentors.applicationstarter.DTO.CompanyResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
+import com.mentors.applicationstarter.Exception.BusinessRuleViolationException;
 import com.mentors.applicationstarter.Exception.InvalidRequestException;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.CompanyMapper;
 import com.mentors.applicationstarter.Model.Company;
+import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.CompanyRepository;
+import com.mentors.applicationstarter.Repository.UserRepository;
 import com.mentors.applicationstarter.Service.CompanyService;
 import com.mentors.applicationstarter.Utils.AresService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
     private final AresService aresService;
 
     @Override
@@ -41,6 +45,22 @@ public class CompanyServiceImpl implements CompanyService {
     public Page<CompanyResponseDTO> getPagedCompanies(Pageable pageable) {
         Page<CompanyResponseDTO> companyPage = companyRepository.findAll(pageable).map(CompanyMapper::toCompanyDto);
         return companyPage;
+    }
+
+    @Override
+    public CompanyResponseDTO enrollUserToCompany(Long companyId, Long userId) {
+        Company company = companyRepository.findById(companyId).orElseThrow(()-> new ResourceNotFoundException(ErrorCodes.COMPANY_DOES_NOT_EXIST));
+        User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+        if(userAllreadyEnrolled(company,user)) {
+            throw new BusinessRuleViolationException(ErrorCodes.COMPANY_USER_ALLREADY_ENROLLED);
+        }
+
+        company.getCompanyMembers().add(user);
+        companyRepository.save(company);
+
+        return CompanyMapper.toCompanyDto(company);
+
     }
 
     @Override
@@ -123,6 +143,11 @@ public class CompanyServiceImpl implements CompanyService {
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COMPANY_DOES_NOT_EXIST));
             default -> throw new IllegalStateException("Unexpected value: " + identifier);
         };
+    }
+
+    private Boolean userAllreadyEnrolled(Company company, User user) {
+        return company.getCompanyMembers().stream()
+                .anyMatch(cu -> cu.getId().equals(user.getId()));
     }
 
 }
