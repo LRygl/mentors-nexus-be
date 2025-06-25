@@ -5,6 +5,7 @@ import com.mentors.applicationstarter.Enum.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,12 +30,13 @@ public class Course {
     private String category;
     //TODO Separate in public, private, unpublished
     private CourseStatus status;
-    private String price;
+    @Column(nullable = false)
+    private BigDecimal price;
 
     private Instant created;
     private Instant updated;
     private Instant published;
-
+    private Boolean featured;
 
     // RELATIONS Definitions
 
