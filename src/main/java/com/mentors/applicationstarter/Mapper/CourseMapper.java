@@ -37,6 +37,7 @@ public class CourseMapper {
                 .published(course.getPublished())
                 .updated(course.getUpdated())
                 .status(String.valueOf(course.getStatus()))
+                .price(course.getPrice())
                 .lessons(
                         course.getLessons() == null ? null :
                                 course.getLessons().stream()
