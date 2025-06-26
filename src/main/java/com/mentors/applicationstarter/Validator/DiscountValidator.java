@@ -22,7 +22,7 @@ public class DiscountValidator {
     @Autowired
     CourseDiscountRepository courseDiscountRepository;
 
-    public void validateCreate(CourseDiscount discount) {
+    public void validateCreate(CourseDiscount discount, Course course) {
         Instant now = Instant.now();
 
         validateValidFrom(discount.getValidFrom(), null, now);
@@ -30,7 +30,15 @@ public class DiscountValidator {
         validateDiscountType(discount.getDiscountPercentage(), discount.getDiscountAmount());
         validateNoOtherActiveDiscount(discount.getCourse(), null, discount.isCurrentlyActive());
         validateValidTo(discount.getValidFrom(), discount.getValidTo(),now);
+        validateAmountOrPercentage(discount);
+        if (discount.getDiscountPercentage() != null) {
+            validateDiscountPercentage(discount);
+        } else {
+            validateDiscountAmount(discount,course);
+        }
     }
+
+
 
     public void validateUpdate(CourseDiscount current, CourseDiscount update) {
         Instant now = Instant.now();
@@ -98,5 +106,38 @@ public class DiscountValidator {
         if (anotherActive) {
             throw new BusinessRuleViolationException(ErrorCodes.DISCOUNT_CONCURRENT_DISCOUNT_NOT_ALOWED);
         }
+    }
+
+    private void validateDiscountAmount(CourseDiscount discount, Course course) {
+        //Check if discounted amount is negative
+        if (discount.getDiscountAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessRuleViolationException(ErrorCodes.DISCOUNT_VALUE_LARGER_THAN_PRICE);
+
+        }
+        //Check if course.price - discount.amount is not negative
+        if (course.getPrice().subtract(discount.getDiscountAmount()).compareTo(BigDecimal.ZERO) < 0 ) {
+            throw new BusinessRuleViolationException(ErrorCodes.DISCOUNT_VALUE_LARGER_THAN_PRICE);
+        }
+
+    }
+
+    private void validateDiscountPercentage(CourseDiscount discount) {
+        if (discount.getDiscountPercentage() == null) {
+            return;
+        }
+        if (discount.getDiscountPercentage().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessRuleViolationException(ErrorCodes.DISCOUNT_PERCENTAGE_TOO_LOW);
+        }
+
+        if (discount.getDiscountPercentage().compareTo(new BigDecimal("100")) > 0) {
+            throw new BusinessRuleViolationException(ErrorCodes.DISCOUNT_PERCENTAGE_TOO_HIGH);
+        }
+    }
+
+    private void validateAmountOrPercentage(CourseDiscount discount) {
+        if (discount.getDiscountPercentage() != null && discount.getDiscountAmount() != null) {
+            throw new BusinessRuleViolationException(ErrorCodes.DISCOUNT_PERCENTAGE_AND_AMOUNT_PROVIDED);
+        }
+
     }
 }

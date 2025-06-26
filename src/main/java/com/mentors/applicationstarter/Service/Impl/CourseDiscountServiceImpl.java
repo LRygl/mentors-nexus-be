@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +26,10 @@ public class CourseDiscountServiceImpl implements CourseDiscountService {
     private final DiscountValidator discountValidator;
 
     @Override
-    public List<CourseDiscount> getAllDiscounts() {
-        return courseDiscountRepository.findAll();
+    public List<CourseDiscountDTO> getAllDiscounts() {
+        return courseDiscountRepository.findAll().stream()
+                .map(CourseDiscountMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     //TODO needs to be able to provide the list of courses
@@ -38,7 +41,7 @@ public class CourseDiscountServiceImpl implements CourseDiscountService {
                 () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST)
         );
 
-        discountValidator.validateCreate(request);
+        discountValidator.validateCreate(request,course);
 
         CourseDiscount courseDiscount = CourseDiscount.builder()
                 .course(course) // ← required!
@@ -56,7 +59,7 @@ public class CourseDiscountServiceImpl implements CourseDiscountService {
     }
 
     @Override
-    public CourseDiscount updateDiscount(Long discountId, CourseDiscount request) {
+    public CourseDiscountDTO updateDiscount(Long discountId, CourseDiscount request) {
         CourseDiscount discount = findCourseDiscountById(discountId);
         discountValidator.validateUpdate(discount,request);
 
@@ -69,14 +72,15 @@ public class CourseDiscountServiceImpl implements CourseDiscountService {
             discount.setValidTo(request.getValidTo());
         }
 
-        return courseDiscountRepository.save(discount);
+        courseDiscountRepository.save(discount);
+        return CourseDiscountMapper.toResponseDTO(discount);
     }
 
     @Override
-    public CourseDiscount deleteDiscount(Long discountId) {
+    public CourseDiscountDTO deleteDiscount(Long discountId) {
         CourseDiscount discount = findCourseDiscountById(discountId);
         courseDiscountRepository.delete(discount);
-        return discount;
+        return CourseDiscountMapper.toResponseDTO(discount);
     }
 
     private CourseDiscount findCourseDiscountById(Long discountId) {

@@ -19,9 +19,11 @@ public class CourseDiscountController {
     private final CourseDiscountService courseDiscountService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<CourseDiscount>> getAllDiscounts() {
+    public ResponseEntity<List<CourseDiscountDTO>> getAllDiscounts() {
         return new ResponseEntity<>(courseDiscountService.getAllDiscounts(), HttpStatus.OK);
     }
+
+
 
     @PostMapping
     public ResponseEntity<CourseDiscountDTO> createCourseDiscount(@RequestBody CourseDiscount request) {
@@ -29,12 +31,12 @@ public class CourseDiscountController {
     }
 
     @PatchMapping("/{discountId}")
-    public ResponseEntity<CourseDiscount> updateCourseDiscnout(@PathVariable Long discountId, @RequestBody CourseDiscount request) {
+    public ResponseEntity<CourseDiscountDTO> updateCourseDiscnout(@PathVariable Long discountId, @RequestBody CourseDiscount request) {
         return new ResponseEntity<>(courseDiscountService.updateDiscount(discountId, request), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/{discountId}")
-    public ResponseEntity<CourseDiscount> deleteCourseDiscount(@PathVariable Long discountId) {
+    public ResponseEntity<CourseDiscountDTO> deleteCourseDiscount(@PathVariable Long discountId) {
         return new ResponseEntity<>(courseDiscountService.deleteDiscount(discountId), HttpStatus.GONE);
     }
 

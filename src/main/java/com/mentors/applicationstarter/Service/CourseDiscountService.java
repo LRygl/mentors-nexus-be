@@ -8,11 +8,11 @@ import java.util.List;
 
 @Service
 public interface CourseDiscountService {
-    List<CourseDiscount> getAllDiscounts();
+    List<CourseDiscountDTO> getAllDiscounts();
 
     CourseDiscountDTO createCourseDiscount(CourseDiscount request);
 
-    CourseDiscount updateDiscount(Long discountId, CourseDiscount request);
+    CourseDiscountDTO updateDiscount(Long discountId, CourseDiscount request);
 
-    CourseDiscount deleteDiscount(Long discountId);
+    CourseDiscountDTO deleteDiscount(Long discountId);
 }

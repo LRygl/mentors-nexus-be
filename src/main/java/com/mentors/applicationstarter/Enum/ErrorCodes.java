@@ -30,10 +30,10 @@ public enum ErrorCodes {
     DISCOUNT_ALREADY_STARTED("","",""),
     DISCOUNT_TYPE_AMBIGUOUS("","",""),
     DISCOUNT_CONCURRENT_DISCOUNT_NOT_ALOWED("CourseDiscountConcurrentNotAlowed","It is not alowed to have multiple overlapping discounts for the same course","Shits on fire yo!"),
-
-
-
-
+    DISCOUNT_VALUE_LARGER_THAN_PRICE("CourseDiscountAmountLargerThanPrice","The discount amount cannot be larger than the price of the course.",""),
+    DISCOUNT_PERCENTAGE_TOO_LOW("DiscountPercentageTooLowOrNegative","",""),
+    DISCOUNT_PERCENTAGE_TOO_HIGH("DiscountPercentageTooHigh","",""),
+    DISCOUNT_PERCENTAGE_AND_AMOUNT_PROVIDED("DiscountPercentageAndAmountProvided","Only Percentage discount or Amount can be provided in the rquest", ""),
 
     COMPANY_DOES_NOT_EXIST("","",""),
     COMPANY_ALLREADY_EXISTS_BY_VAT("CompanyDuplicateVATRecord","VAT value for the company is allready used",""),

@@ -68,6 +68,7 @@ public class CourseMapper {
                 .name(course.getName())
                 .status(course.getStatus() != null ? course.getStatus().name() : null)
                 .uuid(course.getUuid())
+                .price(course.getPrice())
                 .build();
     }
 
