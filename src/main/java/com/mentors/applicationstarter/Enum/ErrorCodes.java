@@ -21,14 +21,25 @@ public enum ErrorCodes {
     LESSON_NOT_FOUND("LessonDoesNotExist","Lesson does not exist", "Lesson does not exist by lesson id"),
 
 
+
+
+    DISCOUNT_COURSE_DOES_NOT_EXIST("CourseDiscountDoesNotExist","",""),
+    DISCOUNT_VALID_FROM_IN_PAST("CourseDiscountValidFromInPast","",""),
+    DISCOUNT_VALID_FROM_AFTER_VALID_TO("","",""),
+    DISCOUNT_VALID_TO_IN_PAST("","",""),
+    DISCOUNT_ALREADY_STARTED("","",""),
+    DISCOUNT_TYPE_AMBIGUOUS("","",""),
+    DISCOUNT_CONCURRENT_DISCOUNT_NOT_ALOWED("CourseDiscountConcurrentNotAlowed","It is not alowed to have multiple overlapping discounts for the same course","Shits on fire yo!"),
+
+
+
+
+
     COMPANY_DOES_NOT_EXIST("","",""),
     COMPANY_ALLREADY_EXISTS_BY_VAT("CompanyDuplicateVATRecord","VAT value for the company is allready used",""),
     COMPANY_REQUEST_VAT_REQUIRED("CompanyRequestVATMandatory","VAT is a mandatory value for company registration",""),
     COMPANY_USER_ALLREADY_ENROLLED("UserAllreadyEnroled", "This user was allready enrolled to this company as an employee",""),
     INVOICE_DOES_NOT_EXIST("InvoiceDoesNotExist","Invoice lookup failed - invoice with this identification does not exist","");
-
-
-
 
 
     @Getter

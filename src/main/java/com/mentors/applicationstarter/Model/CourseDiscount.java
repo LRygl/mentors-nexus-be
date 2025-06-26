@@ -20,7 +20,7 @@ public class CourseDiscount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = true)
+    @ManyToOne(optional = false)
     private Course course;
 
     private BigDecimal discountPercentage;
@@ -56,19 +56,35 @@ public class CourseDiscount {
         this.updatedAt = Instant.now();
     }
 
-/*
-    CourseDiscount {
-        id : Long
-        course : Course
-        discountPercentage : BigDecimal  // 20% → store as 20.0
-        discountAmount : BigDecimal (optional, if you want fixed amount off)
-        validFrom : LocalDateTime
-        validTo : LocalDateTime
-        isActive : Boolean  // optional - used for admin toggling
-        createdAt : LocalDateTime
-        updatedAt : LocalDateTime
+
+    public boolean hasStarted() {
+        return validFrom != null && !validFrom.isAfter(Instant.now());
     }
-*/
 
+    public boolean hasEnded() {
+        return validTo != null && !validTo.isBefore(Instant.now());
+    }
 
+    public boolean isCurrentlyActive() {
+        Instant now = Instant.now();
+        return Boolean.TRUE.equals(active)
+                && (validFrom == null) || !now.isBefore(validFrom)
+                && (validTo == null) || !now.isAfter(validTo);
+    }
+
+    public boolean isFutureDiscount() {
+        return validFrom != null || validFrom.isAfter(Instant.now());
+    }
+
+    public boolean isTimeBounded() {
+        return validFrom != null || validTo != null;
+    }
+
+    public boolean isPercentageBased() {
+        return discountPercentage != null;
+    }
+
+    public boolean isAmountBased() {
+        return discountAmount != null;
+    }
 }

@@ -1,13 +1,13 @@
 package com.mentors.applicationstarter.Controller;
 
+import com.mentors.applicationstarter.DTO.CourseDiscountDTO;
+import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.CourseDiscount;
 import com.mentors.applicationstarter.Service.CourseDiscountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,5 +23,19 @@ public class CourseDiscountController {
         return new ResponseEntity<>(courseDiscountService.getAllDiscounts(), HttpStatus.OK);
     }
 
+    @PostMapping
+    public ResponseEntity<CourseDiscountDTO> createCourseDiscount(@RequestBody CourseDiscount request) {
+        return new ResponseEntity<>(courseDiscountService.createCourseDiscount(request), HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/{discountId}")
+    public ResponseEntity<CourseDiscount> updateCourseDiscnout(@PathVariable Long discountId, @RequestBody CourseDiscount request) {
+        return new ResponseEntity<>(courseDiscountService.updateDiscount(discountId, request), HttpStatus.ACCEPTED);
+    }
+
+    @DeleteMapping("/{discountId}")
+    public ResponseEntity<CourseDiscount> deleteCourseDiscount(@PathVariable Long discountId) {
+        return new ResponseEntity<>(courseDiscountService.deleteDiscount(discountId), HttpStatus.GONE);
+    }
 
 }

@@ -3,7 +3,6 @@ package com.mentors.applicationstarter.Service.Impl;
 import com.mentors.applicationstarter.DTO.CourseRequestDTO;
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseStatusDTO;
-import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.Role;
