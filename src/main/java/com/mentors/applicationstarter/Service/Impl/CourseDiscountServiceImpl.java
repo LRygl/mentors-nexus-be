@@ -32,6 +32,10 @@ public class CourseDiscountServiceImpl implements CourseDiscountService {
                 .collect(Collectors.toList());
     }
 
+    //TODO Get Paginated discounts
+
+    //TODO Get discount by ID
+
     //TODO needs to be able to provide the list of courses
     //TODO cannot create concurrent discounts for one course
     @Override
