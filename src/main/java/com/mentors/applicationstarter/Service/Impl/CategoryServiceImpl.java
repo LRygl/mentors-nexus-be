@@ -32,7 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Page<CategoryDTO> getPagedCategories(String name, Pageable pageable) {
-        Specification<Category> specification = Specification.where(CategorySpecification.hasName(name));
+        Specification<Category> specification = CategorySpecification.hasName(name);
         Page<Category> categoryPage = categoryRepository.findAll(specification, pageable);
         return categoryPage.map(CategoryMapper::toCategoryWithCoursesDto);
     }
@@ -67,7 +67,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = Category.builder()
                 .UUID(UUID.randomUUID())
                 .name(categoryName)
-                .created(Instant.now())
+                .description(createdCategory.getDescription())
+                .color(createdCategory.getColor())
                 .build();
 
         if(category.getName().isEmpty()){
@@ -82,7 +83,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = findCategoryById(id);
 
         category.setName(updatedCategory.getName().toUpperCase().trim());
-        category.setUpdated(Instant.now());
+        category.setDescription(updatedCategory.getDescription());
+        category.setColor(updatedCategory.getColor());
 
         return saveCategory(category);
     }

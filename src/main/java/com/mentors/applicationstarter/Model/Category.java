@@ -18,16 +18,18 @@ import java.util.UUID;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "categoryGenerator")
-    @SequenceGenerator(name = "categoryGenerator", sequenceName = "application_category_sequence", allocationSize = 50)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "categoryGenerator")
+    @SequenceGenerator(name = "categoryGenerator", sequenceName = "application_category_sequence", allocationSize = 1)
     @Column(nullable = false, updatable = false)
     private Long id;
     private UUID UUID;
 
     @Column(unique = true, nullable = false)
     private String name;
+    private String description;
     private Instant created;
     private Instant updated;
+    private String color;
 
     @ManyToMany(mappedBy = "categories")
     @Builder.Default
@@ -45,6 +47,18 @@ public class Category {
     @Override
     public int hashCode() {
         return 31;
+    }
+
+    @PrePersist
+    public void onCreate() {
+        Instant now = Instant.now();
+        this.created = now;
+        this.updated = now;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updated = Instant.now();
     }
 
 }

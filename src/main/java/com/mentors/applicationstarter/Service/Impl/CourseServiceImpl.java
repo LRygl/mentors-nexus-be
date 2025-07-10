@@ -41,7 +41,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryName, Pageable pageable) {
-        Specification<Course> specification = Specification.where(CourseSpecification.hasName(name))
+        Specification<Course> specification = CourseSpecification.hasName(name)
                 .and(CourseSpecification.hasCategories(categoryName));
         Page<Course> coursePage = courseRepository.findAll(specification, pageable);
 
