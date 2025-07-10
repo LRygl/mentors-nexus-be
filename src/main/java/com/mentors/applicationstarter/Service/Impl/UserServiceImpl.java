@@ -15,6 +15,7 @@ import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.UserRepository;
 import com.mentors.applicationstarter.Service.EventService;
 import com.mentors.applicationstarter.Service.UserService;
+import com.mentors.applicationstarter.Utils.UserColorGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -209,6 +210,8 @@ public class UserServiceImpl implements UserService {
                 .marketing(user.getMarketing())
                 .cookiePolicyConsent(user.getCookiePolicyConsent())
                 .role(user.getRoleName())
+                .lightBg(user.getLightBg())
+                .darkBg(user.getDarkBg())
                 .ownedCourses(user.getOwnedCourses().stream()
                         .map(course -> CourseSummaryDTO.builder()
                                 .id(course.getId())

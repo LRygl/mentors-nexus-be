@@ -35,6 +35,8 @@ public class UserResponseDTO {
     private Boolean personalDataPublishing;
     private Boolean marketing;
     private Boolean cookiePolicyConsent;
+    private String lightBg;
+    private String darkBg;
 
     private String role;
 

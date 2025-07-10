@@ -77,6 +77,6 @@ public class CourseController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<CourseResponseDTO> deleteCourse(@PathVariable Long id) {
-        return new ResponseEntity<>(courseService.deleteCourse(id), HttpStatus.GONE);
+        return new ResponseEntity<>(courseService.deleteCourse(id), HttpStatus.OK);
     }
 }

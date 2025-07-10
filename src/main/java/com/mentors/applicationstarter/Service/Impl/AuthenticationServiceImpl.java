@@ -15,6 +15,7 @@ import com.mentors.applicationstarter.Enum.Role;
 import com.mentors.applicationstarter.Utils.Base64Utils;
 import com.mentors.applicationstarter.Utils.EmailServiceUtils;
 import com.mentors.applicationstarter.Utils.HttpResponseFactory;
+import com.mentors.applicationstarter.Utils.UserColorGenerator;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -100,6 +101,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .isAccountNonLocked(false)
                 .registerDate(new Date())
                 .role(Role.USER)
+                .lightBg(UserColorGenerator.getUserColorHex(registeredUser.getEmail(), UserColorGenerator.Theme.LIGHT))
+                .darkBg(UserColorGenerator.getUserColorHex(registeredUser.getEmail(), UserColorGenerator.Theme.DARK))
                 .marketing(registeredUser.getMarketing())
                 .personalDataProcessing(registeredUser.getPersonalDataProcessing())
                 .personalDataPublishing(registeredUser.getPersonalDataPublishing())
@@ -330,6 +333,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             user.setRegisterDate(new Date());
             user.setIsAccountNonLocked(true);
             user.setRole(Role.ROLE_ADMIN);
+            user.setLightBg(UserColorGenerator.getUserColorHex(applicationAdminEmail, UserColorGenerator.Theme.LIGHT));
+            user.setDarkBg(UserColorGenerator.getUserColorHex(applicationAdminEmail, UserColorGenerator.Theme.DARK));
 
             userRepository.save(user);
             eventService.generateEvent(user.getUUID(),"New User Registered",user.getEmail(),EventCategory.USER,EventType.REGISTRATION,this.getClass().getSimpleName());

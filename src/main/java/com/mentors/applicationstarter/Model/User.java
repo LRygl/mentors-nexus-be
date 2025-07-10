@@ -38,6 +38,8 @@ public class User implements UserDetails {
     private Date lastUpdatedDate;
     private UUID passwordResetOperationUUID;
     private Date passwordResetExpiryDate;
+    private String lightBg;
+    private String darkBg;
 
     @Builder.Default
     private Boolean isAccountNonLocked = false;
