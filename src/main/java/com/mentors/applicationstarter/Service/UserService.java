@@ -34,4 +34,6 @@ public interface UserService {
     User changeUserRole(Long id, String role);
 
     Course getUserCourses(Long userId);
+
+    UserResponseDTO getUserByUserId(Long userId);
 }

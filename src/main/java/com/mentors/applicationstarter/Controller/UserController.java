@@ -24,9 +24,14 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<UserResponseDTO>> listAllUsers() {
         return new ResponseEntity<>(userService.getUserList(), HttpStatus.OK);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String userId) {
+        return new ResponseEntity<>(userService.getUserByUserId(Long.valueOf(userId)), HttpStatus.OK);
     }
 
     @GetMapping("/filter")

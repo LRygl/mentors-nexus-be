@@ -29,7 +29,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-
     @Override
     public Page<CategoryDTO> getPagedCategories(String name, Pageable pageable) {
         Specification<Category> specification = CategorySpecification.hasName(name);
@@ -37,14 +36,12 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryPage.map(CategoryMapper::toCategoryWithCoursesDto);
     }
 
-
     @Override
     public List<CategoryDTO> getAllCategories() {
         return categoryRepository.findAll().stream()
                 .map(CategoryMapper::toCategoryWithCoursesDto)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public CategoryDTO getCategoryById(Long categoryId) {
@@ -101,9 +98,6 @@ public class CategoryServiceImpl implements CategoryService {
 
         return category;
     }
-
-
-
 
     private Category findCategoryById(Long id) {
         return categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CATEGORY_DOES_NOT_EXIST));

@@ -43,4 +43,5 @@ public class UserResponseDTO {
     // To avoid recursion and infinite loops:
     private Set<CourseSummaryDTO> ownedCourses;
     private Set<CourseSummaryDTO> joinedCourses;
+
 }
