@@ -39,7 +39,28 @@ public enum ErrorCodes {
     COMPANY_ALLREADY_EXISTS_BY_VAT("CompanyDuplicateVATRecord","VAT value for the company is allready used",""),
     COMPANY_REQUEST_VAT_REQUIRED("CompanyRequestVATMandatory","VAT is a mandatory value for company registration",""),
     COMPANY_USER_ALLREADY_ENROLLED("UserAllreadyEnroled", "This user was allready enrolled to this company as an employee",""),
-    INVOICE_DOES_NOT_EXIST("InvoiceDoesNotExist","Invoice lookup failed - invoice with this identification does not exist","");
+    INVOICE_DOES_NOT_EXIST("InvoiceDoesNotExist","Invoice lookup failed - invoice with this identification does not exist",""),
+
+    // FAQ Category error codes
+    FAQ_CATEGORY_NOT_FOUND("FAQCategoryNotFound", "FAQ Category not found", "FAQ Category with the specified identifier was not found"),
+    FAQ_CATEGORY_NAME_EXISTS("FAQCategoryNameExists", "FAQ Category name '%s' already exists", "A FAQ category with name '%s' already exists in the system"),
+    FAQ_CATEGORY_SLUG_EXISTS("FAQCategorySlugExists", "FAQ Category slug '%s' already exists", "A FAQ category with slug '%s' already exists in the system"),
+    FAQ_CATEGORY_HAS_FAQS("FAQCategoryHasFAQs", "Cannot delete category with existing FAQs", "FAQ Category cannot be deleted because it contains FAQs. Move or delete FAQs first"),
+    FAQ_CATEGORY_INVALID_NAME("FAQCategoryInvalidName", "Invalid category name", "FAQ Category name cannot be empty and must be less than 100 characters"),
+    FAQ_CATEGORY_INVALID_COLOR("FAQCategoryInvalidColor", "Invalid color code format", "Color code must be in hex format like #FF0000"),
+    FAQ_CATEGORY_INACTIVE("FAQCategoryInactive", "Category is not active", "Cannot perform operation on inactive FAQ category"),
+
+    // FAQ error codes
+    FAQ_NOT_FOUND("FAQNotFound", "FAQ not found", "FAQ with the specified identifier was not found"),
+    FAQ_SLUG_EXISTS("FAQSlugExists", "FAQ slug '%s' already exists in this category", "A FAQ with slug '%s' already exists in the specified category"),
+    FAQ_INVALID_QUESTION("FAQInvalidQuestion", "Invalid FAQ question", "FAQ question cannot be empty and must be less than 500 characters"),
+    FAQ_INVALID_ANSWER("FAQInvalidAnswer", "Invalid FAQ answer", "FAQ answer cannot be empty"),
+    FAQ_CATEGORY_REQUIRED("FAQCategoryRequired", "FAQ category is required", "Every FAQ must be assigned to a category"),
+    FAQ_ALREADY_PUBLISHED("FAQAlreadyPublished", "FAQ is already published", "The specified FAQ is already in published status"),
+    FAQ_NOT_PUBLISHED("FAQNotPublished", "FAQ is not published", "The specified FAQ is not in published status"),
+    FAQ_INVALID_STATUS_TRANSITION("FAQInvalidStatusTransition", "Invalid status transition", "Cannot transition FAQ from current status to requested status"),
+    FAQ_DUPLICATE_QUESTION("FAQDuplicateQuestion", "FAQ question already exists in category", "A FAQ with similar question already exists in this category"),
+    FAQ_VALIDATION_FAILED("FAQValidationFailed", "FAQ validation failed", "FAQ data validation failed - check required fields and constraints");
 
 
     @Getter
