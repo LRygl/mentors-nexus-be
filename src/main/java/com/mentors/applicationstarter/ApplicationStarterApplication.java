@@ -31,7 +31,10 @@ public class ApplicationStarterApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApplicationStarterApplication.class, args);
-		new File(USER_FOLDER).mkdirs();
+		File userFolder = new File(USER_FOLDER);
+		if (!userFolder.mkdirs() && !userFolder.exists()) {
+			throw new RuntimeException("Failed to create directory: " + USER_FOLDER);
+		}
 	}
 
 	@Bean
@@ -48,6 +51,8 @@ public class ApplicationStarterApplication {
 			} else {
 				LOGGER.info("Admin user generation is disabled");
 			}
+
+			//TODO CREATE DEFAULT CATEGORY
 
 		};
 	}

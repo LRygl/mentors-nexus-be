@@ -1,0 +1,99 @@
+package com.mentors.applicationstarter.Model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mentors.applicationstarter.Enum.CourseStatus;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+public class Course {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "courseGenerator")
+    @SequenceGenerator(name = "courseGenerator", sequenceName = "application_course_sequence", allocationSize = 50)
+    @Column(nullable = false, updatable = false)
+    private Long id;
+    private UUID uuid;
+    private String name;
+
+    //TODO Create CRUD for Category Management
+    private String category;
+    //TODO Separate in public, private, unpublished
+    private CourseStatus status;
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    private Instant created;
+    private Instant updated;
+    private Instant published;
+    private Boolean featured;
+
+    // RELATIONS Definitions
+
+    // LABEL JOIN
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "course_label",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "label_id")
+    )
+    @Builder.Default
+    @ToString.Exclude
+    private Set<Label> labels = new HashSet<>();
+
+    // CATEGORY JOIN
+    @ManyToMany
+    @JoinTable(
+            name = "course_category",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    @Builder.Default
+    @ToString.Exclude
+    private Set<Category> categories = new HashSet<>();
+
+    //OWNER JOIN - MANYTOONE
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    @JsonIgnore
+    private User owner;
+
+    //STUDENTS JOIN - MANYTOMANY
+    @ManyToMany
+    @JoinTable(
+            name = "course_student",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> students = new HashSet<>();
+
+    //LESSONS JOIN - ONETOMANY
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Lesson> lessons = new HashSet<>();
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return id != null && id.equals(course.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31;
+    }
+}

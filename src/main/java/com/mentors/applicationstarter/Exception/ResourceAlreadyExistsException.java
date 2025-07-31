@@ -6,7 +6,8 @@ import lombok.Getter;
 
 
 @Getter
-public class ResourceAlreadyExistsException extends Exception {
+public class ResourceAlreadyExistsException extends RuntimeException {
+
     private final ErrorCodes errorCode;
     private final String developerMessage;
 

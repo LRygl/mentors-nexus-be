@@ -8,10 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Builder
@@ -26,7 +23,6 @@ public class User implements UserDetails {
     @SequenceGenerator(name = "userGenerator", sequenceName = "application_user_sequence", allocationSize = 1)
     @Column(nullable = false, updatable = false)
     private Long id;
-    
     private UUID UUID;
     private String firstName;
     private String lastName;
@@ -42,6 +38,8 @@ public class User implements UserDetails {
     private Date lastUpdatedDate;
     private UUID passwordResetOperationUUID;
     private Date passwordResetExpiryDate;
+    private String lightBg;
+    private String darkBg;
 
     @Builder.Default
     private Boolean isAccountNonLocked = false;
@@ -55,6 +53,21 @@ public class User implements UserDetails {
     private Boolean personalDataPublishing = false;
     @Builder.Default
     private Boolean marketing = false;
+    @Builder.Default
+    private Boolean cookiePolicyConsent = false;
+
+    @OneToMany(mappedBy = "owner")
+    @Builder.Default
+    private Set<Course> ownedCourses = new HashSet<>();
+
+    @ManyToMany(mappedBy = "students")
+    @Builder.Default
+    private Set<Course> joinedCourses = new HashSet<>();
+
+    //Employee Company
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @NonNull
     @Enumerated(EnumType.STRING)

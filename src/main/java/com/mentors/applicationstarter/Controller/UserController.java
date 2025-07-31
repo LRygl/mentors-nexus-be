@@ -1,15 +1,17 @@
 package com.mentors.applicationstarter.Controller;
 
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Model.Course;
+import com.mentors.applicationstarter.Model.Event;
+import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,10 +24,14 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping
-    public ResponseEntity<List<User>> listAllUsers() {
-        List<User> userList = userService.getUserList();
-        return new ResponseEntity<>(userList, HttpStatus.OK);
+    @GetMapping("/all")
+    public ResponseEntity<List<UserResponseDTO>> listAllUsers() {
+        return new ResponseEntity<>(userService.getUserList(), HttpStatus.OK);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String userId) {
+        return new ResponseEntity<>(userService.getUserByUserId(Long.valueOf(userId)), HttpStatus.OK);
     }
 
     @GetMapping("/filter")
@@ -48,7 +54,50 @@ public class UserController {
         }
     }
 
+    @GetMapping("/{id}/course")
+    public ResponseEntity<Course> getUserCourses(@PathVariable Long userId){
+        return new ResponseEntity<>(userService.getUserCourses(userId),HttpStatus.OK);
+    }
+
 
     //TODO Consent Management Endpoint
+    @PutMapping("/{id}/consent")
+    public ResponseEntity<?> updateUserConsents(
+            @PathVariable Long id,
+            @RequestBody UserConsentUpdateRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        userService.updateConsents(id,request, httpRequest);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/consent/history")
+    public ResponseEntity<List<Event>>getConsentEvents() {
+        return new ResponseEntity<>(userService.getConsentEvents(),HttpStatus.OK);
+    }
+    @GetMapping("/{id}/consent/history")
+    public ResponseEntity<List<Event>>getUserConsentEvents(@PathVariable Long id) {
+        return new ResponseEntity<>(userService.getUserConsentEvents(id),HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<User> changeUserRole(@PathVariable Long id, @RequestBody User request) {
+        return new ResponseEntity<>(userService.changeUserRole(id, request.getRoleName()), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<User> activateUser(@PathVariable Long id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.activateUser(id),HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<User> deactivateUser(@PathVariable Long id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.deactivateUser(id),HttpStatus.OK);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<User> deleteUser(@PathVariable Long id) throws ResourceNotFoundException {
+        return new ResponseEntity<>(userService.deleteUser(id),HttpStatus.GONE);
+    }
 
 }

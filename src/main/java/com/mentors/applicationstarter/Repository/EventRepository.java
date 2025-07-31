@@ -6,8 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.mentors.applicationstarter.Enum.EventType;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<List<Event>> findByResourceUUID(UUID resourceUUID);
+
+    List<Event> findByResourceUUIDAndType(UUID userUUID, EventType type);
+    List<Event> findByType(EventType type);
 }

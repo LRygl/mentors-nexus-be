@@ -2,9 +2,9 @@ package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.EventCategory;
+import com.mentors.applicationstarter.Enum.EventType;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
-import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Response.HttpResponse;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.UserRepository;
@@ -15,6 +15,7 @@ import com.mentors.applicationstarter.Enum.Role;
 import com.mentors.applicationstarter.Utils.Base64Utils;
 import com.mentors.applicationstarter.Utils.EmailServiceUtils;
 import com.mentors.applicationstarter.Utils.HttpResponseFactory;
+import com.mentors.applicationstarter.Utils.UserColorGenerator;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -36,7 +37,6 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import static com.mentors.applicationstarter.Constant.ApplicationConstant.APP_EXPIRY_DURATION_24H;
@@ -83,7 +83,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private Boolean forcePasswordResetOnLogin;
 
     @Override
-    public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException {
+    public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException, IOException {
         String passwordGenerationStrategy = "useProvidedPassword";
         boolean requireUserEmailConfirmation = false;
 
@@ -101,6 +101,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .isAccountNonLocked(false)
                 .registerDate(new Date())
                 .role(Role.USER)
+                .lightBg(UserColorGenerator.getUserColorHex(registeredUser.getEmail(), UserColorGenerator.Theme.LIGHT))
+                .darkBg(UserColorGenerator.getUserColorHex(registeredUser.getEmail(), UserColorGenerator.Theme.DARK))
                 .marketing(registeredUser.getMarketing())
                 .personalDataProcessing(registeredUser.getPersonalDataProcessing())
                 .personalDataPublishing(registeredUser.getPersonalDataPublishing())
@@ -168,8 +170,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     "The user with email " + user.getEmail() + " has been created.",
                     Map.of("user", user)
             );
-
-        eventService.generateEvent(user.getUUID(),EVENT_AUTH_USER_REGISTERED ,EventCategory.USER,this.getClass().getSimpleName());
+        generateUserFolder(user.getUUID());
+        eventService.generateEvent(user.getUUID(),EVENT_AUTH_USER_REGISTERED ,user.getEmail(),EventCategory.USER, EventType.REGISTRATION,this.getClass().getSimpleName());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -199,7 +201,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setLastLoginDate(new Date());
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        eventService.generateEvent(user.getUUID(),"User Authentication Request",EventCategory.USER,this.getClass().getSimpleName());
+        eventService.generateEvent(user.getUUID(),"User Authentication Request",user.getEmail(),EventCategory.USER,EventType.AUTH,this.getClass().getSimpleName());
 
         return jwtToken;
     }
@@ -281,7 +283,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String[] securityString = base64DecodedString.split("\\+",2);
         String activationUUID = securityString[0];
         String activationTimestamp = securityString[1];
-        eventService.generateEvent(UUID.fromString(activationUUID),"User Account Activated",EventCategory.USER,this.getClass().getSimpleName());
+        eventService.generateEvent(UUID.fromString(activationUUID),"User Account Activated",base64DecodedString,EventCategory.USER,EventType.ACTIVATION,this.getClass().getSimpleName());
 
         Instant timestamp = Instant.parse(activationTimestamp);
         Instant now = Instant.now();
@@ -331,11 +333,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             user.setRegisterDate(new Date());
             user.setIsAccountNonLocked(true);
             user.setRole(Role.ROLE_ADMIN);
+            user.setLightBg(UserColorGenerator.getUserColorHex(applicationAdminEmail, UserColorGenerator.Theme.LIGHT));
+            user.setDarkBg(UserColorGenerator.getUserColorHex(applicationAdminEmail, UserColorGenerator.Theme.DARK));
 
             userRepository.save(user);
-            eventService.generateEvent(user.getUUID(),"New User Registered",EventCategory.USER,this.getClass().getSimpleName());
-            Path userFolder = Paths.get(USER_FOLDER + user.getUUID()).toAbsolutePath().normalize();
-            Files.createDirectories(userFolder);
+            eventService.generateEvent(user.getUUID(),"New User Registered",user.getEmail(),EventCategory.USER,EventType.REGISTRATION,this.getClass().getSimpleName());
+            generateUserFolder(user.getUUID());
+
         }
 
     }
@@ -371,6 +375,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private String encryptAndSaltUserPassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    private void generateUserFolder(UUID userUUID) throws IOException {
+        Path userFolder = Paths.get(USER_FOLDER + userUUID).toAbsolutePath().normalize();
+        Files.createDirectories(userFolder);
     }
 
 }

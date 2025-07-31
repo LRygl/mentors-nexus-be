@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class ResourceImmutableException extends Exception{
+
     private final ErrorCodes errorCode;
     private final String developerMessage;
 
