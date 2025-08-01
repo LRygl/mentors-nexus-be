@@ -534,4 +534,51 @@ public interface FAQRepository extends JpaRepository<FAQ,Long> {
             "WHERE f.status = 'PUBLISHED' AND f.viewCount < :minViews AND f.createdAt < :beforeDate")
     int archiveOldUnpopularFAQs(@Param("minViews") Long minViews, @Param("beforeDate") LocalDateTime beforeDate);
 
+    // FIX: Method for slug uniqueness checking
+    boolean existsBySlugAndCategoryIdAndUuidNot(String slug, Long categoryId, UUID excludeUuid);
+
+    // FIX: Alternative approach - Use native query with explicit type casting
+    @Query(value = """
+        SELECT f.* FROM faq f 
+        JOIN faqcategory c ON c.id = f.category_id 
+        WHERE (:status IS NULL OR f.status = CAST(:status AS varchar))
+        AND (:categoryUuid IS NULL OR c.uuid = CAST(:categoryUuid AS uuid))
+        AND (:priority IS NULL OR f.priority = CAST(:priority AS varchar))
+        AND (:searchTerm IS NULL OR 
+             LOWER(f.question::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+             LOWER(f.answer::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+             LOWER(f.search_keywords::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+             LOWER(c.name::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')))
+        ORDER BY f.created_at DESC
+        LIMIT :limit OFFSET :offset
+        """, nativeQuery = true)
+    List<FAQ> findByFiltersNative(
+            @Param("status") String status,
+            @Param("categoryUuid") String categoryUuid,
+            @Param("priority") String priority,
+            @Param("searchTerm") String searchTerm,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
+    // FIX: Count query for pagination
+    @Query(value = """
+        SELECT COUNT(*) FROM faq f 
+        JOIN faqcategory c ON c.id = f.category_id 
+        WHERE (:status IS NULL OR f.status = CAST(:status AS varchar))
+        AND (:categoryUuid IS NULL OR c.uuid = CAST(:categoryUuid AS uuid))
+        AND (:priority IS NULL OR f.priority = CAST(:priority AS varchar))
+        AND (:searchTerm IS NULL OR 
+             LOWER(f.question::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+             LOWER(f.answer::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+             LOWER(f.search_keywords::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')) OR
+             LOWER(c.name::TEXT) ILIKE LOWER(CONCAT('%', :searchTerm, '%')))
+        """, nativeQuery = true)
+    long countByFiltersNative(
+            @Param("status") String status,
+            @Param("categoryUuid") String categoryUuid,
+            @Param("priority") String priority,
+            @Param("searchTerm") String searchTerm
+    );
+
 }

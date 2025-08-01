@@ -12,6 +12,7 @@ import com.mentors.applicationstarter.Repository.FAQCategoryRepository;
 import com.mentors.applicationstarter.Repository.FAQRepository;
 import com.mentors.applicationstarter.Service.FAQCategoryService;
 import com.mentors.applicationstarter.Service.FAQService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -289,29 +291,40 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    public FAQ publishFAQ(UUID uuid, UUID updatedBy) {
-        log.debug("Publishing FAQ: {}", uuid);
-        FAQ faq = faqRepository.findByUuid(uuid)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
+    public FAQ publishFAQ(UUID faqUuid, UUID userUuid) {
+        FAQ faq = faqRepository.findByUuid(faqUuid)
+                .orElseThrow(() -> new RuntimeException("FAQ not found with UUID: " + faqUuid));
 
-        validateFAQForPublication(faq);
-
+        // Update status
         faq.setStatus(FAQStatus.PUBLISHED);
         faq.setIsPublished(true);
-        faq.setUpdatedBy(updatedBy);
+        faq.setUpdatedAt(LocalDateTime.now());
+
+        // Track who published it
+        if (userUuid != null) {
+            faq.setUpdatedBy(userUuid);
+        }
+
+        // Ensure unique slug before publishing
+        ensureUniqueSlug(faq);
 
         return faqRepository.save(faq);
     }
 
     @Override
-    public FAQ unpublishFAQ(UUID uuid, UUID updatedBy) {
-        log.debug("Unpublishing FAQ: {}", uuid);
-        FAQ faq = faqRepository.findByUuid(uuid)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
+    public FAQ unpublishFAQ(UUID faqUuid, UUID userUuid) {
+        FAQ faq = faqRepository.findByUuid(faqUuid)
+                .orElseThrow(() -> new RuntimeException("FAQ not found with UUID: " + faqUuid));
 
+        // Update status
         faq.setStatus(FAQStatus.DRAFT);
         faq.setIsPublished(false);
-        faq.setUpdatedBy(updatedBy);
+        faq.setUpdatedAt(LocalDateTime.now());
+
+        // Track who unpublished it
+        if (userUuid != null) {
+            faq.setUpdatedBy(userUuid);
+        }
 
         return faqRepository.save(faq);
     }
@@ -512,6 +525,76 @@ public class FAQServiceImpl implements FAQService {
 
         return slug;
     }
+
+    /**
+     * FIX: Ensures the FAQ has a unique slug
+     * This prevents the StringIndexOutOfBoundsException and ensures uniqueness
+     */
+    private void ensureUniqueSlug(FAQ faq) {
+        if (faq.getQuestion() == null || faq.getQuestion().trim().isEmpty()) {
+            faq.setSlug("faq-" + System.currentTimeMillis());
+            return;
+        }
+
+        String baseSlug = generateSafeSlug(faq.getQuestion());
+        String finalSlug = baseSlug;
+        int attempt = 0;
+
+        // Check for uniqueness and add suffix if needed
+        while (slugExists(finalSlug, faq.getCategory().getId(), faq.getUuid())) {
+            attempt++;
+            finalSlug = baseSlug + "-" + attempt;
+
+            // Prevent infinite loop
+            if (attempt > 100) {
+                finalSlug = baseSlug + "-" + System.currentTimeMillis();
+                break;
+            }
+        }
+
+        faq.setSlug(finalSlug);
+    }
+
+    /**
+     * FIX: Safe slug generation with proper bounds checking
+     */
+    private String generateSafeSlug(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return "faq-" + System.currentTimeMillis();
+        }
+
+        // Clean and normalize
+        String normalized = text.trim()
+                .toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "");
+
+        // Safe truncation
+        final int MAX_LENGTH = 50;
+        if (normalized.length() <= MAX_LENGTH) {
+            return normalized.isEmpty() ? "faq" : normalized;
+        }
+
+        // Truncate at word boundary
+        String truncated = normalized.substring(0, MAX_LENGTH);
+        int lastHyphen = truncated.lastIndexOf('-');
+
+        if (lastHyphen > 0 && lastHyphen > MAX_LENGTH - 10) {
+            return normalized.substring(0, lastHyphen);
+        }
+
+        return truncated;
+    }
+
+    /**
+     * Check if slug already exists for this category (excluding current FAQ)
+     */
+    private boolean slugExists(String slug, Long categoryId, UUID excludeUuid) {
+        return faqRepository.existsBySlugAndCategoryIdAndUuidNot(slug, categoryId, excludeUuid);
+    }
+
 
     private String generateSlug(String text) {
         if (text == null || text.isBlank()) {

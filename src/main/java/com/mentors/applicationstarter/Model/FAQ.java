@@ -28,10 +28,10 @@ public class FAQ {
     @Column(nullable = false, updatable = false, unique = true)
     private UUID uuid;
 
-    @Column(nullable = false, length = 500)
+    @Column(name = "question", columnDefinition = "TEXT", nullable = false, length = 500)
     private String question;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "answer", columnDefinition = "TEXT", nullable = false)
     private String answer;
 
     // Relationship with FAQCategory
@@ -57,13 +57,13 @@ public class FAQ {
     private Boolean isFeatured = false;
 
     // SEO and searchability
-    @Column(length = 1000)
+    @Column(name = "search_keywords", columnDefinition = "TEXT", length = 1000)
     private String searchKeywords;
 
-    @Column(length = 160)
+    @Column(name = "meta_description", columnDefinition = "TEXT", length = 160)
     private String metaDescription;
 
-    @Column(length = 100)
+    @Column(name = "slug", columnDefinition = "VARCHAR(255)", unique = true)
     private String slug; // URL-friendly version for SEO
 
     // Analytics
@@ -100,30 +100,78 @@ public class FAQ {
     @Column(name = "updated_by")
     private UUID updatedBy;
 
+    // FIX: Combine both operations into a single @PrePersist method
     @PrePersist
-    private void generateUUID() {
+    private void onPrePersist() {
+        // Generate UUID if not present
         if (this.uuid == null) {
             this.uuid = UUID.randomUUID();
         }
+
+        // Generate slug if not present and question exists
         if (this.slug == null && this.question != null) {
             this.slug = generateSlug(this.question);
         }
     }
 
+    // FIX: Separate method for updates only
     @PreUpdate
-    private void updateSlug() {
-        if (this.question != null) {
+    private void onPreUpdate() {
+        // Update slug if question changed
+        if (this.question != null && !this.question.trim().isEmpty()) {
             this.slug = generateSlug(this.question);
         }
     }
 
-    private String generateSlug(String question) {
-        return question.toLowerCase()
+    /**
+     * Generates a URL-safe slug from the question text
+     * FIX: Added proper bounds checking and validation
+     */
+    private String generateSlug(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return "faq-" + System.currentTimeMillis(); // Fallback slug
+        }
+
+        // Clean and normalize the text
+        String normalized = text.trim()
+                .toLowerCase()
                 .replaceAll("[^a-z0-9\\s-]", "") // Remove special characters
-                .replaceAll("\\s+", "-") // Replace spaces with hyphens
-                .replaceAll("-+", "-") // Replace multiple hyphens with single
-                .replaceAll("^-|-$", "") // Remove leading/trailing hyphens
-                .substring(0, Math.min(question.length(), 100)); // Limit length
+                .replaceAll("\\s+", "-")         // Replace spaces with hyphens
+                .replaceAll("-+", "-")           // Replace multiple hyphens with single
+                .replaceAll("^-|-$", "");        // Remove leading/trailing hyphens
+
+        // FIX: Safe substring with proper bounds checking
+        final int MAX_SLUG_LENGTH = 50; // Safe maximum length
+
+        if (normalized.length() <= MAX_SLUG_LENGTH) {
+            return normalized.isEmpty() ? "faq-" + System.currentTimeMillis() : normalized;
+        }
+
+        // Find last word boundary within limit to avoid cutting words
+        String truncated = normalized.substring(0, MAX_SLUG_LENGTH);
+        int lastHyphen = truncated.lastIndexOf('-');
+
+        if (lastHyphen > 0 && lastHyphen > MAX_SLUG_LENGTH - 10) {
+            // Cut at word boundary if it's reasonable
+            return normalized.substring(0, lastHyphen);
+        }
+
+        // Otherwise just truncate
+        return truncated;
+    }
+
+    /**
+     * Alternative method: Generate slug with uniqueness suffix if needed
+     */
+    public String generateUniqueSlug(String baseText, int attempt) {
+        String baseSlug = generateSlug(baseText);
+
+        if (attempt == 0) {
+            return baseSlug;
+        }
+
+        // Add numeric suffix for uniqueness
+        return baseSlug + "-" + attempt;
     }
 
     // Computed fields for frontend

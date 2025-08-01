@@ -98,70 +98,19 @@ public interface FAQService {
     // ADMIN API METHODS (for backend management)
     // ================================
 
-    /**
-     * Get all FAQs with pagination and filtering for admin interface
-     */
     Page<FAQ> getAllFAQsForAdmin(Pageable pageable);
-
-    /**
-     * Get FAQs by status for admin workflow management
-     */
     Page<FAQ> getFAQsByStatus(FAQStatus status, Pageable pageable);
-
-    /**
-     * Get FAQs by category for admin category management
-     */
     Page<FAQ> getFAQsByCategoryForAdmin(UUID categoryUuid, Pageable pageable);
-
-    /**
-     * Get FAQs with comprehensive filtering
-     */
     Page<FAQ> getFAQsByFilters(FAQStatus status, UUID categoryUuid, FAQPriority priority,
                                String searchTerm, Pageable pageable);
-
-    /**
-     * Create new FAQ
-     */
     FAQ createFAQ(FAQ faq, UUID createdBy);
-
-    /**
-     * Update existing FAQ
-     */
     FAQ updateFAQ(UUID uuid, FAQ faq, UUID updatedBy);
-
-    /**
-     * Delete FAQ
-     */
     void deleteFAQ(UUID uuid);
-
-    /**
-     * Publish FAQ (change status to published and mark as published)
-     */
     FAQ publishFAQ(UUID uuid, UUID updatedBy);
-
-    /**
-     * Unpublish FAQ (change status to draft and mark as unpublished)
-     */
     FAQ unpublishFAQ(UUID uuid, UUID updatedBy);
-
-    /**
-     * Mark FAQ as featured
-     */
     FAQ featureFAQ(UUID uuid, UUID updatedBy);
-
-    /**
-     * Remove featured status from FAQ
-     */
     FAQ unfeatureFAQ(UUID uuid, UUID updatedBy);
-
-    /**
-     * Reorder FAQs by providing ordered list of UUIDs
-     */
     void reorderFAQs(List<UUID> orderedUuids);
-
-    /**
-     * Move all FAQs from one category to another
-     */
     void moveFAQsBetweenCategories(UUID oldCategoryUuid, UUID newCategoryUuid, UUID updatedBy);
 
     // ================================
