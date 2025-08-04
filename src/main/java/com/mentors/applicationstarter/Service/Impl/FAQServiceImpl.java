@@ -16,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -208,11 +209,27 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<FAQ> getFAQsByFilters(FAQStatus status, UUID categoryUuid, FAQPriority priority,
-                                      String searchTerm, Pageable pageable) {
-        log.debug("Fetching FAQs with filters - status: {}, category: {}, priority: {}, search: {}",
-                status, categoryUuid, priority, searchTerm);
-        return faqRepository.findByFilters(status, categoryUuid, priority, searchTerm, pageable);
+    public Page<FAQ> getFAQsByFilters(FAQStatus status, UUID categoryUuid,
+                                      FAQPriority priority, String search, Pageable pageable) {
+
+        // Convert parameters to strings for native query
+        String statusStr = status != null ? status.name() : null;
+        String categoryUuidStr = categoryUuid != null ? categoryUuid.toString() : null;
+        String priorityStr = priority != null ? priority.name() : null;
+        String cleanSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+
+        // Calculate offset
+        int offset = pageable.getPageNumber() * pageable.getPageSize();
+        int limit = pageable.getPageSize();
+
+        // Get results and count
+        List<FAQ> content = faqRepository.findByFiltersNative(
+                statusStr, categoryUuidStr, priorityStr, cleanSearch, limit, offset);
+
+        long total = faqRepository.countByFiltersNative(
+                statusStr, categoryUuidStr, priorityStr, cleanSearch);
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     @Override

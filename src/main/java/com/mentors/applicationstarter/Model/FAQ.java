@@ -94,10 +94,10 @@ public class FAQ {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
-    @Column(name = "created_by")
+    @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
-    @Column(name = "updated_by")
+    @Column(name = "updated_by", columnDefinition = "VARCHAR(36)")
     private UUID updatedBy;
 
     // FIX: Combine both operations into a single @PrePersist method
