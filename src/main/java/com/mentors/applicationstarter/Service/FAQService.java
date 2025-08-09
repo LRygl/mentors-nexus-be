@@ -106,8 +106,8 @@ public interface FAQService {
     FAQ createFAQ(FAQ faq, UUID createdBy);
     FAQ updateFAQ(UUID uuid, FAQ faq, UUID updatedBy);
     void deleteFAQ(UUID uuid);
-    FAQ publishFAQ(UUID uuid, UUID updatedBy);
-    FAQ unpublishFAQ(UUID uuid, UUID updatedBy);
+    FAQ publishFAQ(UUID uuid);
+    FAQ unpublishFAQ(UUID uuid);
     FAQ featureFAQ(UUID uuid, UUID updatedBy);
     FAQ unfeatureFAQ(UUID uuid, UUID updatedBy);
     void reorderFAQs(List<UUID> orderedUuids);

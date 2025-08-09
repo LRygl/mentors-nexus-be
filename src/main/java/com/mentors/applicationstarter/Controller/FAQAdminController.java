@@ -119,14 +119,12 @@ public class FAQAdminController {
 
     @PatchMapping("/{uuid}/publish")
     @Operation(summary = "Publish FAQ", description = "Publishes an FAQ")
-    public ResponseEntity<FAQ> publishFAQ(
-            @Parameter(description = "FAQ UUID") @PathVariable UUID uuid,
-            @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
+    public ResponseEntity<FAQ> publishFAQ(@Parameter(description = "FAQ UUID") @PathVariable UUID uuid) {
 
         log.debug("PATCH /api/v1/admin/faq/{}/publish - Publishing FAQ", uuid);
 
         try {
-            FAQ faq = faqService.publishFAQ(uuid, adminUuid);
+            FAQ faq = faqService.publishFAQ(uuid);
             return ResponseEntity.ok(faq);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -135,14 +133,11 @@ public class FAQAdminController {
 
     @PatchMapping("/{uuid}/unpublish")
     @Operation(summary = "Unpublish FAQ", description = "Unpublishes an FAQ")
-    public ResponseEntity<FAQ> unpublishFAQ(
-            @Parameter(description = "FAQ UUID") @PathVariable UUID uuid,
-            @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
-
+    public ResponseEntity<FAQ> unpublishFAQ(@Parameter(description = "FAQ UUID") @PathVariable UUID uuid) {
         log.debug("PATCH /api/v1/admin/faq/{}/unpublish - Unpublishing FAQ", uuid);
 
         try {
-            FAQ faq = faqService.unpublishFAQ(uuid, adminUuid);
+            FAQ faq = faqService.unpublishFAQ(uuid);
             return ResponseEntity.ok(faq);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

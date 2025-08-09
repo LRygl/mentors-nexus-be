@@ -308,7 +308,7 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    public FAQ publishFAQ(UUID faqUuid, UUID userUuid) {
+    public FAQ publishFAQ(UUID faqUuid) {
         FAQ faq = faqRepository.findByUuid(faqUuid)
                 .orElseThrow(() -> new RuntimeException("FAQ not found with UUID: " + faqUuid));
 
@@ -317,11 +317,6 @@ public class FAQServiceImpl implements FAQService {
         faq.setIsPublished(true);
         faq.setUpdatedAt(LocalDateTime.now());
 
-        // Track who published it
-        if (userUuid != null) {
-            faq.setUpdatedBy(userUuid);
-        }
-
         // Ensure unique slug before publishing
         ensureUniqueSlug(faq);
 
@@ -329,7 +324,7 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    public FAQ unpublishFAQ(UUID faqUuid, UUID userUuid) {
+    public FAQ unpublishFAQ(UUID faqUuid) {
         FAQ faq = faqRepository.findByUuid(faqUuid)
                 .orElseThrow(() -> new RuntimeException("FAQ not found with UUID: " + faqUuid));
 
@@ -337,11 +332,6 @@ public class FAQServiceImpl implements FAQService {
         faq.setStatus(FAQStatus.DRAFT);
         faq.setIsPublished(false);
         faq.setUpdatedAt(LocalDateTime.now());
-
-        // Track who unpublished it
-        if (userUuid != null) {
-            faq.setUpdatedBy(userUuid);
-        }
 
         return faqRepository.save(faq);
     }
