@@ -59,13 +59,12 @@ public class FAQCategoryAdminController {
     @PostMapping
     @Operation(summary = "Create new category", description = "Creates a new FAQ category")
     public ResponseEntity<FAQCategory> createCategory(
-            @Parameter(description = "Category data") @RequestBody FAQCategory category,
-            @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
+            @Parameter(description = "Category data") @RequestBody FAQCategory category) {
 
         log.debug("POST /api/v1/admin/faq-category - Creating new category: {}", category.getName());
 
         try {
-            FAQCategory createdCategory = faqCategoryService.createCategory(category, adminUuid);
+            FAQCategory createdCategory = faqCategoryService.createCategory(category);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
         } catch (ResourceAlreadyExistsException e) {
             log.warn("Category creation failed - resource already exists: {}", e.getMessage());

@@ -93,7 +93,7 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
     }
 
     @Override
-    public FAQCategory createCategory(FAQCategory category, UUID createdBy) {
+    public FAQCategory createCategory(FAQCategory category) {
         log.debug("Creating new FAQ category: {}", category.getName());
 
         validateCategory(category, null);
@@ -120,7 +120,6 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
                 .isVisible(category.getIsVisible() != null ? category.getIsVisible() : true)
                 .metaDescription(category.getMetaDescription())
                 .metaKeywords(category.getMetaKeywords())
-                .createdBy(createdBy)
                 .build();
 
         return faqCategoryRepository.save(newCategory);

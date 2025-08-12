@@ -23,7 +23,7 @@ public interface FAQCategoryService {
     // Admin API methods (for backend management)
     Page<FAQCategory> getAllCategoriesForAdmin(Pageable pageable);
     Page<FAQCategory> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable);
-    FAQCategory createCategory(FAQCategory category, UUID createdBy);
+    FAQCategory createCategory(FAQCategory category);
     FAQCategory updateCategory(UUID uuid, FAQCategory category, UUID updatedBy);
     void deleteCategory(UUID uuid);
     FAQCategory activateCategory(UUID uuid, UUID updatedBy);
