@@ -44,6 +44,15 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
     }
 
     @Override
+    public FAQCategory getCategoryById(Long faqCategoryId) {
+        FAQCategory category = faqCategoryRepository.findById(faqCategoryId).orElseThrow(
+                ()-> new ResourceNotFoundException(ErrorCodes.FAQ_CATEGORY_NOT_FOUND)
+        );
+        return category;
+    }
+
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<FAQCategory> getCategoryBySlug(String slug) {
         log.debug("Fetching FAQ category by slug: {}", slug);
@@ -237,6 +246,7 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
         log.debug("Fetching {} most popular FAQ categories", limit);
         return faqCategoryRepository.findCategoriesOrderByFAQCount(PageRequest.of(0, limit));
     }
+
 
     // Helper methods
     private void validateCategory(FAQCategory category, UUID excludeUuid) {

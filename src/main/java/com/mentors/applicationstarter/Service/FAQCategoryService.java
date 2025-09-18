@@ -37,4 +37,6 @@ public interface FAQCategoryService {
     // Analytics methods
     Long getActiveCategoryCount();
     List<FAQCategory> getMostPopularCategories(int limit);
+
+    FAQCategory getCategoryById(Long faqCategoryId);
 }

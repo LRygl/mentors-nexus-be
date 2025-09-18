@@ -56,6 +56,11 @@ public class FAQCategoryAdminController {
         return ResponseEntity.ok(categories);
     }
 
+    @GetMapping("/{faqCategoryId}")
+    public ResponseEntity<FAQCategory> getFAQCategoryById(@PathVariable Long faqCategoryId) {
+        return new ResponseEntity<>(faqCategoryService.getCategoryById(faqCategoryId), HttpStatus.OK);
+    }
+
     @PostMapping
     @Operation(summary = "Create new category", description = "Creates a new FAQ category")
     public ResponseEntity<FAQCategory> createCategory(
