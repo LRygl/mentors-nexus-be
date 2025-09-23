@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Controller;
 
 
 import com.mentors.applicationstarter.DTO.CategoryStats;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.FAQCategory;
@@ -37,16 +38,15 @@ public class FAQCategoryAdminController {
 
     @GetMapping
     @Operation(summary = "Get all categories for admin", description = "Retrieves all FAQ categories with pagination for admin interface")
-    public ResponseEntity<Page<FAQCategory>> getAllCategoriesForAdmin(
+    public ResponseEntity<Page<FAQCategoryPageResponseDTO>> getAllCategoriesForAdmin(
             @Parameter(description = "Page number") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
             @Parameter(description = "Active status filter") @RequestParam(required = false) Boolean isActive,
             @Parameter(description = "Search term") @RequestParam(required = false) String search) {
 
-        log.debug("GET /api/v1/admin/faq-category - Fetching categories for admin");
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<FAQCategory> categories;
+        Page<FAQCategoryPageResponseDTO> categories;
         if (isActive != null || (search != null && !search.trim().isEmpty())) {
             categories = faqCategoryService.getCategoriesByFilters(isActive, search, pageable);
         } else {

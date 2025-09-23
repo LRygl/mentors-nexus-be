@@ -1,11 +1,14 @@
 package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.DTO.CategoryFAQCount;
+import com.mentors.applicationstarter.DTO.FAQ.FAQResponseDTO;
+import com.mentors.applicationstarter.DTO.FAQRequest;
 import com.mentors.applicationstarter.DTO.FAQStats;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.FAQPriority;
 import com.mentors.applicationstarter.Enum.FAQStatus;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Mapper.FAQMapper;
 import com.mentors.applicationstarter.Model.FAQ;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import com.mentors.applicationstarter.Repository.FAQCategoryRepository;
@@ -46,23 +49,12 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FAQ> getAllPublishedFAQs() {
+    public List<FAQResponseDTO> getAllPublishedFAQs() {
         log.debug("Fetching all published FAQs");
-        return faqRepository.findAllPublishedFAQs();
-    }
+        return faqRepository.findAllPublishedFAQs().stream()
+                .map(FAQMapper::toFaqResponseDto)
+                .collect(Collectors.toList());
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQ> getFAQsByCategory(FAQCategory category) {
-        log.debug("Fetching FAQs for category: {}", category.getName());
-        return faqRepository.findPublishedFAQsByCategory(category);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQ> getFAQsByCategorySlug(String categorySlug) {
-        log.debug("Fetching FAQs for category slug: {}", categorySlug);
-        return faqRepository.findPublishedFAQsByCategorySlug(categorySlug);
     }
 
     @Override
@@ -70,43 +62,6 @@ public class FAQServiceImpl implements FAQService {
     public List<FAQ> getFAQsByCategoryUuid(UUID categoryUuid) {
         log.debug("Fetching FAQs for category UUID: {}", categoryUuid);
         return faqRepository.findPublishedFAQsByCategoryUuid(categoryUuid);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQ> getFeaturedFAQs() {
-        log.debug("Fetching featured FAQs");
-        return faqRepository.findFeaturedFAQs();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQ> searchFAQs(String searchTerm) {
-        log.debug("Searching FAQs with term: {}", searchTerm);
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            return getAllPublishedFAQs();
-        }
-
-        // Use relevance ranking for better search results
-        return faqRepository.searchWithRelevanceRanking(searchTerm.trim());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQ> searchFAQsInCategory(String searchTerm, String categorySlug) {
-        log.debug("Searching FAQs with term: {} in category: {}", searchTerm, categorySlug);
-
-        Optional<FAQCategory> category = faqCategoryService.getCategoryBySlug(categorySlug);
-        if (category.isEmpty()) {
-            log.warn("Category not found with slug: {}", categorySlug);
-            return List.of();
-        }
-
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            return getFAQsByCategory(category.get());
-        }
-
-        return faqRepository.searchPublishedFAQsInCategory(searchTerm.trim(), category.get());
     }
 
     @Override
@@ -119,61 +74,7 @@ public class FAQServiceImpl implements FAQService {
         return faq.filter(f -> f.getIsPublished() && f.getStatus() == FAQStatus.PUBLISHED);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<FAQ> getFAQBySlug(String slug) {
-        log.debug("Fetching FAQ by slug: {}", slug);
-        Optional<FAQ> faq = faqRepository.findBySlug(slug);
 
-        // Only return if published for public access
-        return faq.filter(f -> f.getIsPublished() && f.getStatus() == FAQStatus.PUBLISHED);
-    }
-
-    @Override
-    @Async
-    public void recordFAQView(UUID uuid) {
-        log.debug("Recording view for FAQ: {}", uuid);
-        try {
-            faqRepository.incrementViewCount(uuid);
-        } catch (Exception e) {
-            log.warn("Failed to increment view count for FAQ: {}", uuid, e);
-        }
-    }
-
-    @Override
-    public void voteFAQHelpful(UUID uuid, boolean isHelpful) {
-        log.debug("Recording {} vote for FAQ: {}", isHelpful ? "helpful" : "not helpful", uuid);
-        try {
-            if (isHelpful) {
-                faqRepository.incrementHelpfulVotes(uuid);
-            } else {
-                faqRepository.incrementNotHelpfulVotes(uuid);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to record vote for FAQ: {}", uuid, e);
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQ> getMostViewedFAQs(int limit) {
-        log.debug("Fetching {} most viewed FAQs", limit);
-        return faqRepository.findMostViewedFAQs(PageRequest.of(0, limit));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQ> getMostViewedFAQsInCategory(String categorySlug, int limit) {
-        log.debug("Fetching {} most viewed FAQs in category: {}", limit, categorySlug);
-
-        Optional<FAQCategory> category = faqCategoryService.getCategoryBySlug(categorySlug);
-        if (category.isEmpty()) {
-            log.warn("Category not found with slug: {}", categorySlug);
-            return List.of();
-        }
-
-        return faqRepository.findMostViewedFAQsInCategory(category.get(), PageRequest.of(0, limit));
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -187,66 +88,35 @@ public class FAQServiceImpl implements FAQService {
     // ================================
 
     @Override
-    @Transactional(readOnly = true)
-    public Page<FAQ> getAllFAQsForAdmin(Pageable pageable) {
-        log.debug("Fetching all FAQs for admin with pagination");
-        return faqRepository.findAllByOrderByCreatedAtDesc(pageable);
+    public List<FAQResponseDTO> getAll() {
+        return faqRepository.findAll().stream()
+                .map(FAQMapper::toFaqResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Page<FAQ> getFAQsByStatus(FAQStatus status, Pageable pageable) {
-        log.debug("Fetching FAQs by status: {}", status);
-        return faqRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<FAQ> getFAQsByCategoryForAdmin(UUID categoryUuid, Pageable pageable) {
-        log.debug("Fetching FAQs by category UUID for admin: {}", categoryUuid);
-        return faqRepository.findByCategoryUuidOrderByDisplayOrderAsc(categoryUuid, pageable);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<FAQ> getFAQsByFilters(FAQStatus status, UUID categoryUuid,
-                                      FAQPriority priority, String search, Pageable pageable) {
-
-        // Convert parameters to strings for native query
-        String statusStr = status != null ? status.name() : null;
-        String categoryUuidStr = categoryUuid != null ? categoryUuid.toString() : null;
-        String priorityStr = priority != null ? priority.name() : null;
-        String cleanSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
-
-        // Calculate offset
-        int offset = pageable.getPageNumber() * pageable.getPageSize();
-        int limit = pageable.getPageSize();
-
-        // Get results and count
-        List<FAQ> content = faqRepository.findByFiltersNative(
-                statusStr, categoryUuidStr, priorityStr, cleanSearch, limit, offset);
-
-        long total = faqRepository.countByFiltersNative(
-                statusStr, categoryUuidStr, priorityStr, cleanSearch);
-
-        return new PageImpl<>(content, pageable, total);
-    }
-
-    @Override
-    public FAQ createFAQ(FAQ faq, UUID createdBy) {
+    public FAQ createFAQ(FAQRequest faq, UUID createdBy) {
         log.debug("Creating new FAQ: {}", faq.getQuestion());
 
         validateFAQ(faq);
-        validateCategoryExists(faq.getCategory());
+        FAQCategory category = null;
+        if (faq.getCategoryId() != null) {
+            try {
+                category = faqCategoryService.getCategoryById(faq.getCategoryId());
+            } catch (Exception e){
+                log.warn("Category with ID {} not found, creating FAQ without category", faq.getCategoryId());
+            }
+        }
+
 
         // Generate unique slug within category
-        String slug = generateUniqueSlug(faq.getQuestion(), faq.getCategory(), null);
+        String slug = generateUniqueSlug(faq.getQuestion(), category, null);
 
         FAQ newFAQ = FAQ.builder()
                 .uuid(UUID.randomUUID())
                 .question(faq.getQuestion().trim())
                 .answer(faq.getAnswer().trim())
-                .category(faq.getCategory())
+                .category(category)
                 .status(FAQStatus.DRAFT)
                 .displayOrder(faq.getDisplayOrder() != null ? faq.getDisplayOrder() : 0)
                 .isPublished(false)
@@ -265,24 +135,24 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    public FAQ updateFAQ(UUID uuid, FAQ faq, UUID updatedBy) {
+    public FAQ updateFAQ(UUID uuid, FAQRequest faq, UUID updatedBy) {
         log.debug("Updating FAQ: {}", uuid);
 
         FAQ existingFAQ = faqRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
 
         validateFAQ(faq);
-        validateCategoryExists(faq.getCategory());
+        FAQCategory category = faqCategoryService.getCategoryById(faq.getCategoryId());
 
         // Generate new slug if question changed
         String slug = existingFAQ.getSlug();
         if (!existingFAQ.getQuestion().equals(faq.getQuestion())) {
-            slug = generateUniqueSlug(faq.getQuestion(), faq.getCategory(), uuid);
+            slug = generateUniqueSlug(faq.getQuestion(), category, uuid);
         }
 
         existingFAQ.setQuestion(faq.getQuestion().trim());
         existingFAQ.setAnswer(faq.getAnswer().trim());
-        existingFAQ.setCategory(faq.getCategory());
+        existingFAQ.setCategory(category);
         existingFAQ.setDisplayOrder(faq.getDisplayOrder());
         existingFAQ.setSearchKeywords(faq.getSearchKeywords());
         existingFAQ.setMetaDescription(faq.getMetaDescription());
@@ -308,7 +178,7 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    public FAQ publishFAQ(UUID faqUuid) {
+    public FAQResponseDTO publishFAQ(UUID faqUuid) {
         FAQ faq = faqRepository.findByUuid(faqUuid)
                 .orElseThrow(() -> new RuntimeException("FAQ not found with UUID: " + faqUuid));
 
@@ -319,12 +189,12 @@ public class FAQServiceImpl implements FAQService {
 
         // Ensure unique slug before publishing
         ensureUniqueSlug(faq);
-
-        return faqRepository.save(faq);
+        FAQ savedFaq = faqRepository.save(faq);
+        return FAQMapper.toFaqResponseDto(savedFaq);
     }
 
     @Override
-    public FAQ unpublishFAQ(UUID faqUuid) {
+    public FAQResponseDTO unpublishFAQ(UUID faqUuid) {
         FAQ faq = faqRepository.findByUuid(faqUuid)
                 .orElseThrow(() -> new RuntimeException("FAQ not found with UUID: " + faqUuid));
 
@@ -333,11 +203,12 @@ public class FAQServiceImpl implements FAQService {
         faq.setIsPublished(false);
         faq.setUpdatedAt(LocalDateTime.now());
 
-        return faqRepository.save(faq);
+        FAQ savedFaq = faqRepository.save(faq);
+        return FAQMapper.toFaqResponseDto(savedFaq);
     }
 
     @Override
-    public FAQ featureFAQ(UUID uuid, UUID updatedBy) {
+    public FAQResponseDTO featureFAQ(UUID uuid, UUID updatedBy) {
         log.debug("Featuring FAQ: {}", uuid);
         FAQ faq = faqRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
@@ -345,11 +216,12 @@ public class FAQServiceImpl implements FAQService {
         faq.setIsFeatured(true);
         faq.setUpdatedBy(updatedBy);
 
-        return faqRepository.save(faq);
+        FAQ savedFaq = faqRepository.save(faq);
+        return FAQMapper.toFaqResponseDto(savedFaq);
     }
 
     @Override
-    public FAQ unfeatureFAQ(UUID uuid, UUID updatedBy) {
+    public FAQResponseDTO unfeatureFAQ(UUID uuid, UUID updatedBy) {
         log.debug("Unfeaturing FAQ: {}", uuid);
         FAQ faq = faqRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
@@ -357,7 +229,8 @@ public class FAQServiceImpl implements FAQService {
         faq.setIsFeatured(false);
         faq.setUpdatedBy(updatedBy);
 
-        return faqRepository.save(faq);
+        FAQ savedFaq = faqRepository.save(faq);
+        return FAQMapper.toFaqResponseDto(savedFaq);
     }
 
     @Override
@@ -387,95 +260,40 @@ public class FAQServiceImpl implements FAQService {
         faqRepository.moveFAQsToNewCategory(oldCategory, newCategory, updatedBy);
     }
 
+    @Override
+    public FAQResponseDTO unlinkFAQ(UUID uuid) {
+        FAQ faq = faqRepository.findByUuid(uuid).orElseThrow(
+                ()-> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND)
+        );
+
+        faq.setCategory(null);
+        FAQ savedFaq = faqRepository.save(faq);
+        return FAQMapper.toFaqResponseDto(savedFaq);
+    }
+
+    @Override
+    public FAQResponseDTO linkFaqToCategory(UUID faqUuid, UUID categoryUuid) {
+        FAQ faq = faqRepository.findByUuid(faqUuid).orElseThrow(()->new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
+        FAQCategory category = faqCategoryService.getCategoryByUuid(categoryUuid);
+
+        faq.setCategory(category);
+        FAQ savedFaq = faqRepository.save(faq);
+        return FAQMapper.toFaqResponseDto(savedFaq);
+    }
+
     // ================================
     // VALIDATION METHODS
     // ================================
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isFAQSlugUnique(String slug, UUID categoryUuid, UUID excludeUuid) {
-        FAQCategory category = faqCategoryRepository.findByUuid(categoryUuid)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_CATEGORY_NOT_FOUND));
-
-        return !faqRepository.existsBySlugAndCategoryAndUuidNot(slug, category, excludeUuid);
-    }
 
     // ================================
     // ANALYTICS AND STATISTICS
     // ================================
 
-    @Override
-    @Transactional(readOnly = true)
-    public FAQStats getFAQStats() {
-        log.debug("Fetching FAQ statistics");
-
-        Long totalFAQs = faqRepository.count();
-        Long publishedFAQs = getPublishedFAQCount();
-        Long draftFAQs = getFAQCountByStatus(FAQStatus.DRAFT);
-        Long featuredFAQs = getFeaturedFAQCount();
-
-        // Calculate total views and votes
-        List<FAQ> allFAQs = faqRepository.findAll();
-        Long totalViews = allFAQs.stream().mapToLong(FAQ::getViewCount).sum();
-        Long totalHelpfulVotes = allFAQs.stream().mapToLong(FAQ::getHelpfulVotes).sum();
-
-        List<FAQ> mostViewedFAQs = getMostViewedFAQs(5);
-        List<FAQ> mostHelpfulFAQs = getMostHelpfulFAQs(5);
-
-        // Get FAQ counts by category
-        List<CategoryFAQCount> faqsByCategory = faqCategoryService.getCategoriesWithFAQCounts()
-                .stream()
-                .map(category -> CategoryFAQCount.builder()
-                        .categoryName(category.getName())
-                        .categorySlug(category.getSlug())
-                        .categoryUuid(category.getUuid().toString())
-                        .totalFAQs(category.getFaqCount())
-                        .publishedFAQs(category.getPublishedFaqCount())
-                        .build())
-                .collect(Collectors.toList());
-
-        return FAQStats.builder()
-                .totalFAQs(totalFAQs)
-                .publishedFAQs(publishedFAQs)
-                .draftFAQs(draftFAQs)
-                .featuredFAQs(featuredFAQs)
-                .totalViews(totalViews)
-                .totalHelpfulVotes(totalHelpfulVotes)
-                .mostViewedFAQs(mostViewedFAQs)
-                .mostHelpfulFAQs(mostHelpfulFAQs)
-                .faqsByCategory(faqsByCategory)
-                .build();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Long getFAQCountByStatus(FAQStatus status) {
-        return faqRepository.countByStatus(status);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Long getFAQCountByPriority(FAQPriority priority) {
-        return faqRepository.countByPriority(priority);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Long getPublishedFAQCount() {
-        return faqRepository.countPublishedFAQs();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Long getFeaturedFAQCount() {
-        return faqRepository.countFeaturedFAQs();
-    }
-
     // ================================
     // PRIVATE HELPER METHODS
     // ================================
 
-    private void validateFAQ(FAQ faq) {
+    private void validateFAQ(FAQRequest faq) {
         if (faq.getQuestion() == null || faq.getQuestion().trim().isEmpty()) {
             throw new IllegalArgumentException("FAQ question cannot be empty");
         }
@@ -484,39 +302,8 @@ public class FAQServiceImpl implements FAQService {
             throw new IllegalArgumentException("FAQ answer cannot be empty");
         }
 
-        if (faq.getCategory() == null) {
-            throw new IllegalArgumentException("FAQ category is required");
-        }
-
         if (faq.getQuestion().length() > 500) {
             throw new IllegalArgumentException("FAQ question too long (max 500 characters)");
-        }
-    }
-
-    private void validateCategoryExists(FAQCategory category) {
-        if (category.getUuid() == null) {
-            throw new IllegalArgumentException("Category UUID is required");
-        }
-
-        Optional<FAQCategory> existingCategory = faqCategoryService.getCategoryByUuid(category.getUuid());
-        if (existingCategory.isEmpty()) {
-            throw new ResourceNotFoundException(ErrorCodes.FAQ_CATEGORY_NOT_FOUND);
-        }
-
-        if (!existingCategory.get().getIsActive()) {
-            throw new IllegalArgumentException("Cannot assign FAQ to inactive category");
-        }
-    }
-
-    private void validateFAQForPublication(FAQ faq) {
-        validateFAQ(faq);
-
-        if (!faq.getCategory().getIsActive()) {
-            throw new IllegalArgumentException("Cannot publish FAQ in inactive category");
-        }
-
-        if (faq.getStatus() == FAQStatus.ARCHIVED) {
-            throw new IllegalArgumentException("Cannot publish archived FAQ");
         }
     }
 

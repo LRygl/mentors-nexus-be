@@ -44,42 +44,6 @@ public class FAQCategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @GetMapping("/with-counts")
-    @Operation(summary = "Get categories with FAQ counts", description = "Retrieves categories with their FAQ counts for analytics")
-    public ResponseEntity<List<FAQCategory>> getCategoriesWithFAQCounts() {
-        log.debug("GET /api/v1/faq-category/with-counts - Fetching categories with FAQ counts");
-        List<FAQCategory> categories = faqCategoryService.getCategoriesWithFAQCounts();
-        return ResponseEntity.ok(categories);
-    }
 
-    @GetMapping("/slug/{slug}")
-    @Operation(summary = "Get category by slug", description = "Retrieves a specific FAQ category by its URL slug")
-    public ResponseEntity<FAQCategory> getCategoryBySlug(
-            @Parameter(description = "Category URL slug") @PathVariable String slug) {
-        log.debug("GET /api/v1/faq-category/slug/{} - Fetching category by slug", slug);
-        Optional<FAQCategory> category = faqCategoryService.getCategoryBySlug(slug);
 
-        return category.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/{uuid}")
-    @Operation(summary = "Get category by UUID", description = "Retrieves a specific FAQ category by its UUID")
-    public ResponseEntity<FAQCategory> getCategoryByUuid(
-            @Parameter(description = "Category UUID") @PathVariable UUID uuid) {
-        log.debug("GET /api/v1/faq-category/{} - Fetching category by UUID", uuid);
-        Optional<FAQCategory> category = faqCategoryService.getCategoryByUuid(uuid);
-
-        return category.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/analytics/popular")
-    @Operation(summary = "Get popular categories", description = "Retrieves most popular FAQ categories by FAQ count")
-    public ResponseEntity<List<FAQCategory>> getPopularCategories(
-            @Parameter(description = "Number of categories to return") @RequestParam(defaultValue = "5") int limit) {
-        log.debug("GET /api/v1/faq-category/analytics/popular - Fetching {} popular categories", limit);
-        List<FAQCategory> categories = faqCategoryService.getMostPopularCategories(limit);
-        return ResponseEntity.ok(categories);
-    }
 }

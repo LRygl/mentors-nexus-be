@@ -1,6 +1,9 @@
 package com.mentors.applicationstarter.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.mentors.applicationstarter.Enum.FAQPriority;
 import com.mentors.applicationstarter.Enum.FAQStatus;
 import jakarta.persistence.*;
@@ -34,9 +37,8 @@ public class FAQ {
     @Column(name = "answer", columnDefinition = "TEXT", nullable = false)
     private String answer;
 
-    // Relationship with FAQCategory
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = true)
     private FAQCategory category;
 
     @Enumerated(EnumType.STRING)
@@ -160,40 +162,8 @@ public class FAQ {
         return truncated;
     }
 
-    /**
-     * Alternative method: Generate slug with uniqueness suffix if needed
-     */
-    public String generateUniqueSlug(String baseText, int attempt) {
-        String baseSlug = generateSlug(baseText);
-
-        if (attempt == 0) {
-            return baseSlug;
-        }
-
-        // Add numeric suffix for uniqueness
-        return baseSlug + "-" + attempt;
-    }
-
-    // Computed fields for frontend
-    public Double getHelpfulnessRatio() {
-        int totalVotes = helpfulVotes + notHelpfulVotes;
-        if (totalVotes == 0) return 0.0;
-        return (double) helpfulVotes / totalVotes;
-    }
-
-    public Boolean getIsPopular() {
-        return viewCount > 100; // Configurable threshold
-    }
-
-    public String getFullUrl() {
-        return "/faq/" + category.getSlug() + "/" + slug;
-    }
-
-    public String getCategoryName() {
-        return category != null ? category.getName() : null;
-    }
 
     public String getCategorySlug() {
-        return category != null ? category.getSlug() : null;
+        return category != null ? category.getSlug() : "Uncategorized";
     }
 }

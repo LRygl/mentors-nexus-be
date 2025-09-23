@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service;
 
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import org.springframework.data.domain.Page;
@@ -16,13 +17,11 @@ public interface FAQCategoryService {
     // Public API methods (for frontend users)
     List<FAQCategory> getAllVisibleCategories();
     List<FAQCategory> getCategoriesWithPublishedFAQs();
-    Optional<FAQCategory> getCategoryBySlug(String slug);
-    Optional<FAQCategory> getCategoryByUuid(UUID uuid);
-    List<FAQCategory> getCategoriesWithFAQCounts();
+    FAQCategory getCategoryByUuid(UUID uuid);
 
     // Admin API methods (for backend management)
-    Page<FAQCategory> getAllCategoriesForAdmin(Pageable pageable);
-    Page<FAQCategory> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable);
+    Page<FAQCategoryPageResponseDTO> getAllCategoriesForAdmin(Pageable pageable);
+    Page<FAQCategoryPageResponseDTO> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable);
     FAQCategory createCategory(FAQCategory category);
     FAQCategory updateCategory(UUID uuid, FAQCategory category, UUID updatedBy);
     void deleteCategory(UUID uuid);

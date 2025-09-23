@@ -33,27 +33,27 @@ public class CategoryFAQCount {
     /**
      * Total number of FAQs in this category
      */
-    private Long totalFAQs;
+    private Integer totalFAQs;
 
     /**
      * Number of published FAQs in this category
      */
-    private Long publishedFAQs;
+    private Integer publishedFAQs;
 
     /**
      * Number of draft FAQs in this category
      */
-    private Long draftFAQs;
+    private Integer draftFAQs;
 
     /**
      * Number of featured FAQs in this category
      */
-    private Long featuredFAQs;
+    private Integer featuredFAQs;
 
     /**
      * Total view count for FAQs in this category
      */
-    private Long totalViews;
+    private Integer totalViews;
 
     /**
      * Average helpfulness ratio for FAQs in this category

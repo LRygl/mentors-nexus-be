@@ -1,7 +1,9 @@
 package com.mentors.applicationstarter.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -67,15 +70,14 @@ public class FAQCategory {
     private String metaKeywords;
 
     // Statistics (computed fields)
-    @Transient
-    private Long faqCount;
+    @Formula("(SELECT COUNT(*) FROM faq f WHERE f.category_id = id)")
+    private Integer faqCount;
 
-    @Transient
-    private Long publishedFaqCount;
+    @Formula("(SELECT COUNT(*) FROM faq f WHERE f.category_id = id AND f.is_published = true)")
+    private Integer publishedFaqCount;
 
     // Relationships
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore // Prevent infinite recursion in JSON serialization
     @Builder.Default
     private List<FAQ> faqs = new ArrayList<>();
 
@@ -124,11 +126,4 @@ public class FAQCategory {
         return publishedFaqCount != null && publishedFaqCount > 0;
     }
 
-    public String getDisplayName() {
-        return name;
-    }
-
-    public String getFullUrl() {
-        return "/faq/category/" + slug;
-    }
 }

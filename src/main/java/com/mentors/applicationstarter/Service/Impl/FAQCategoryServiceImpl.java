@@ -1,8 +1,10 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Mapper.FAQCategoryMapper;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import com.mentors.applicationstarter.Repository.FAQCategoryRepository;
 import com.mentors.applicationstarter.Service.FAQCategoryService;
@@ -51,54 +53,30 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
         return category;
     }
 
-
     @Override
     @Transactional(readOnly = true)
-    public Optional<FAQCategory> getCategoryBySlug(String slug) {
-        log.debug("Fetching FAQ category by slug: {}", slug);
-        return faqCategoryRepository.findBySlug(slug);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<FAQCategory> getCategoryByUuid(UUID uuid) {
+    public FAQCategory getCategoryByUuid(UUID uuid) {
         log.debug("Fetching FAQ category by UUID: {}", uuid);
-        return faqCategoryRepository.findByUuid(uuid);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<FAQCategory> getCategoriesWithFAQCounts() {
-        log.debug("Fetching categories with FAQ counts");
-        List<Object[]> results = faqCategoryRepository.findCategoriesWithFAQCounts();
-
-        return results.stream()
-                .map(result -> {
-                    FAQCategory category = (FAQCategory) result[0];
-                    Long faqCount = (Long) result[1];
-                    Long publishedCount = (Long) result[2];
-
-                    category.setFaqCount(faqCount);
-                    category.setPublishedFaqCount(publishedCount);
-
-                    return category;
-                })
-                .collect(Collectors.toList());
+        return faqCategoryRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.FAQ_CATEGORY_NOT_FOUND)
+        );
     }
 
     // Admin API methods
     @Override
     @Transactional(readOnly = true)
-    public Page<FAQCategory> getAllCategoriesForAdmin(Pageable pageable) {
+    public Page<FAQCategoryPageResponseDTO> getAllCategoriesForAdmin(Pageable pageable) {
         log.debug("Fetching all FAQ categories for admin with pagination");
-        return faqCategoryRepository.findAllByOrderByDisplayOrderAscNameAsc(pageable);
+        Page<FAQCategory> faqCategoryPage = faqCategoryRepository.findAllByOrderByDisplayOrderAscNameAsc(pageable);
+        return faqCategoryPage.map(FAQCategoryMapper::toFAQCategoryPageResponseDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<FAQCategory> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable) {
+    public Page<FAQCategoryPageResponseDTO> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable) {
         log.debug("Fetching FAQ categories with filters - active: {}, search: {}", isActive, searchTerm);
-        return faqCategoryRepository.findByFilters(isActive, searchTerm, pageable);
+        Page<FAQCategory> faqCategoryPage = faqCategoryRepository.findByFilters(isActive, searchTerm, pageable);
+        return faqCategoryPage.map(FAQCategoryMapper::toFAQCategoryPageResponseDto);
     }
 
     @Override
