@@ -1,7 +1,5 @@
-package com.mentors.applicationstarter.DTO.FAQ;
+package com.mentors.applicationstarter.DTO.FAQCategory;
 
-import com.mentors.applicationstarter.Enum.FAQPriority;
-import com.mentors.applicationstarter.Enum.FAQStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,20 +12,19 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FAQSimplifiedResponseDTO {
+public class FAQCategoryResponseSimplifiedDTO {
     private Long id;
     private UUID uuid;
-    private String question;
-    private String answer;
-    private FAQStatus status;
+    private String name;
+    private String description;
+    private String iconClass;
+    private String colorCode;
     private Integer displayOrder;
-    private Boolean isPublished;
-    private Boolean isFeatured;
-    private FAQPriority priority;
-
+    private Boolean isActive;
+    private Boolean isVisible;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
     private UUID createdBy;
     private UUID updatedBy;
+
 }

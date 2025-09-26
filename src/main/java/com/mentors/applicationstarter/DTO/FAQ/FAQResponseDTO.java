@@ -1,18 +1,12 @@
 package com.mentors.applicationstarter.DTO.FAQ;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategorySimplifiedDTO;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseSimplifiedDTO;
 import com.mentors.applicationstarter.Enum.FAQPriority;
 import com.mentors.applicationstarter.Enum.FAQStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,7 +20,7 @@ public class FAQResponseDTO {
     private UUID uuid;
     private String question;
     private String answer;
-    private FAQCategorySimplifiedDTO category;
+    private FAQCategoryResponseSimplifiedDTO category;
     private FAQStatus status;
     private Integer displayOrder;
     private Boolean isPublished;

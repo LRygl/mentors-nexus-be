@@ -1,15 +1,17 @@
 package com.mentors.applicationstarter.Mapper;
 
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategorySimplifiedDTO;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseSimplifiedDTO;
 import com.mentors.applicationstarter.Model.FAQCategory;
+
+import java.util.stream.Collectors;
 
 public class FAQCategoryMapper {
 
-    public static FAQCategoryPageResponseDTO toFAQCategoryPageResponseDto(FAQCategory faqCategory) {
+    public static FAQCategoryResponseDTO toFAQCategoryResponseDTO(FAQCategory faqCategory) {
         if (faqCategory == null) return null;
 
-        return FAQCategoryPageResponseDTO.builder()
+        return FAQCategoryResponseDTO.builder()
                 .id(faqCategory.getId())
                 .uuid(faqCategory.getUuid())
                 .name(faqCategory.getName())
@@ -24,6 +26,10 @@ public class FAQCategoryMapper {
                 .metaKeywords(faqCategory.getMetaKeywords())
                 .faqCount(faqCategory.getFaqCount())
                 .publishedFaqCount(faqCategory.getPublishedFaqCount())
+                .faqs(faqCategory.getFaqs().stream()
+                        .map(FAQMapper::toFaqSimplifiedResponseDto)
+                        .collect(Collectors.toList())
+                )
                 .createdAt(faqCategory.getCreatedAt())
                 .updatedAt(faqCategory.getUpdatedAt())
                 .createdBy(faqCategory.getCreatedBy())
@@ -31,10 +37,10 @@ public class FAQCategoryMapper {
                 .build();
     }
 
-    public static FAQCategorySimplifiedDTO toFAQCategorySimplifedResponseDTO(FAQCategory faqCategory) {
+    public static FAQCategoryResponseSimplifiedDTO toFAQCategorySimplifedResponseDTO(FAQCategory faqCategory) {
         if (faqCategory == null) return null;
 
-        return FAQCategorySimplifiedDTO.builder()
+        return FAQCategoryResponseSimplifiedDTO.builder()
                 .id(faqCategory.getId())
                 .uuid(faqCategory.getUuid())
                 .name(faqCategory.getName())

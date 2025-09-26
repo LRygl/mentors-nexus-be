@@ -28,7 +28,7 @@ public interface FAQRepository extends JpaRepository<FAQ,Long> {
 
     Optional<FAQ> findByUuid(UUID uuid);
     Optional<FAQ> findBySlug(String slug);
-
+    List<FAQ> findByCategoryOrderByDisplayOrderAsc(FAQCategory category);
 
     // ================================
     // PUBLIC QUERIES (for frontend users)
@@ -260,4 +260,6 @@ public interface FAQRepository extends JpaRepository<FAQ,Long> {
             @Param("searchTerm") String searchTerm
     );
 
+    @Query("SELECT COALESCE(MAX(f.displayOrder), 0) FROM FAQ f WHERE f.category.id = :categoryId")
+    Optional<Integer> findMaxDisplayOrderByCategory(@Param("categoryId") Long categoryId);
 }

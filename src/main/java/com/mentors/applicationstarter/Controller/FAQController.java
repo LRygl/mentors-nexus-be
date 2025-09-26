@@ -32,21 +32,13 @@ public class FAQController {
     }
 
 
-    @GetMapping("/category/uuid/{categoryUuid}")
+    @GetMapping("/category/{categoryUuid}")
     @Operation(summary = "Get FAQs by category UUID", description = "Retrieves published FAQs for a specific category using UUID")
-    public ResponseEntity<List<FAQ>> getFAQsByCategoryUuid(
+    public ResponseEntity<List<FAQResponseDTO>> getFAQsByCategoryUuid(
             @Parameter(description = "Category UUID") @PathVariable UUID categoryUuid) {
         log.debug("GET /api/v1/faq/category/uuid/{} - Fetching FAQs by category UUID", categoryUuid);
-        List<FAQ> faqs = faqService.getFAQsByCategoryUuid(categoryUuid);
+        List<FAQResponseDTO> faqs = faqService.getFAQsByCategoryUuid(categoryUuid);
         return ResponseEntity.ok(faqs);
     }
 
-    @GetMapping("/analytics/helpful")
-    @Operation(summary = "Get most helpful FAQs", description = "Retrieves FAQs with highest helpful votes")
-    public ResponseEntity<List<FAQ>> getMostHelpfulFAQs(
-            @Parameter(description = "Number of FAQs to return") @RequestParam(defaultValue = "10") int limit) {
-        log.debug("GET /api/v1/faq/analytics/helpful - Fetching {} most helpful FAQs", limit);
-        List<FAQ> faqs = faqService.getMostHelpfulFAQs(limit);
-        return ResponseEntity.ok(faqs);
-    }
 }

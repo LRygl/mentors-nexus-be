@@ -1,14 +1,12 @@
 package com.mentors.applicationstarter.Service;
 
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
-import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -20,10 +18,10 @@ public interface FAQCategoryService {
     FAQCategory getCategoryByUuid(UUID uuid);
 
     // Admin API methods (for backend management)
-    Page<FAQCategoryPageResponseDTO> getAllCategoriesForAdmin(Pageable pageable);
-    Page<FAQCategoryPageResponseDTO> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable);
-    FAQCategory createCategory(FAQCategory category);
-    FAQCategory updateCategory(UUID uuid, FAQCategory category, UUID updatedBy);
+    Page<FAQCategoryResponseDTO> getAllCategoriesForAdmin(Pageable pageable);
+    Page<FAQCategoryResponseDTO> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable);
+    FAQCategoryResponseDTO createCategory(FAQCategory category);
+    FAQCategoryResponseDTO updateCategory(UUID uuid, FAQCategory category, UUID updatedBy);
     void deleteCategory(UUID uuid);
     FAQCategory activateCategory(UUID uuid, UUID updatedBy);
     FAQCategory deactivateCategory(UUID uuid, UUID updatedBy);
@@ -37,5 +35,6 @@ public interface FAQCategoryService {
     Long getActiveCategoryCount();
     List<FAQCategory> getMostPopularCategories(int limit);
 
-    FAQCategory getCategoryById(Long faqCategoryId);
+    FAQCategory getFAQCategoryEntityById(Long faqCategoryId);
+    FAQCategoryResponseDTO getFAQCategoryById(Long faqCategoryId);
 }

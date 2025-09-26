@@ -1,18 +1,20 @@
 package com.mentors.applicationstarter.DTO.FAQCategory;
 
+import com.mentors.applicationstarter.DTO.FAQ.FAQResponseSimplifiedDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FAQCategoryPageResponseDTO {
+public class FAQCategoryResponseDTO {
     private Long id;
     private UUID uuid;
     private String name;
@@ -28,6 +30,7 @@ public class FAQCategoryPageResponseDTO {
 
     private Integer faqCount;
     private Integer publishedFaqCount;
+    private List<FAQResponseSimplifiedDTO> faqs;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

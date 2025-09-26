@@ -45,13 +45,12 @@ public class FAQAdminController {
 
     @PostMapping
     @Operation(summary = "Create new FAQ", description = "Creates a new FAQ")
-    public ResponseEntity<FAQ> createFAQ(
-            @Parameter(description = "FAQ data") @RequestBody FAQRequest faq,
-            @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
+    public ResponseEntity<FAQResponseDTO> createFAQ(
+            @Parameter(description = "FAQ data") @RequestBody FAQRequest faq) {
 
         try {
-            FAQ createdFAQ = faqService.createFAQ(faq, adminUuid);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdFAQ);
+            FAQResponseDTO createdFAQ = faqService.createFAQ(faq);
+            return ResponseEntity.ok(createdFAQ);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -152,15 +151,6 @@ public class FAQAdminController {
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    @PutMapping("/reorder")
-    @Operation(summary = "Reorder FAQs", description = "Updates the display order of FAQs")
-    public ResponseEntity<Void> reorderFAQs(
-            @Parameter(description = "Ordered list of FAQ UUIDs") @RequestBody List<UUID> orderedUuids) {
-
-        faqService.reorderFAQs(orderedUuids);
-        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/category/{oldCategoryUuid}/move/{newCategoryUuid}")

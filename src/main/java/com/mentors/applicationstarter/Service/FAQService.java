@@ -27,8 +27,7 @@ public interface FAQService {
     // ================================
 
     List<FAQResponseDTO> getAllPublishedFAQs();
-    List<FAQ> getFAQsByCategoryUuid(UUID categoryUuid);
-    List<FAQ> getMostHelpfulFAQs(int limit);
+    List<FAQResponseDTO> getFAQsByCategoryUuid(UUID categoryUuid);
 
     Optional<FAQ> getFAQByUuid(UUID uuid);
 
@@ -37,7 +36,7 @@ public interface FAQService {
     // ================================
 
     List<FAQResponseDTO> getAll();
-    FAQ createFAQ(FAQRequest faq, UUID createdBy);
+    FAQResponseDTO createFAQ(FAQRequest faq);
     FAQ updateFAQ(UUID uuid, FAQRequest faq, UUID updatedBy);
     FAQResponseDTO publishFAQ(UUID uuid);
     FAQResponseDTO unpublishFAQ(UUID uuid);
@@ -46,7 +45,6 @@ public interface FAQService {
     FAQResponseDTO linkFaqToCategory(UUID faqUuid, UUID categoryUuid);
 
     void deleteFAQ(UUID uuid);
-    void reorderFAQs(List<UUID> orderedUuids);
     void moveFAQsBetweenCategories(UUID oldCategoryUuid, UUID newCategoryUuid, UUID updatedBy);
     FAQResponseDTO unlinkFAQ(UUID uuid);
     // ================================

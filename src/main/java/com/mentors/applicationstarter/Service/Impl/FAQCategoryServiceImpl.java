@@ -1,6 +1,6 @@
 package com.mentors.applicationstarter.Service.Impl;
 
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
@@ -17,10 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,11 +44,19 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
     }
 
     @Override
-    public FAQCategory getCategoryById(Long faqCategoryId) {
+    public FAQCategory getFAQCategoryEntityById(Long faqCategoryId) {
         FAQCategory category = faqCategoryRepository.findById(faqCategoryId).orElseThrow(
                 ()-> new ResourceNotFoundException(ErrorCodes.FAQ_CATEGORY_NOT_FOUND)
         );
-        return category;
+        return category;    }
+
+    @Override
+    public FAQCategoryResponseDTO getFAQCategoryById(Long faqCategoryId) {
+        FAQCategory category = faqCategoryRepository.findById(faqCategoryId).orElseThrow(
+                ()-> new ResourceNotFoundException(ErrorCodes.FAQ_CATEGORY_NOT_FOUND)
+        );
+
+        return FAQCategoryMapper.toFAQCategoryResponseDTO(category);
     }
 
     @Override
@@ -65,22 +71,22 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
     // Admin API methods
     @Override
     @Transactional(readOnly = true)
-    public Page<FAQCategoryPageResponseDTO> getAllCategoriesForAdmin(Pageable pageable) {
+    public Page<FAQCategoryResponseDTO> getAllCategoriesForAdmin(Pageable pageable) {
         log.debug("Fetching all FAQ categories for admin with pagination");
         Page<FAQCategory> faqCategoryPage = faqCategoryRepository.findAllByOrderByDisplayOrderAscNameAsc(pageable);
-        return faqCategoryPage.map(FAQCategoryMapper::toFAQCategoryPageResponseDto);
+        return faqCategoryPage.map(FAQCategoryMapper::toFAQCategoryResponseDTO);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<FAQCategoryPageResponseDTO> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable) {
+    public Page<FAQCategoryResponseDTO> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable) {
         log.debug("Fetching FAQ categories with filters - active: {}, search: {}", isActive, searchTerm);
         Page<FAQCategory> faqCategoryPage = faqCategoryRepository.findByFilters(isActive, searchTerm, pageable);
-        return faqCategoryPage.map(FAQCategoryMapper::toFAQCategoryPageResponseDto);
+        return faqCategoryPage.map(FAQCategoryMapper::toFAQCategoryResponseDTO);
     }
 
     @Override
-    public FAQCategory createCategory(FAQCategory category) {
+    public FAQCategoryResponseDTO createCategory(FAQCategory category) {
         log.debug("Creating new FAQ category: {}", category.getName());
 
         validateCategory(category, null);
@@ -109,11 +115,12 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
                 .metaKeywords(category.getMetaKeywords())
                 .build();
 
-        return faqCategoryRepository.save(newCategory);
+        FAQCategory createdCategory = faqCategoryRepository.save(newCategory);
+        return FAQCategoryMapper.toFAQCategoryResponseDTO(createdCategory);
     }
 
     @Override
-    public FAQCategory updateCategory(UUID uuid, FAQCategory category, UUID updatedBy) {
+    public FAQCategoryResponseDTO updateCategory(UUID uuid, FAQCategory category, UUID updatedBy) {
         log.debug("Updating FAQ category: {}", uuid);
 
         FAQCategory existingCategory = faqCategoryRepository.findByUuid(uuid)
@@ -142,7 +149,8 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
         existingCategory.setMetaKeywords(category.getMetaKeywords());
         existingCategory.setUpdatedBy(updatedBy);
 
-        return faqCategoryRepository.save(existingCategory);
+        FAQCategory updatedCategory = faqCategoryRepository.save(existingCategory);
+        return FAQCategoryMapper.toFAQCategoryResponseDTO(updatedCategory);
     }
 
     @Override
@@ -224,6 +232,8 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
         log.debug("Fetching {} most popular FAQ categories", limit);
         return faqCategoryRepository.findCategoriesOrderByFAQCount(PageRequest.of(0, limit));
     }
+
+
 
 
     // Helper methods

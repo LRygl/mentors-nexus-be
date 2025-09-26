@@ -1,8 +1,7 @@
 package com.mentors.applicationstarter.Mapper;
 
 import com.mentors.applicationstarter.DTO.FAQ.FAQResponseDTO;
-import com.mentors.applicationstarter.DTO.FAQ.FAQSimplifiedResponseDTO;
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategorySimplifiedDTO;
+import com.mentors.applicationstarter.DTO.FAQ.FAQResponseSimplifiedDTO;
 import com.mentors.applicationstarter.Model.FAQ;
 
 public class FAQMapper {
@@ -34,10 +33,10 @@ public class FAQMapper {
                 .build();
     }
 
-    public static FAQSimplifiedResponseDTO toFaqSimplifiedResponseDtop(FAQ faq) {
+    public static FAQResponseSimplifiedDTO toFaqSimplifiedResponseDto(FAQ faq) {
         if (faq == null) return null;
 
-        return FAQSimplifiedResponseDTO.builder()
+        return FAQResponseSimplifiedDTO.builder()
                 .id(faq.getId())
                 .uuid(faq.getUuid())
                 .question(faq.getQuestion())

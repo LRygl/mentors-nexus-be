@@ -2,7 +2,7 @@ package com.mentors.applicationstarter.Controller;
 
 
 import com.mentors.applicationstarter.DTO.CategoryStats;
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.FAQCategory;
@@ -38,7 +38,7 @@ public class FAQCategoryAdminController {
 
     @GetMapping
     @Operation(summary = "Get all categories for admin", description = "Retrieves all FAQ categories with pagination for admin interface")
-    public ResponseEntity<Page<FAQCategoryPageResponseDTO>> getAllCategoriesForAdmin(
+    public ResponseEntity<Page<FAQCategoryResponseDTO>> getAllCategoriesForAdmin(
             @Parameter(description = "Page number") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
             @Parameter(description = "Active status filter") @RequestParam(required = false) Boolean isActive,
@@ -46,7 +46,7 @@ public class FAQCategoryAdminController {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<FAQCategoryPageResponseDTO> categories;
+        Page<FAQCategoryResponseDTO> categories;
         if (isActive != null || (search != null && !search.trim().isEmpty())) {
             categories = faqCategoryService.getCategoriesByFilters(isActive, search, pageable);
         } else {
@@ -57,51 +57,28 @@ public class FAQCategoryAdminController {
     }
 
     @GetMapping("/{faqCategoryId}")
-    public ResponseEntity<FAQCategory> getFAQCategoryById(@PathVariable Long faqCategoryId) {
-        return new ResponseEntity<>(faqCategoryService.getCategoryById(faqCategoryId), HttpStatus.OK);
+    public ResponseEntity<FAQCategoryResponseDTO> getFAQCategoryById(@PathVariable Long faqCategoryId) {
+        return ResponseEntity.ok(faqCategoryService.getFAQCategoryById(faqCategoryId));
     }
 
     @PostMapping
     @Operation(summary = "Create new category", description = "Creates a new FAQ category")
-    public ResponseEntity<FAQCategory> createCategory(
+    public ResponseEntity<FAQCategoryResponseDTO> createCategory(
             @Parameter(description = "Category data") @RequestBody FAQCategory category) {
 
-        log.debug("POST /api/v1/admin/faq-category - Creating new category: {}", category.getName());
-
-        try {
-            FAQCategory createdCategory = faqCategoryService.createCategory(category);
+            FAQCategoryResponseDTO createdCategory = faqCategoryService.createCategory(category);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
-        } catch (ResourceAlreadyExistsException e) {
-            log.warn("Category creation failed - resource already exists: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } catch (IllegalArgumentException e) {
-            log.warn("Category creation failed - invalid input: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
     }
 
     @PutMapping("/{uuid}")
     @Operation(summary = "Update category", description = "Updates an existing FAQ category")
-    public ResponseEntity<FAQCategory> updateCategory(
+    public ResponseEntity<FAQCategoryResponseDTO> updateCategory(
             @Parameter(description = "Category UUID") @PathVariable UUID uuid,
             @Parameter(description = "Updated category data") @RequestBody FAQCategory category,
             @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
 
-        log.debug("PUT /api/v1/admin/faq-category/{} - Updating category", uuid);
-
-        try {
-            FAQCategory updatedCategory = faqCategoryService.updateCategory(uuid, category, adminUuid);
+            FAQCategoryResponseDTO updatedCategory = faqCategoryService.updateCategory(uuid, category, adminUuid);
             return ResponseEntity.ok(updatedCategory);
-        } catch (ResourceNotFoundException e) {
-            log.warn("Category update failed - not found: {}", uuid);
-            return ResponseEntity.notFound().build();
-        } catch (ResourceAlreadyExistsException e) {
-            log.warn("Category update failed - conflict: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } catch (IllegalArgumentException e) {
-            log.warn("Category update failed - invalid input: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
     }
 
     @DeleteMapping("/{uuid}")
