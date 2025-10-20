@@ -28,8 +28,8 @@ public interface FAQService {
 
     List<FAQResponseDTO> getAllPublishedFAQs();
     List<FAQResponseDTO> getFAQsByCategoryUuid(UUID categoryUuid);
+    FAQResponseDTO getFAQById(String identifier);
 
-    Optional<FAQ> getFAQByUuid(UUID uuid);
 
     // ================================
     // ADMIN API METHODS (for backend management)
@@ -40,13 +40,14 @@ public interface FAQService {
     FAQ updateFAQ(UUID uuid, FAQRequest faq, UUID updatedBy);
     FAQResponseDTO publishFAQ(UUID uuid);
     FAQResponseDTO unpublishFAQ(UUID uuid);
-    FAQResponseDTO featureFAQ(UUID uuid, UUID updatedBy);
-    FAQResponseDTO unfeatureFAQ(UUID uuid, UUID updatedBy);
+    FAQResponseDTO featureFAQ(UUID uuid);
+    FAQResponseDTO unfeatureFAQ(UUID uuid);
     FAQResponseDTO linkFaqToCategory(UUID faqUuid, UUID categoryUuid);
 
     void deleteFAQ(UUID uuid);
     void moveFAQsBetweenCategories(UUID oldCategoryUuid, UUID newCategoryUuid, UUID updatedBy);
     FAQResponseDTO unlinkFAQ(UUID uuid);
+
     // ================================
     // VALIDATION METHODS
     // ================================

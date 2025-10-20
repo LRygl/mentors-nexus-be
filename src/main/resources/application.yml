@@ -1,0 +1,88 @@
+# Application Configuration
+spring:
+  application:
+    name: application-starter
+  
+  # Database Configuration (adjust to your database)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mentors
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Email Configuration (if using email features)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: lubomir.rygl@gmail.com
+    password: geaworqjmqyupnkh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:544D4B62576358367976794D335757447842566A7478753441746A796C3177616F4C2F584674592F466C55434C74763332325276664346585949633252775A42}
+  access-token-expiration: 900000      # 15 minutes in milliseconds
+  refresh-token-expiration: 604800000  # 7 days in milliseconds
+  cookie:
+    access-token-name: access_token
+    refresh-token-name: refresh_token
+    domain: localhost                   # Change to your domain in production
+    secure: false                       # Set to true in production (HTTPS only)
+    same-site: Lax                      # Lax for same-site, None for cross-site (with secure=true)
+    path: /
+
+# Application Settings
+app:
+  # CORS Configuration
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000
+  
+  # Email Configuration
+  send-email-on-registration: false
+  
+  # Admin User Configuration
+  register-admin-user-on-startup: true
+  
+  # Password Generation Strategy
+  generate-user-password-on-registration: false
+
+# Authentication Settings
+allowPublicUserRegistration: true
+generateUserPasswordOnRegistration: false
+reguireRegisteredUserEmailConfirmation: false
+reguireRegisteredUserAdminApproval: false
+
+# Admin User Configuration (these were missing!)
+applicationAdminName: Admin
+applicationAdminEmail: info@mentors.cz
+applicationAdminPhone: +1234567890
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# Logging Configuration
+logging:
+  level:
+    com.mentors.applicationstarter: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web.cors: DEBUG
+    root: INFO
+
+

@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service;
 
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,7 @@ import java.util.UUID;
 public interface FAQCategoryService {
 
     // Public API methods (for frontend users)
-    List<FAQCategory> getAllVisibleCategories();
+    List<FAQCategoryPublicResponseDTO> getAllVisibleCategories();
     List<FAQCategory> getCategoriesWithPublishedFAQs();
     FAQCategory getCategoryByUuid(UUID uuid);
 

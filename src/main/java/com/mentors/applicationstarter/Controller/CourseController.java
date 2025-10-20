@@ -4,6 +4,7 @@ import com.mentors.applicationstarter.DTO.CourseRequestDTO;
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Model.Course;
+import com.mentors.applicationstarter.Model.CourseSection;
 import com.mentors.applicationstarter.Service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -60,9 +61,17 @@ public class CourseController {
         return new ResponseEntity<>(courseService.createCourse(course), HttpStatus.CREATED);
     }
 
-    @PostMapping("/{courseId}/lesson/{lessonId}")
-    public ResponseEntity<CourseResponseDTO> addLesson(@PathVariable Long courseId, @PathVariable Long lessonId) {
-        return new ResponseEntity<>(courseService.addLessonToCourse(courseId,lessonId),HttpStatus.OK);
+
+    @PostMapping("/{courseId}/section")
+    public ResponseEntity<CourseResponseDTO> createNewCourseSection(
+            @RequestBody CourseSection section,
+            @PathVariable Long courseId) {
+        return new ResponseEntity<>(courseService.createCourseSection(section, courseId), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/section/{sectionId}/lesson/{lessonId}")
+    public ResponseEntity<CourseResponseDTO> addLessonToCourseSection(@PathVariable Long sectionId, @PathVariable Long lessonId) {
+        return new ResponseEntity<>(courseService.addLessonToCourseSection(sectionId,lessonId),HttpStatus.OK);
     }
 
     @PutMapping
@@ -78,5 +87,10 @@ public class CourseController {
     @DeleteMapping("/{id}")
     public ResponseEntity<CourseResponseDTO> deleteCourse(@PathVariable Long id) {
         return new ResponseEntity<>(courseService.deleteCourse(id), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/section/{id}")
+    public ResponseEntity<CourseResponseDTO> deleteCourseSection(@PathVariable Long id) {
+        return new ResponseEntity<>(courseService.delteCourseSection(id), HttpStatus.GONE);
     }
 }

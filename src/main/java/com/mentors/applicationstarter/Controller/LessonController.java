@@ -1,6 +1,7 @@
 package com.mentors.applicationstarter.Controller;
 
 import com.mentors.applicationstarter.DTO.LessonDTO;
+import com.mentors.applicationstarter.DTO.LessonDetailDTO;
 import com.mentors.applicationstarter.Model.Lesson;
 import com.mentors.applicationstarter.Service.LessonService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class LessonController {
     private final LessonService lessonService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<LessonDTO>> getAllLessons(){
+    public ResponseEntity<List<LessonDetailDTO>> getAllLessons(){
         return new ResponseEntity<>(lessonService.getAllLessons(), HttpStatus.OK);
     }
 

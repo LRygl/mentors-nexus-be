@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Mapper;
 
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseSimplifiedDTO;
 import com.mentors.applicationstarter.Model.FAQCategory;
@@ -54,6 +55,25 @@ public class FAQCategoryMapper {
                 .updatedAt(faqCategory.getUpdatedAt())
                 .createdBy(faqCategory.getCreatedBy())
                 .updatedBy(faqCategory.getUpdatedBy())
+                .build();
+    }
+
+    public static FAQCategoryPublicResponseDTO faqCategoryPublicResponseDTO(FAQCategory faqCategory) {
+        if (faqCategory == null) return null;
+
+        return FAQCategoryPublicResponseDTO.builder()
+                .id(faqCategory.getId())
+                .uuid(faqCategory.getUuid())
+                .name(faqCategory.getName())
+                .description(faqCategory.getDescription())
+                .iconClass(faqCategory.getIconClass())
+                .colorCode(faqCategory.getColorCode())
+                .displayOrder(faqCategory.getDisplayOrder())
+                .isActive(faqCategory.getIsActive())
+                .faqs(faqCategory.getFaqs().stream()
+                        .map(FAQMapper::toFaqSimplifiedResponseDto)
+                        .collect(Collectors.toList())
+                )
                 .build();
     }
 

@@ -7,10 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Date;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class CustomExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomExceptionHandler.class);
     private ResponseEntity<HttpErrorResponse> createErrorHttpResponse(HttpStatus httpStatus, String applicationErrorCode, String applicationErrorMessage) {

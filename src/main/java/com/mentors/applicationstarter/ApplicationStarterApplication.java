@@ -19,8 +19,8 @@ import java.io.File;
 
 import static com.mentors.applicationstarter.Constant.FileConstant.USER_FOLDER;
 
-@SpringBootApplication
 @EnableJpaRepositories(basePackages = "com.mentors.applicationstarter.Repository")
+@SpringBootApplication(scanBasePackages = "com.mentors.applicationstarter")
 @EnableAsync
 public class ApplicationStarterApplication {
 

@@ -14,6 +14,7 @@ import com.mentors.applicationstarter.Repository.*;
 import com.mentors.applicationstarter.Service.CourseService;
 import com.mentors.applicationstarter.Service.LessonService;
 import com.mentors.applicationstarter.Specification.CourseSpecification;
+import com.mentors.applicationstarter.Utils.EntityLookupUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final CourseSectionRepository courseSectionRepository;
     private final LabelRepository labelRepository;
     private final CategoryRepository categoryRepository;
     private final LessonService lessonService;
@@ -163,18 +165,56 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseResponseDTO addLessonToCourse(Long courseId, Long lessonId) {
-        Course course = findCourseById(courseId);
-        Lesson lesson = lessonService.getLessonById(lessonId);
+    public CourseResponseDTO addLessonToCourseSection(Long sectionId, Long lessonId) {
 
-        lesson.setCourse(course);
-        course.getLessons().add(lesson);
+        CourseSection section = courseSectionRepository.findById(sectionId).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.COURSE_SECTION_DOES_NOT_EXIST));
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.LESSON_NOT_FOUND));
 
+        lesson.setSection(section);
+
+        section.getLessons().add(lesson);
         lessonRepository.save(lesson);
-        courseRepository.save(course);
+
+        Course course = courseRepository.findById(section.getCourse().getId()).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+
+        return CourseMapper.toDto(course);
+
+    }
+
+    @Override
+    public CourseResponseDTO createCourseSection(CourseSection section, Long courseId) {
+        Course course = courseRepository.findById(courseId).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+
+        section.setTitle(section.getTitle());
+        section.setUuid(UUID.randomUUID());
+        section.setDescription(section.getDescription());
+        section.setOrderIndex(section.getOrderIndex());
+        section.setCourse(course);
+
+        courseSectionRepository.save(section);
+        return CourseMapper.toDto(course);
+    }
+
+    @Override
+    public CourseResponseDTO delteCourseSection(Long id) {
+        CourseSection section = courseSectionRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+
+        Course course = section.getCourse();
+        course.getSections().remove(section);
+
+        // Todo unassign all lessons from the section
+
+        courseSectionRepository.deleteById(id);
 
         return CourseMapper.toDto(course);
     }
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PRIVATE METHODS

@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Controller;
 
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import com.mentors.applicationstarter.Service.FAQCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,9 +31,9 @@ public class FAQCategoryController {
 
     @GetMapping
     @Operation(summary = "Get all visible categories", description = "Retrieves all visible FAQ categories ordered by display order")
-    public ResponseEntity<List<FAQCategory>> getAllVisibleCategories() {
+    public ResponseEntity<List<FAQCategoryPublicResponseDTO>> getAllVisibleCategories() {
         log.debug("GET /api/v1/faq-category - Fetching all visible categories");
-        List<FAQCategory> categories = faqCategoryService.getAllVisibleCategories();
+        List<FAQCategoryPublicResponseDTO> categories = faqCategoryService.getAllVisibleCategories();
         return ResponseEntity.ok(categories);
     }
 

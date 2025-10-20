@@ -1,6 +1,7 @@
 package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.DTO.LessonDTO;
+import com.mentors.applicationstarter.DTO.LessonDetailDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.LessonMapper;
@@ -24,9 +25,9 @@ public class LessonServiceImpl implements LessonService {
     private final LessonRepository lessonRepository;
 
     @Override
-    public List<LessonDTO> getAllLessons() {
+    public List<LessonDetailDTO> getAllLessons() {
         return lessonRepository.findAll().stream()
-                .map(LessonMapper::toLessonDto)
+                .map(LessonMapper::toDetailDTO)
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +45,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
     public Lesson createLesson(Lesson request) {
         Lesson lesson = Lesson.builder()
-                .UUID(UUID.randomUUID())
+                .uuid(UUID.randomUUID())
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .orderIndex(request.getOrderIndex())

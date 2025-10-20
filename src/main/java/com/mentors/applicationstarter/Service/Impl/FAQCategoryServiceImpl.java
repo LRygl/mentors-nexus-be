@@ -1,10 +1,12 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.FAQCategoryMapper;
+import com.mentors.applicationstarter.Mapper.FAQMapper;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import com.mentors.applicationstarter.Repository.FAQCategoryRepository;
 import com.mentors.applicationstarter.Service.FAQCategoryService;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +34,11 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
     // Public API methods
     @Override
     @Transactional(readOnly = true)
-    public List<FAQCategory> getAllVisibleCategories() {
-        log.debug("Fetching all visible FAQ categories");
-        return faqCategoryRepository.findAllVisibleCategories();
+    public List<FAQCategoryPublicResponseDTO> getAllVisibleCategories() {
+        return faqCategoryRepository.findAllVisibleCategories().stream()
+                .map(FAQCategoryMapper::faqCategoryPublicResponseDTO)
+                .collect(Collectors.toList());
+
     }
 
     @Override

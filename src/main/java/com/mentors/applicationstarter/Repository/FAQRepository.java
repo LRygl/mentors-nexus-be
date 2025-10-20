@@ -24,8 +24,7 @@ import java.util.UUID;
  */
 
 @Repository
-public interface FAQRepository extends JpaRepository<FAQ,Long> {
-
+public interface FAQRepository extends JpaRepository<FAQ,Long>, IdentifiableRepository<FAQ> {
     Optional<FAQ> findByUuid(UUID uuid);
     Optional<FAQ> findBySlug(String slug);
     List<FAQ> findByCategoryOrderByDisplayOrderAsc(FAQCategory category);

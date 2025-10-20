@@ -41,4 +41,5 @@ public class FAQController {
         return ResponseEntity.ok(faqs);
     }
 
+
 }

@@ -10,9 +10,9 @@ import java.util.UUID;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class LessonDTO {
+@AllArgsConstructor
+public class LessonDetailDTO {
     private Long id; // Nullable for new lessons
     private UUID uuid;
     private String title;
@@ -20,4 +20,7 @@ public class LessonDTO {
     private String videoUrl;
     private Duration duration;
     private Integer orderIndex;
+
+    private CourseSectionSummaryDTO section;
+    private CourseSummaryDTO course;
 }

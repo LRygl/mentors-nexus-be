@@ -33,7 +33,6 @@ import java.util.UUID;
 @Tag(name = "FAQ Category Admin API", description = "Admin FAQ category operations for content management")
 public class FAQCategoryAdminController {
 
-
     private final FAQCategoryService faqCategoryService;
 
     @GetMapping

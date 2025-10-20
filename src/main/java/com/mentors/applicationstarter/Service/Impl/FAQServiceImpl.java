@@ -1,13 +1,11 @@
 package com.mentors.applicationstarter.Service.Impl;
 
-import com.mentors.applicationstarter.DTO.CategoryFAQCount;
 import com.mentors.applicationstarter.DTO.FAQ.FAQResponseDTO;
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQRequest;
-import com.mentors.applicationstarter.DTO.FAQStats;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.FAQPriority;
 import com.mentors.applicationstarter.Enum.FAQStatus;
+import com.mentors.applicationstarter.Exception.InvalidRequestException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.FAQMapper;
 import com.mentors.applicationstarter.Model.FAQ;
@@ -16,25 +14,17 @@ import com.mentors.applicationstarter.Repository.FAQCategoryRepository;
 import com.mentors.applicationstarter.Repository.FAQRepository;
 import com.mentors.applicationstarter.Service.FAQCategoryService;
 import com.mentors.applicationstarter.Service.FAQService;
+import com.mentors.applicationstarter.Utils.EntityLookupUtils;
 import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -69,12 +59,16 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<FAQ> getFAQByUuid(UUID uuid) {
-        Optional<FAQ> faq = faqRepository.findByUuid(uuid);
+    public FAQResponseDTO getFAQById(String identifier) {
+        FAQ faq = EntityLookupUtils.findByIdentifier(
+                identifier,
+                faqRepository,
+                ErrorCodes.FAQ_NOT_FOUND,
+                ErrorCodes.FAQ_CATEGORY_REQUIRED
+        );
 
-        // Only return if published for public access
-        return faq.filter(f -> f.getIsPublished() && f.getStatus() == FAQStatus.PUBLISHED);
+        return FAQMapper.toFaqResponseDto(faq);
+
     }
 
     // ================================
@@ -164,18 +158,22 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     public void deleteFAQ(UUID uuid) {
-        log.debug("Deleting FAQ: {}", uuid);
         FAQ faq = faqRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
 
         faqRepository.delete(faq);
     }
 
+    //TODO Add missing category handling
     @Override
     public FAQResponseDTO publishFAQ(UUID faqUuid) {
         FAQ faq = faqRepository.findByUuid(faqUuid)
                 .orElseThrow(() -> new RuntimeException("FAQ not found with UUID: " + faqUuid));
 
+        if (faq.getCategory() == null) {
+            log.error("FAQ category is null, throwing exception");
+            throw new InvalidRequestException(ErrorCodes.FAQ_CATEGORY_REQUIRED);
+        }
         // Update status
         faq.setStatus(FAQStatus.PUBLISHED);
         faq.setIsPublished(true);
@@ -196,32 +194,35 @@ public class FAQServiceImpl implements FAQService {
         faq.setStatus(FAQStatus.DRAFT);
         faq.setIsPublished(false);
         faq.setUpdatedAt(LocalDateTime.now());
+        faq.setIsFeatured(false);
 
         FAQ savedFaq = faqRepository.save(faq);
         return FAQMapper.toFaqResponseDto(savedFaq);
     }
 
     @Override
-    public FAQResponseDTO featureFAQ(UUID uuid, UUID updatedBy) {
+    public FAQResponseDTO featureFAQ(UUID uuid) {
         log.debug("Featuring FAQ: {}", uuid);
         FAQ faq = faqRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
 
         faq.setIsFeatured(true);
-        faq.setUpdatedBy(updatedBy);
+        faq.setUpdatedAt(LocalDateTime.now());
+        //faq.setUpdatedBy(updatedBy);
 
         FAQ savedFaq = faqRepository.save(faq);
         return FAQMapper.toFaqResponseDto(savedFaq);
     }
 
     @Override
-    public FAQResponseDTO unfeatureFAQ(UUID uuid, UUID updatedBy) {
+    public FAQResponseDTO unfeatureFAQ(UUID uuid) {
         log.debug("Unfeaturing FAQ: {}", uuid);
         FAQ faq = faqRepository.findByUuid(uuid)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
 
         faq.setIsFeatured(false);
-        faq.setUpdatedBy(updatedBy);
+        faq.setUpdatedAt(LocalDateTime.now());
+        //faq.setUpdatedBy(updatedBy);
 
         FAQ savedFaq = faqRepository.save(faq);
         return FAQMapper.toFaqResponseDto(savedFaq);
@@ -252,6 +253,8 @@ public class FAQServiceImpl implements FAQService {
         FAQCategory category = faq.getCategory();
         faq.setCategory(null);
         faq.setDisplayOrder(0);
+        faq.setIsPublished(false);
+        faq.setIsFeatured(false);
         FAQ savedFaq = faqRepository.save(faq);
 
         recalcualteFAQDisplayOrder(category.getUuid(),null);

@@ -1,6 +1,7 @@
 package com.mentors.applicationstarter.Service;
 
 import com.mentors.applicationstarter.DTO.LessonDTO;
+import com.mentors.applicationstarter.DTO.LessonDetailDTO;
 import com.mentors.applicationstarter.Model.Lesson;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +11,7 @@ import java.util.List;
 
 @Service
 public interface LessonService {
-    List<LessonDTO> getAllLessons();
+    List<LessonDetailDTO> getAllLessons();
 
     Lesson getLessonById(Long lessonId);
 

@@ -43,6 +43,11 @@ public class FAQAdminController {
         return new ResponseEntity<>(faqService.getAll(),HttpStatus.OK);
     }
 
+    @GetMapping("/{identifier}")
+    public ResponseEntity<FAQResponseDTO> getFAQById(@PathVariable String identifier) {
+        return new ResponseEntity<>(faqService.getFAQById(identifier), HttpStatus.OK);
+    }
+
     @PostMapping
     @Operation(summary = "Create new FAQ", description = "Creates a new FAQ")
     public ResponseEntity<FAQResponseDTO> createFAQ(
@@ -124,15 +129,14 @@ public class FAQAdminController {
             return ResponseEntity.notFound().build();
         }
     }
-
+//@Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid)
     @PatchMapping("/{uuid}/feature")
     @Operation(summary = "Feature FAQ", description = "Marks an FAQ as featured")
     public ResponseEntity<FAQResponseDTO> featureFAQ(
-            @Parameter(description = "FAQ UUID") @PathVariable UUID uuid,
-            @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
+            @Parameter(description = "FAQ UUID") @PathVariable UUID uuid){
 
         try {
-            FAQResponseDTO faq = faqService.featureFAQ(uuid, adminUuid);
+            FAQResponseDTO faq = faqService.featureFAQ(uuid);
             return ResponseEntity.ok(faq);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -142,11 +146,10 @@ public class FAQAdminController {
     @PatchMapping("/{uuid}/unfeature")
     @Operation(summary = "Unfeature FAQ", description = "Removes featured status from an FAQ")
     public ResponseEntity<FAQResponseDTO> unfeatureFAQ(
-            @Parameter(description = "FAQ UUID") @PathVariable UUID uuid,
-            @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
+            @Parameter(description = "FAQ UUID") @PathVariable UUID uuid) {
 
         try {
-            FAQResponseDTO faq = faqService.unfeatureFAQ(uuid, adminUuid);
+            FAQResponseDTO faq = faqService.unfeatureFAQ(uuid);
             return ResponseEntity.ok(faq);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

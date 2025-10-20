@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.DTO;
 
+import com.mentors.applicationstarter.Model.CourseSection;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +27,7 @@ public class CourseResponseDTO {
     private String name;
     private Set<String> labels;
     private Set<String> categories;
-    private List<LessonDTO> lessons;
     private UserResponseDTO owner;
+    private List<CourseSectionDTO> sections;
     private int students;
 }

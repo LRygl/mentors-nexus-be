@@ -1,6 +1,7 @@
 package com.mentors.applicationstarter.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mentors.applicationstarter.DTO.CourseSectionDTO;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -78,11 +79,9 @@ public class Course {
     @Builder.Default
     private Set<User> students = new HashSet<>();
 
-    //LESSONS JOIN - ONETOMANY
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "course")
     @Builder.Default
-    private Set<Lesson> lessons = new HashSet<>();
-
+    private Set<CourseSection> sections = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

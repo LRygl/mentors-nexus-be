@@ -17,10 +17,12 @@ public enum ErrorCodes {
     COURSE_DOES_NOT_EXIST("CourseDoesNotExist","Course was not found", "Could not find course based on the request data provided"),
     COURSE_CANNOT_BE_ASSIGNED("CourseCannotBeAssigned", "User cannot be course owner", "Ordinary users cannot be owning a course. Elevate user Role to assign him to course."),
 
+    COURSE_SECTION_DOES_NOT_EXIST("CourseSectionDoesNotExist","Course section does not exist","Could not find the course section with the Course Section ID Provided in the request"),
 
     LESSON_NOT_FOUND("LessonDoesNotExist","Lesson does not exist", "Lesson does not exist by lesson id"),
 
-
+    INVALID_TOKEN("AUTH_INVALID_TOKEN", "Token is not valid","Token is not valid"),
+    TOKEN_NOT_FOUND("AUTH_TOKEN_NOT_FOUND", "Token was not find", "Refresh the token"),
 
 
     DISCOUNT_COURSE_DOES_NOT_EXIST("CourseDiscountDoesNotExist","",""),

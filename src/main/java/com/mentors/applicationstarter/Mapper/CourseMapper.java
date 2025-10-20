@@ -1,13 +1,10 @@
 package com.mentors.applicationstarter.Mapper;
 
-import com.mentors.applicationstarter.DTO.CourseResponseDTO;
-import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
-import com.mentors.applicationstarter.DTO.LessonDTO;
-import com.mentors.applicationstarter.DTO.UserResponseDTO;
-import com.mentors.applicationstarter.Model.Category;
-import com.mentors.applicationstarter.Model.Course;
-import com.mentors.applicationstarter.Model.Label;
+import com.mentors.applicationstarter.DTO.*;
+import com.mentors.applicationstarter.Model.*;
 
+import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,24 +35,29 @@ public class CourseMapper {
                 .updated(course.getUpdated())
                 .status(String.valueOf(course.getStatus()))
                 .price(course.getPrice())
-                .lessons(
-                        course.getLessons() == null ? null :
-                                course.getLessons().stream()
-                                        .map(lesson -> LessonDTO.builder()
-                                                .id(lesson.getId())
-                                                .title(lesson.getTitle())
-                                                .description(lesson.getDescription())
-                                                .videoUrl(lesson.getVideoUrl())
-                                                .duration(lesson.getLength())
-                                                .orderIndex(lesson.getOrderIndex())
-                                                .course(CourseSummaryDTO.builder()
-                                                        .id(lesson.getCourse().getId())
-                                                        .uuid(lesson.getCourse().getUuid())
-                                                        .name(lesson.getCourse().getName())
-                                                        .build())
-                                                .build()
+                .sections(course.getSections() == null ? null :
+                        course.getSections().stream()
+                                .map(section -> CourseSectionDTO.builder()
+                                        .id(section.getId())
+                                        .uuid(section.getUuid())
+                                        .title(section.getTitle())
+                                        .description(section.getDescription())
+                                        .orderIndex(section.getOrderIndex())
+                                        .lessons(section.getLessons() == null ? null :
+                                                section.getLessons().stream()
+                                                        .map(lesson -> LessonDTO.builder()
+                                                                .id(lesson.getId())
+                                                                .uuid(lesson.getUuid())
+                                                                .title(lesson.getTitle())
+                                                                .description(lesson.getDescription())
+                                                                .videoUrl(lesson.getVideoUrl())
+                                                                .duration(lesson.getLength())
+                                                                .orderIndex(lesson.getOrderIndex())
+                                                                .build())
+                                                        .collect(Collectors.toList())
                                         )
-                                        .collect(Collectors.toList())
+                                        .build())
+                                .collect(Collectors.toList())
                 )
                 .students(course.getStudents().size())
                 .build();
@@ -85,4 +87,46 @@ public class CourseMapper {
                         .map(Category::getName) // assuming `Category` has a `getName()` method
                         .collect(Collectors.toSet());
     }
+
+
+    // PRIVATE HELPER METHODS
+
+
+    private static List<CourseSectionDTO> toSectionDtoList(List<CourseSection> sections) {
+        if (sections == null) return null;
+        return sections.stream().map(CourseMapper::toSectionDto).toList();
+    }
+
+    private static CourseSectionDTO toSectionDto(CourseSection section) {
+        return CourseSectionDTO.builder()
+                .id(section.getId())
+                .uuid(section.getUuid())
+                .title(section.getTitle())
+                .description(section.getDescription())
+                .orderIndex(section.getOrderIndex())
+                .lessons(toLessonDtoList(section.getLessons()))
+                .build();
+    }
+
+    private static List<LessonDTO> toLessonDtoList(List<Lesson> lessons) {
+        if (lessons == null) return null;
+        return lessons.stream().map(CourseMapper::toLessonDto).toList();
+    }
+
+    private static LessonDTO toLessonDto(Lesson lesson) {
+        return LessonDTO.builder()
+                .id(lesson.getId())
+                .uuid(lesson.getUuid())
+                .title(lesson.getTitle())
+                .description(lesson.getDescription())
+                .videoUrl(lesson.getVideoUrl())
+                .duration(lesson.getLength())
+                .orderIndex(lesson.getOrderIndex())
+                .build();
+    }
+
+
 }
+
+
+

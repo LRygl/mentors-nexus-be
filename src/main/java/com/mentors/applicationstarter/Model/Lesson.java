@@ -22,7 +22,7 @@ public class Lesson {
     @SequenceGenerator(name = "lessonGenerator", sequenceName = "application_lesson_sequence", allocationSize = 50)
     @Column(nullable = false, updatable = false)
     private Long id;
-    private UUID UUID;
+    private UUID uuid;
     private String title;
     private String description;
     private String videoUrl;
@@ -32,11 +32,7 @@ public class Lesson {
     private Integer orderIndex;
 
     @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
-
-    //TODO
-    //CourseSection
-    //LessonRating
+    @JoinColumn(name = "section_id")
+    private CourseSection section;
 
 }

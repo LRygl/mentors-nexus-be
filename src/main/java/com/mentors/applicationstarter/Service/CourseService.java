@@ -4,6 +4,7 @@ import com.mentors.applicationstarter.DTO.CourseRequestDTO;
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Model.Course;
+import com.mentors.applicationstarter.Model.CourseSection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,5 +31,9 @@ public interface CourseService {
 
     void enrollUserToCourse(Long courseId, UUID userUUID);
 
-    CourseResponseDTO addLessonToCourse(Long courseId, Long lessonId);
+    CourseResponseDTO createCourseSection(CourseSection section, Long courseId);
+
+    CourseResponseDTO delteCourseSection(Long id);
+
+    CourseResponseDTO addLessonToCourseSection(Long sectionId, Long lessonId);
 }
