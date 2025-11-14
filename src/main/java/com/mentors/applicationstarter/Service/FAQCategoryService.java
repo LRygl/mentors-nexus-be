@@ -23,7 +23,7 @@ public interface FAQCategoryService {
     Page<FAQCategoryResponseDTO> getCategoriesByFilters(Boolean isActive, String searchTerm, Pageable pageable);
     FAQCategoryResponseDTO createCategory(FAQCategory category);
     FAQCategoryResponseDTO updateCategory(UUID uuid, FAQCategory category, UUID updatedBy);
-    void deleteCategory(UUID uuid);
+    void deleteCategory(Long id);
     FAQCategory activateCategory(UUID uuid, UUID updatedBy);
     FAQCategory deactivateCategory(UUID uuid, UUID updatedBy);
     void reorderCategories(List<UUID> orderedUuids);

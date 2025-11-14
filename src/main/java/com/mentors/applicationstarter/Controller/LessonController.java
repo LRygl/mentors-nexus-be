@@ -10,8 +10,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,7 +30,7 @@ public class LessonController {
     }
 
     @GetMapping("/{lessonId}")
-    public ResponseEntity<Lesson> getLessonById(@PathVariable Long lessonId) {
+    public ResponseEntity<LessonDTO> getLessonById(@PathVariable Long lessonId) {
         return new ResponseEntity<>(lessonService.getLessonById(lessonId), HttpStatus.OK);
     }
 
@@ -44,18 +46,31 @@ public class LessonController {
     }
 
     @PostMapping
-    public ResponseEntity<Lesson> createLesson(@RequestBody Lesson lesson) {
+    public ResponseEntity<LessonDTO> createLesson(@RequestBody Lesson lesson) {
         return new ResponseEntity<>(lessonService.createLesson(lesson),HttpStatus.CREATED);
     }
 
-    @PutMapping("/{lessonId}")
-    public ResponseEntity<Lesson> updateLesson(@RequestBody Lesson request, @PathVariable Long lessonId) {
-        return new ResponseEntity<>(lessonService.updateCompany(request,lessonId),HttpStatus.OK);
+    @PutMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<LessonDTO> updateLessonMultipart(
+            @PathVariable Long lessonId,
+            @RequestPart(value="lesson") Lesson lesson,
+            @RequestPart(value = "image", required = false) MultipartFile image
+            ) {
+        return new ResponseEntity<>(lessonService.updateLesson(lessonId, lesson, image),HttpStatus.OK);
     }
 
+    @PutMapping(value = "/{lessonId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LessonDTO> updateLessonJson(
+            @PathVariable Long lessonId,
+            @RequestBody Lesson lesson
+    ) {
+        return new ResponseEntity<>(lessonService.updateLesson(lessonId, lesson, null),HttpStatus.OK);
+    }
+
+
     @DeleteMapping("/{lessonId}")
-    public ResponseEntity<Lesson> deleteLesson(@PathVariable Long lessonId) {
-        return new ResponseEntity<>(lessonService.deleteLesson(lessonId),HttpStatus.GONE);
+    public ResponseEntity<LessonDTO> deleteLesson(@PathVariable Long lessonId) {
+        return new ResponseEntity<>(lessonService.deleteLesson(lessonId),HttpStatus.OK);
     }
 
 }

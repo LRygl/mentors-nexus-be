@@ -159,9 +159,8 @@ public class FAQCategoryServiceImpl implements FAQCategoryService {
     }
 
     @Override
-    public void deleteCategory(UUID uuid) {
-        log.debug("Deleting FAQ category: {}", uuid);
-        FAQCategory category = faqCategoryRepository.findByUuid(uuid)
+    public void deleteCategory(Long id) {
+        FAQCategory category = faqCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_CATEGORY_NOT_FOUND));
 
         // Check if category has FAQs

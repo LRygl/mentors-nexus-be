@@ -5,17 +5,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Lesson {
+public class Lesson extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "lessonGenerator")
@@ -25,10 +26,9 @@ public class Lesson {
     private UUID uuid;
     private String title;
     private String description;
+    private String imageUrl;
     private String videoUrl;
-    private Duration length;
-    private Instant createdDate;
-    private Instant updatedDate;
+    private Integer duration;
     private Integer orderIndex;
 
     @ManyToOne

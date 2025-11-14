@@ -6,6 +6,7 @@ import com.mentors.applicationstarter.Model.Lesson;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,13 +14,13 @@ import java.util.List;
 public interface LessonService {
     List<LessonDetailDTO> getAllLessons();
 
-    Lesson getLessonById(Long lessonId);
+    LessonDTO getLessonById(Long lessonId);
 
     Page<Lesson> getPagedLessons(Pageable pageable);
 
-    Lesson createLesson(Lesson lesson);
+    LessonDTO createLesson(Lesson lesson);
 
-    Lesson updateCompany(Lesson request, Long lessonId);
+    LessonDTO updateLesson(Long lessonId, Lesson lesson, MultipartFile image);
 
-    Lesson deleteLesson(Long lessonId);
+    LessonDTO deleteLesson(Long lessonId);
 }

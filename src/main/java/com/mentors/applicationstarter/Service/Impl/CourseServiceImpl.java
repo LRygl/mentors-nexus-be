@@ -7,14 +7,17 @@ import com.mentors.applicationstarter.Enum.CourseStatus;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.Role;
 import com.mentors.applicationstarter.Exception.BusinessRuleViolationException;
+import com.mentors.applicationstarter.Exception.InvalidRequestException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.CourseMapper;
 import com.mentors.applicationstarter.Model.*;
 import com.mentors.applicationstarter.Repository.*;
 import com.mentors.applicationstarter.Service.CourseService;
+import com.mentors.applicationstarter.Service.FileStorageService;
 import com.mentors.applicationstarter.Service.LessonService;
 import com.mentors.applicationstarter.Specification.CourseSpecification;
 import com.mentors.applicationstarter.Utils.EntityLookupUtils;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,11 +25,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.mentors.applicationstarter.Constant.FileConstant.COURSE_FOLDER;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +45,8 @@ public class CourseServiceImpl implements CourseService {
     private final CourseSectionRepository courseSectionRepository;
     private final LabelRepository labelRepository;
     private final CategoryRepository categoryRepository;
-    private final LessonService lessonService;
     private final LessonRepository lessonRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     public Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryName, Pageable pageable) {
@@ -65,48 +72,105 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseResponseDTO createCourse(CourseRequestDTO request) {
+    public CourseResponseDTO createCourse(CourseRequestDTO request, MultipartFile file, UUID userUUID) {
         Set<Label> labels = resolveLabels(request.getLabels());
-        Set<Category> categories = resolveCategories(request.getCategories());
-
+        Set<Category> categories = resolveCategoriesByIds(request.getCategoryIds());
         User owner = getCourseOwner(request.getCourseOwnerId());
 
+        UUID courseUUID = UUID.randomUUID();
+        UUID authenticatedUserUuid = getAuthenticatedUserUuid();
+
+        // Create Folder for course data and store the image
+        fileStorageService.createEntityDirectory(COURSE_FOLDER, courseUUID.toString());
+
+        String imagePath = null;
+        if (file != null) {
+            imagePath = fileStorageService.storeFile(
+                    COURSE_FOLDER,
+                    "Image",
+                    courseUUID,
+                    file
+            );
+        }
+
         Course course = Course.builder()
-                .uuid(UUID.randomUUID())
+                .uuid(courseUUID)
                 .name(request.getName())
-                .created(Instant.now())
+                .createdAt(Instant.now())
+                .createdBy(authenticatedUserUuid)
                 .status(CourseStatus.UNPUBLISHED)
                 .price(request.getPrice())
                 .categories((categories))
                 .labels(labels)
                 .owner(owner)
+                .createdBy(userUUID)
+                .imageUrl(imagePath)
                 .build();
 
         Course savedCourse = courseRepository.save(course);
-
         return CourseMapper.toDto(savedCourse);
     }
 
     @Override
-    public CourseResponseDTO updateCourse(CourseRequestDTO dto) {
-        Course course = findCourseById(dto.getId());
+    public CourseResponseDTO updateCourse(Long courseId, CourseRequestDTO dto, MultipartFile file) {
+        Course course = findCourseById(courseId);
+
+        UUID userUuid = getAuthenticatedUserUuid();
+
+        course.setUpdatedBy(userUuid);
+        course.setUpdatedAt(Instant.now());
 
         if(dto.getName() != null){
             course.setName(dto.getName());
         }
-        course.setUpdated(Instant.now());
+        if (dto.getStatus() != null) {
+            CourseStatus status = CourseStatus.valueOf(dto.getStatus().toUpperCase());
+            course.setStatus(status);
+
+            // Set published date logic
+            if (dto.getPublished() != null) {
+                course.setPublished(dto.getPublished());
+            } else if (status == CourseStatus.PUBLISHED) {
+                course.setPublished(Instant.now());
+            }
+        }
+        // TODO change to toggle
+        if (dto.getIsFeatured() != null) {
+            course.setFeatured(dto.getIsFeatured());
+        }
+
+        if (dto.getCourseOwnerId() != null) {
+            User user = userRepository.findById(dto.getCourseOwnerId()).orElseThrow(
+                    () -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST)
+            );
+            course.setOwner(user);
+        }
+
         if (dto.getLabels() != null){
             course.setLabels(resolveLabels(dto.getLabels()));
         }
-        if (dto.getCategories() != null){
-            course.setCategories(resolveCategories(dto.getCategories()));
+        if (dto.getCategoryIds() != null) {
+            Set<Category> categories = resolveCategoriesByIds(dto.getCategoryIds());
+            course.setCategories(categories);
         }
+
         if (dto.getCourseOwnerId() != null) {
             User owner = getCourseOwner(dto.getCourseOwnerId());
             course.setOwner(owner);
         }
 
+        if (file != null) {
+            String path = fileStorageService.storeFile(
+                    COURSE_FOLDER,
+                    "Image",
+                    course.getUuid(),
+                    file
+            );
+            course.setImageUrl(path);
+        }
+
         Course updatedCourse = courseRepository.save(course);
+
         return CourseMapper.toDto(updatedCourse);
     }
 
@@ -115,7 +179,7 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponseDTO deleteCourse(Long courseId) {
         Course course = findCourseById(courseId);
 
-        detachCourseFromLabels(course);
+        detachCourseAssociations(course);
         courseRepository.delete(course);
 
         return CourseMapper.toDto(course);
@@ -141,7 +205,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         course.setStatus(courseStatusDTO.getStatus());
-        course.setUpdated(Instant.now());
+        course.setUpdatedAt(Instant.now());
         course.setPublished(courseStatusDTO.getPublished());
 
         courseRepository.save(course);
@@ -164,6 +228,9 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.save(course);
     }
 
+    // TODO Reorder sections
+    // TODO New section is assigned maxindex+1
+    // TODO Method to reorder section index in BE
     @Override
     public CourseResponseDTO addLessonToCourseSection(Long sectionId, Long lessonId) {
 
@@ -185,9 +252,74 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Transactional
+    public CourseResponseDTO reorderCourseSections(List<Long> sectionOrderIds) {
+
+        if (sectionOrderIds == null ||  sectionOrderIds.isEmpty()) {
+            throw new InvalidRequestException(ErrorCodes.COURSE_DOES_NOT_EXIST);
+        }
+
+        // Find parent course based on the first section in the array
+        Course course = courseRepository.findByCourseSection(sectionOrderIds.getFirst());
+
+        // Convert course sections to a mutable list for ordering
+        List<CourseSection> courseSections = new ArrayList<>(course.getSections());
+
+        // Build the ordered list
+        List<CourseSection> orderedSections = new ArrayList<>();
+
+        // Add only those sections in the request that belong to the course
+        for (int i = 0; i < sectionOrderIds.size(); i++) {
+            Long id = sectionOrderIds.get(i);
+            for (CourseSection section : courseSections) {
+                if (section.getId().equals(id)) {
+                    section.setOrderIndex(i + 1);
+                    orderedSections.add(section);
+                    break;
+                }
+            }
+        }
+
+        // Append any remaining sections that were not part of the request to the end
+        int nextOrder = orderedSections.size() + 1;
+        for (CourseSection section : courseSections) {
+            if (orderedSections.stream().noneMatch(s->s.getId().equals(section.getId()))) {
+                section.setOrderIndex(nextOrder++);
+                orderedSections.add(section);
+            }
+        }
+
+        // Persist updated order
+        course.setSections(new HashSet<>(orderedSections));
+        courseRepository.save(course);
+
+        return CourseMapper.toDto(course);
+    }
+
+    @Override
     public CourseResponseDTO createCourseSection(CourseSection section, Long courseId) {
+        // Get parent course
         Course course = courseRepository.findById(courseId).orElseThrow(
                 () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+
+        // Get existing sections for a course orded by orderIndex
+        List<CourseSection> sections = courseSectionRepository.findByCourseOrderByOrderIndexAsc(course);
+
+        // Set course section order
+        if (section.getOrderIndex() == null) {
+            int nextOrder = course.getSections().isEmpty() ? 1 :
+                    course.getSections().stream().mapToInt(CourseSection::getOrderIndex).max().orElse(0) + 1;
+            section.setOrderIndex(nextOrder);
+        } else {
+        // Insert item at specific position
+            int insertAt = section.getOrderIndex();
+            for (CourseSection existing : sections) {
+                if (existing.getOrderIndex() >= insertAt) {
+                    existing.setOrderIndex(existing.getOrderIndex() + 1);
+                }
+            }
+            courseSectionRepository.saveAll(sections);
+        }
 
         section.setTitle(section.getTitle());
         section.setUuid(UUID.randomUUID());
@@ -196,6 +328,10 @@ public class CourseServiceImpl implements CourseService {
         section.setCourse(course);
 
         courseSectionRepository.save(section);
+
+        course.getSections().add(section);
+        courseRepository.save(course);
+
         return CourseMapper.toDto(course);
     }
 
@@ -243,33 +379,55 @@ public class CourseServiceImpl implements CourseService {
         return allLabels;
     }
 
-    private Set<Category> resolveCategories(Set<String> requestedCategoryNames) {
-        List<Category> existingCategories = categoryRepository.findByNameIn(requestedCategoryNames);
-        Set<String> existingNames = existingCategories.stream()
-                .map(Category::getName)
-                .collect(Collectors.toSet());
+    private Set<Category> resolveCategoriesByIds(Set<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return new HashSet<>();
+        }
 
-        Set<Category> newCategories = requestedCategoryNames.stream()
-                .filter(name-> !existingNames.contains(name))
-                .map(name -> Category.builder()
-                        .name(name)
-                        .UUID(UUID.randomUUID())
-                        .created(Instant.now())
-                        .build()
-                )
-                .collect(Collectors.toSet());
+        LOGGER.info("Resolving categories by IDs: {}", categoryIds);
 
-        List<Category> savedNewCategories = categoryRepository.saveAll(newCategories);
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
 
-        Set<Category> allCategories = new HashSet<>(existingCategories);
-        allCategories.addAll(savedNewCategories);
-        return allCategories;
+        // Validate that all requested categories exist
+        if (categories.size() != categoryIds.size()) {
+            Set<Long> foundIds = categories.stream()
+                    .map(Category::getId)
+                    .collect(Collectors.toSet());
+
+            Set<Long> missingIds = categoryIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .collect(Collectors.toSet());
+
+            LOGGER.warn("Some category IDs not found: {}", missingIds);
+            throw new ResourceNotFoundException(ErrorCodes.CATEGORY_DOES_NOT_EXIST);
+        }
+
+        LOGGER.info("Resolved {} categories", categories.size());
+        return new HashSet<>(categories);
     }
 
-    private void detachCourseFromLabels(Course course) {
+    private void detachCourseAssociations(Course course) {
+        // Detach from Labels
         for (Label label : course.getLabels()) {
             label.getCourses().remove(course);
         }
+        course.getLabels().clear();
+
+        // Detach from Categories
+        for (Category category : course.getCategories()) {
+            category.getCourses().remove(course);
+        }
+        course.getCategories().clear();
+
+        // Detach Sections (and their Lessons)y
+        for (CourseSection section : course.getSections()) {
+            for (Lesson lesson : section.getLessons()) {
+                lesson.setSection(null); // remove reference to parent Section
+            }
+            section.getLessons().clear();
+            section.setCourse(null); // remove reference to parent Course
+        }
+        course.getSections().clear();
     }
 
     private User getCourseOwner(Long ownerId){
@@ -285,4 +443,11 @@ public class CourseServiceImpl implements CourseService {
         return owner;
     }
 
+    private UUID getAuthenticatedUserUuid() {
+        return ((User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal())
+                .getUUID();
+    }
 }

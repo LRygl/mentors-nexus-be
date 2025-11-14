@@ -19,14 +19,20 @@ import java.util.UUID;
 public class CourseResponseDTO {
     private Long id;
     private UUID uuid;
-    private Instant created;
-    private Instant updated;
+
     private Instant published;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private UUID createdBy;
+    private UUID updatedBy;
+
     private BigDecimal price;
     private String status;
     private String name;
+    private String imageUrl;
+    private Boolean isFeatured;
     private Set<String> labels;
-    private Set<String> categories;
+    private Set<Long> categoryIds;
     private UserResponseDTO owner;
     private List<CourseSectionDTO> sections;
     private int students;

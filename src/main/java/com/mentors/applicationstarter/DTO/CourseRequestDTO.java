@@ -18,7 +18,8 @@ public class CourseRequestDTO {
     private String status;
     private BigDecimal price;
     private Instant published;
+    private Boolean isFeatured;
     private Long courseOwnerId;
     private Set<String> labels;  // Label names
-    private Set<String> categories;
+    private Set<Long> categoryIds;
 }

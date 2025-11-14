@@ -5,6 +5,7 @@ import com.mentors.applicationstarter.DTO.CourseSectionDTO;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -13,19 +14,14 @@ import java.util.Set;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Course {
+public class Course extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "courseGenerator")
-    @SequenceGenerator(name = "courseGenerator", sequenceName = "application_course_sequence", allocationSize = 50)
-    @Column(nullable = false, updatable = false)
-    private Long id;
-    private UUID uuid;
     private String name;
+    private String imageUrl;
 
     //TODO Create CRUD for Category Management
     private String category;
@@ -33,16 +29,13 @@ public class Course {
     private CourseStatus status;
     @Column(nullable = false)
     private BigDecimal price;
-
-    private Instant created;
-    private Instant updated;
     private Instant published;
     private Boolean featured;
 
     // RELATIONS Definitions
 
     // LABEL JOIN
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "course_label",
             joinColumns = @JoinColumn(name = "course_id"),
@@ -53,7 +46,7 @@ public class Course {
     private Set<Label> labels = new HashSet<>();
 
     // CATEGORY JOIN
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "course_category",
             joinColumns = @JoinColumn(name = "course_id"),
@@ -79,16 +72,15 @@ public class Course {
     @Builder.Default
     private Set<User> students = new HashSet<>();
 
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<CourseSection> sections = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Course course = (Course) o;
-        return id != null && id.equals(course.id);
+        if (!(o instanceof Course course)) return false;
+        return getId() != null && getId().equals(course.getId());
     }
 
     @Override

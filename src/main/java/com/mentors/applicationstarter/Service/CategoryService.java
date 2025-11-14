@@ -13,7 +13,7 @@ import java.util.List;
 public interface CategoryService {
     List<CategoryDTO> getAllCategories();
 
-    Category createCategory(Category category);
+    CategoryDTO createCategory(Category category);
 
     Category updateCategory(Long id, Category category);
 

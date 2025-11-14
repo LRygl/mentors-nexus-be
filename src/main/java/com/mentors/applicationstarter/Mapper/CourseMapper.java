@@ -18,10 +18,9 @@ public class CourseMapper {
                 .labels(course.getLabels().stream()
                         .map(Label::getName)
                         .collect(Collectors.toSet()))
-                .categories(course.getCategories().stream()
-                        .map(Category::getName)
+                .categoryIds(course.getCategories().stream()
+                        .map(Category::getId)
                         .collect(Collectors.toSet()))
-                .created(course.getCreated())
                 .owner(
                         course.getOwner() == null ? null :
                                 UserResponseDTO.builder()
@@ -32,7 +31,12 @@ public class CourseMapper {
                                         .build()
                 )
                 .published(course.getPublished())
-                .updated(course.getUpdated())
+                .isFeatured(course.getFeatured())
+                .imageUrl(course.getImageUrl())
+                .createdBy(course.getCreatedBy())
+                .createdAt(course.getCreatedAt())
+                .updatedBy(course.getUpdatedBy())
+                .updatedAt(course.getUpdatedAt())
                 .status(String.valueOf(course.getStatus()))
                 .price(course.getPrice())
                 .sections(course.getSections() == null ? null :
@@ -51,7 +55,7 @@ public class CourseMapper {
                                                                 .title(lesson.getTitle())
                                                                 .description(lesson.getDescription())
                                                                 .videoUrl(lesson.getVideoUrl())
-                                                                .duration(lesson.getLength())
+                                                                .duration(lesson.getDuration())
                                                                 .orderIndex(lesson.getOrderIndex())
                                                                 .build())
                                                         .collect(Collectors.toList())
@@ -120,7 +124,7 @@ public class CourseMapper {
                 .title(lesson.getTitle())
                 .description(lesson.getDescription())
                 .videoUrl(lesson.getVideoUrl())
-                .duration(lesson.getLength())
+                .duration(lesson.getDuration())
                 .orderIndex(lesson.getOrderIndex())
                 .build();
     }
