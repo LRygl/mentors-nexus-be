@@ -62,7 +62,10 @@ public enum ErrorCodes {
     FAQ_NOT_PUBLISHED("FAQNotPublished", "FAQ is not published", "The specified FAQ is not in published status"),
     FAQ_INVALID_STATUS_TRANSITION("FAQInvalidStatusTransition", "Invalid status transition", "Cannot transition FAQ from current status to requested status"),
     FAQ_DUPLICATE_QUESTION("FAQDuplicateQuestion", "FAQ question already exists in category", "A FAQ with similar question already exists in this category"),
-    FAQ_VALIDATION_FAILED("FAQValidationFailed", "FAQ validation failed", "FAQ data validation failed - check required fields and constraints");
+    FAQ_VALIDATION_FAILED("FAQValidationFailed", "FAQ validation failed", "FAQ data validation failed - check required fields and constraints"),
+
+
+    LEGAL_TOPIC_NOT_FOUND("LegalTopicNotFound","Legal Topic was not found", "");
 
 
     @Getter

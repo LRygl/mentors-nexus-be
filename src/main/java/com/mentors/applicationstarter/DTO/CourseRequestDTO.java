@@ -14,10 +14,12 @@ import java.util.Set;
 public class CourseRequestDTO {
     private Long id;
     private String name;
+    private String description;
     private String category;
     private String status;
     private BigDecimal price;
-    private Instant published;
+    private Boolean published;
+    private Instant publishedAt;
     private Boolean isFeatured;
     private Long courseOwnerId;
     private Set<String> labels;  // Label names

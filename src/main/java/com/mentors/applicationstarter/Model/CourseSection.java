@@ -29,7 +29,7 @@ public class CourseSection {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
     private List<Lesson> lessons = new ArrayList<>();
 
 }

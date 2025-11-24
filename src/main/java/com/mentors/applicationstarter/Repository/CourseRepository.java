@@ -15,6 +15,7 @@ public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecif
     @Query("SELECT c FROM Course c JOIN c.sections s WHERE s.id = :sectionId")
     Course findByCourseSection(@Param("sectionId") Long sectionId);
 
+    List<Course> findByFeaturedTrue();
     List<Course> findAllByCategoriesContaining(Category category);
 
 }

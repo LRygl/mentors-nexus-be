@@ -21,7 +21,7 @@ public interface CourseService {
 
     List<CourseResponseDTO> getAllCourses();
 
-    CourseResponseDTO createCourse(CourseRequestDTO course, MultipartFile file, UUID userUUID);
+    CourseResponseDTO createCourse(CourseRequestDTO course, MultipartFile file);
     CourseResponseDTO updateCourse(Long courseId, CourseRequestDTO courseRequestDTO, MultipartFile image);
 
     CourseResponseDTO deleteCourse(Long courseId);
@@ -39,4 +39,12 @@ public interface CourseService {
     CourseResponseDTO addLessonToCourseSection(Long sectionId, Long lessonId);
 
     CourseResponseDTO reorderCourseSections(List<Long> sectionOrder);
+
+    CourseResponseDTO removeLessonFromCourse(Long sectionId, Long lessonId);
+
+    CourseResponseDTO featureCourse(Long id);
+
+    CourseResponseDTO unfeatureCourse(Long id);
+
+    List<CourseResponseDTO> getAllFeaturedCourses();
 }

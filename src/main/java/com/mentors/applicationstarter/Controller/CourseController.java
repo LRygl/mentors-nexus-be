@@ -9,6 +9,7 @@ import com.mentors.applicationstarter.Model.CourseSection;
 import com.mentors.applicationstarter.Service.CourseService;
 import com.mentors.applicationstarter.Service.Impl.CourseServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,12 @@ public class CourseController {
     return new ResponseEntity<>(courseService.getAllCourses(),HttpStatus.OK);
     }
 
+
+    @GetMapping("/featured")
+    public ResponseEntity<List<CourseResponseDTO>> getAllFeaturedCourses() {
+        return new ResponseEntity<>(courseService.getAllFeaturedCourses(), HttpStatus.OK);
+    }
+
     @GetMapping
     public Page<CourseResponseDTO> getPageCourses(
             @RequestParam(required = false) String name,
@@ -68,15 +75,20 @@ public class CourseController {
         return null;
     }
 
-    @PostMapping(consumes = {"multipart/form-data"})
-    public ResponseEntity<CourseResponseDTO> createNewCourse(
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CourseResponseDTO> createNewCourseMultipart(
             @RequestPart(value = "course") CourseRequestDTO courseRequestDTO,
-            @RequestPart(value = "image", required = false) MultipartFile image,
-            @RequestHeader(value = "X-USER-UUID", required = false) UUID userUuid
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        return new ResponseEntity<>(courseService.createCourse(courseRequestDTO, image, userUuid), HttpStatus.CREATED);
+        return new ResponseEntity<>(courseService.createCourse(courseRequestDTO, image), HttpStatus.CREATED);
     }
 
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CourseResponseDTO> createNewCourseMultipart(
+            @RequestBody CourseRequestDTO courseRequestDTO
+    ) {
+        return new ResponseEntity<>(courseService.createCourse(courseRequestDTO, null), HttpStatus.CREATED);
+    }
 
     @PostMapping("/{courseId}/section")
     public ResponseEntity<CourseResponseDTO> createNewCourseSection(
@@ -88,6 +100,14 @@ public class CourseController {
     @PostMapping("/section/{sectionId}/lesson/{lessonId}")
     public ResponseEntity<CourseResponseDTO> addLessonToCourseSection(@PathVariable Long sectionId, @PathVariable Long lessonId) {
         return new ResponseEntity<>(courseService.addLessonToCourseSection(sectionId,lessonId),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/section/{sectionId}/lesson/{lessonId}")
+    public ResponseEntity<CourseResponseDTO> removeLessonFromCourseSection(
+            @PathVariable Long sectionId,
+            @PathVariable Long lessonId
+    ) {
+        return new ResponseEntity<>(courseService.removeLessonFromCourse(sectionId,lessonId), HttpStatus.OK);
     }
 
     @PostMapping("/section/reorder")
@@ -118,6 +138,16 @@ public class CourseController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<CourseResponseDTO> updateCourseStatus(@PathVariable Long id, @RequestBody CourseStatusDTO courseStatusDTO) {
         return new ResponseEntity<>(courseService.updateCourseStatus(id,courseStatusDTO),HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/feature")
+    public ResponseEntity<CourseResponseDTO> featureCourse(@PathVariable Long id) {
+        return new ResponseEntity<>(courseService.featureCourse(id), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/unfeature")
+    public ResponseEntity<CourseResponseDTO> unfeatureCourse(@PathVariable Long id) {
+        return new ResponseEntity<>(courseService.unfeatureCourse(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

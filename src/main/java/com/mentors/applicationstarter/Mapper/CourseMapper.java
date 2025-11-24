@@ -11,10 +11,20 @@ import java.util.stream.Collectors;
 public class CourseMapper {
 
     public static CourseResponseDTO toDto(Course course) {
+
+        int totalDuration = course.getSections() == null ? 0 :
+                course.getSections().stream()
+                        .filter(section -> section.getLessons() != null)
+                        .flatMap(section -> section.getLessons().stream())
+                        .mapToInt(Lesson::getDuration)
+                        .sum();
+
+
         return CourseResponseDTO.builder()
                 .id(course.getId())
                 .uuid(course.getUuid())
                 .name(course.getName())
+                .description(course.getDescription())
                 .labels(course.getLabels().stream()
                         .map(Label::getName)
                         .collect(Collectors.toSet()))
@@ -31,7 +41,8 @@ public class CourseMapper {
                                         .build()
                 )
                 .published(course.getPublished())
-                .isFeatured(course.getFeatured())
+                .duration(course.getTotalDuration())
+                .featured(course.getFeatured())
                 .imageUrl(course.getImageUrl())
                 .createdBy(course.getCreatedBy())
                 .createdAt(course.getCreatedAt())
@@ -64,6 +75,7 @@ public class CourseMapper {
                                 .collect(Collectors.toList())
                 )
                 .students(course.getStudents().size())
+
                 .build();
 
     }
@@ -72,6 +84,7 @@ public class CourseMapper {
         return CourseSummaryDTO.builder()
                 .id(course.getId())
                 .name(course.getName())
+                .description(course.getDescription())
                 .status(course.getStatus() != null ? course.getStatus().name() : null)
                 .uuid(course.getUuid())
                 .price(course.getPrice())

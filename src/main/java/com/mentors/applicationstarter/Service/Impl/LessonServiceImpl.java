@@ -61,7 +61,7 @@ public class LessonServiceImpl implements LessonService {
                 .uuid(UUID.randomUUID())
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .orderIndex(request.getOrderIndex())
+                .orderIndex(null)
                 .videoUrl(request.getVideoUrl())
                 .duration(request.getDuration())
                 .createdAt(Instant.now())

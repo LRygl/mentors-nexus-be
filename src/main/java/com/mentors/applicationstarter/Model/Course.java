@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mentors.applicationstarter.DTO.CourseSectionDTO;
+import com.mentors.applicationstarter.Enum.CourseLevel;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class Course extends BaseEntity{
 
     private String name;
+    private String description;
     private String imageUrl;
 
     //TODO Create CRUD for Category Management
@@ -29,8 +31,14 @@ public class Course extends BaseEntity{
     private CourseStatus status;
     @Column(nullable = false)
     private BigDecimal price;
-    private Instant published;
+    private Instant publishedAt;
+    private Boolean published;
     private Boolean featured;
+
+
+    @Enumerated(EnumType.STRING)
+    private CourseLevel level;
+
 
     // RELATIONS Definitions
 
@@ -73,6 +81,9 @@ public class Course extends BaseEntity{
     private Set<User> students = new HashSet<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CourseRating> ratings = new HashSet<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<CourseSection> sections = new HashSet<>();
 
@@ -86,5 +97,20 @@ public class Course extends BaseEntity{
     @Override
     public int hashCode() {
         return 31;
+    }
+
+    public int getTotalDuration() {
+        return sections == null ? 0 :
+                sections.stream()
+                        .filter(sec -> sec.getLessons() != null)
+                        .flatMap(sec -> sec.getLessons().stream())
+                        .mapToInt(Lesson::getDuration)
+                        .sum();
+    }
+
+    public double getAverageRating() {
+        return ratings.isEmpty()
+                ? 0
+                : ratings.stream().mapToInt(CourseRating::getRating).average().orElse(0);
     }
 }

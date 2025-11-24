@@ -14,10 +14,7 @@ import com.mentors.applicationstarter.Model.*;
 import com.mentors.applicationstarter.Repository.*;
 import com.mentors.applicationstarter.Service.CourseService;
 import com.mentors.applicationstarter.Service.FileStorageService;
-import com.mentors.applicationstarter.Service.LessonService;
 import com.mentors.applicationstarter.Specification.CourseSpecification;
-import com.mentors.applicationstarter.Utils.EntityLookupUtils;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -65,6 +62,13 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public List<CourseResponseDTO> getAllFeaturedCourses() {
+        return courseRepository.findByFeaturedTrue().stream()
+                .map(CourseMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public CourseResponseDTO getCourseById(Long courseId) {
         Course course = findCourseById(courseId);
@@ -72,7 +76,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseResponseDTO createCourse(CourseRequestDTO request, MultipartFile file, UUID userUUID) {
+    public CourseResponseDTO createCourse(CourseRequestDTO request, MultipartFile file) {
         Set<Label> labels = resolveLabels(request.getLabels());
         Set<Category> categories = resolveCategoriesByIds(request.getCategoryIds());
         User owner = getCourseOwner(request.getCourseOwnerId());
@@ -96,6 +100,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = Course.builder()
                 .uuid(courseUUID)
                 .name(request.getName())
+                .description(request.getDescription())
                 .createdAt(Instant.now())
                 .createdBy(authenticatedUserUuid)
                 .status(CourseStatus.UNPUBLISHED)
@@ -103,7 +108,6 @@ public class CourseServiceImpl implements CourseService {
                 .categories((categories))
                 .labels(labels)
                 .owner(owner)
-                .createdBy(userUUID)
                 .imageUrl(imagePath)
                 .build();
 
@@ -123,6 +127,9 @@ public class CourseServiceImpl implements CourseService {
         if(dto.getName() != null){
             course.setName(dto.getName());
         }
+        if(dto.getDescription() != null) {
+            course.setDescription(dto.getDescription());
+        }
         if (dto.getStatus() != null) {
             CourseStatus status = CourseStatus.valueOf(dto.getStatus().toUpperCase());
             course.setStatus(status);
@@ -131,7 +138,7 @@ public class CourseServiceImpl implements CourseService {
             if (dto.getPublished() != null) {
                 course.setPublished(dto.getPublished());
             } else if (status == CourseStatus.PUBLISHED) {
-                course.setPublished(Instant.now());
+                course.setPublishedAt(Instant.now());
             }
         }
         // TODO change to toggle
@@ -198,7 +205,7 @@ public class CourseServiceImpl implements CourseService {
         switch (newStatus) {
             case PUBLISHED, HIDDEN, PRIVATE -> {
                 if(course.getPublished() == null) {
-                    course.setPublished(Instant.now());
+                    course.setPublishedAt(Instant.now());
                 }
             }
             case UNPUBLISHED -> course.setPublished(null);
@@ -206,7 +213,7 @@ public class CourseServiceImpl implements CourseService {
 
         course.setStatus(courseStatusDTO.getStatus());
         course.setUpdatedAt(Instant.now());
-        course.setPublished(courseStatusDTO.getPublished());
+        course.setPublishedAt(courseStatusDTO.getPublishedAt());
 
         courseRepository.save(course);
         return CourseMapper.toDto(course);
@@ -218,8 +225,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public void enrollUserToCourse(Long courseId, UUID userUUID) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow( () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+        Course course = findCourseById(courseId);
 
         User user = userRepository.findByUUID(userUUID)
                 .orElseThrow( () -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
@@ -234,12 +240,17 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseResponseDTO addLessonToCourseSection(Long sectionId, Long lessonId) {
 
-        CourseSection section = courseSectionRepository.findById(sectionId).orElseThrow(
-                () -> new ResourceNotFoundException(ErrorCodes.COURSE_SECTION_DOES_NOT_EXIST));
-        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(
-                () -> new ResourceNotFoundException(ErrorCodes.LESSON_NOT_FOUND));
+        CourseSection section = findSectionById(sectionId);
+        Lesson lesson = findLessonById(lessonId);
 
         lesson.setSection(section);
+
+        // Set course section order
+        if (lesson.getOrderIndex() == null) {
+            int nextOrder = section.getLessons().isEmpty() ? 1 :
+                    section.getLessons().stream().mapToInt(Lesson::getOrderIndex).max().orElse(0) + 1;
+            lesson.setOrderIndex(nextOrder);
+        }
 
         section.getLessons().add(lesson);
         lessonRepository.save(lesson);
@@ -248,6 +259,21 @@ public class CourseServiceImpl implements CourseService {
                 () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
 
         return CourseMapper.toDto(course);
+
+    }
+
+    @Override
+    public CourseResponseDTO removeLessonFromCourse(Long sectionId, Long lessonId) {
+        Lesson lesson = findLessonById(lessonId);
+        CourseSection section = findSectionById(sectionId);
+
+        section.getLessons().remove(lesson);
+        courseSectionRepository.save(section);
+        lesson.setSection(null);
+        lesson.setOrderIndex(null);
+        lessonRepository.save(lesson);
+
+        return CourseMapper.toDto(findCourseById(section.getCourse().getId()));
 
     }
 
@@ -295,6 +321,8 @@ public class CourseServiceImpl implements CourseService {
 
         return CourseMapper.toDto(course);
     }
+
+
 
     @Override
     public CourseResponseDTO createCourseSection(CourseSection section, Long courseId) {
@@ -351,14 +379,44 @@ public class CourseServiceImpl implements CourseService {
     }
 
 
+    @Override
+    public CourseResponseDTO featureCourse(Long id) {
+        Course course = findCourseById(id);
+
+        course.setFeatured(true);
+        courseRepository.save(course);
+        return CourseMapper.toDto(course);
+    }
+
+    @Override
+    public CourseResponseDTO unfeatureCourse(Long id) {
+        Course course = findCourseById(id);
+
+        course.setFeatured(false);
+        courseRepository.save(course);
+
+        return CourseMapper.toDto(course);
+    }
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PRIVATE METHODS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private Lesson findLessonById(Long lessonId) {
+        return lessonRepository.findById(lessonId).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.LESSON_NOT_FOUND));
+    }
+
     private Course findCourseById(Long courseId){
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+    }
+
+    private CourseSection findSectionById(Long sectionId) {
+        return courseSectionRepository.findById(sectionId).orElseThrow(
+                ()-> new ResourceNotFoundException(ErrorCodes.COURSE_SECTION_DOES_NOT_EXIST));
     }
 
     private Set<Label> resolveLabels(Set<String> requestedLabelNames) {
