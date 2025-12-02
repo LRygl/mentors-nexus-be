@@ -64,6 +64,8 @@ public enum ErrorCodes {
     FAQ_DUPLICATE_QUESTION("FAQDuplicateQuestion", "FAQ question already exists in category", "A FAQ with similar question already exists in this category"),
     FAQ_VALIDATION_FAILED("FAQValidationFailed", "FAQ validation failed", "FAQ data validation failed - check required fields and constraints"),
 
+    LEGAL_ITEM_NOT_FOUND("LegalItemNotFound", "Legal Item was not found in the database", ""),
+    LEGAL_SECTION_NOT_FOUND("LegalSectionNotFound", "Legal Section was not found in the database", ""),
 
     LEGAL_TOPIC_NOT_FOUND("LegalTopicNotFound","Legal Topic was not found", "");
 

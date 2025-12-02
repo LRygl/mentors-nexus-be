@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service;
 
+import com.mentors.applicationstarter.DTO.Response.Admin.LegalTopicAdminResponseDTO;
 import com.mentors.applicationstarter.Model.LegalTopic;
 import org.springframework.stereotype.Service;
 
@@ -7,12 +8,12 @@ import java.util.List;
 
 @Service
 public interface LegalTopicService {
-    LegalTopic createNewLegalTopic(LegalTopic request);
-    LegalTopic getLegalTopicById(Long id);
+    LegalTopicAdminResponseDTO createNewLegalTopic(LegalTopic request);
+    LegalTopicAdminResponseDTO getLegalTopicById(Long id);
 
-    List<LegalTopic> getAllLegalTopics();
+    List<LegalTopicAdminResponseDTO> getAllLegalTopics();
 
     LegalTopic deleteLegalTopic(Long id);
 
-    LegalTopic updateLegalTopic(Long id, LegalTopic request);
+    LegalTopicAdminResponseDTO updateLegalTopic(Long id, LegalTopic request);
 }

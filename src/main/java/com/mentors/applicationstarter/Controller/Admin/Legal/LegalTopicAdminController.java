@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Controller.Admin.Legal;
 
+import com.mentors.applicationstarter.DTO.Response.Admin.LegalTopicAdminResponseDTO;
 import com.mentors.applicationstarter.Model.LegalTopic;
 import com.mentors.applicationstarter.Service.LegalTopicService;
 import lombok.RequiredArgsConstructor;
@@ -17,22 +18,22 @@ public class LegalTopicAdminController {
     private final LegalTopicService legalTopicService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<LegalTopic>> getAllLegalTopic() {
+    public ResponseEntity<List<LegalTopicAdminResponseDTO>> getAllLegalTopic() {
         return new ResponseEntity<>(legalTopicService.getAllLegalTopics(),HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LegalTopic> getLegalTopicById(@PathVariable Long id) {
+    public ResponseEntity<LegalTopicAdminResponseDTO> getLegalTopicById(@PathVariable Long id) {
         return new ResponseEntity<>(legalTopicService.getLegalTopicById(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<LegalTopic> createNewLegalTopic(@RequestBody LegalTopic request) {
+    public ResponseEntity<LegalTopicAdminResponseDTO> createNewLegalTopic(@RequestBody LegalTopic request) {
         return new ResponseEntity<>(legalTopicService.createNewLegalTopic(request), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LegalTopic> updateLegalTopic(@PathVariable Long id, @RequestBody LegalTopic request) {
+    public ResponseEntity<LegalTopicAdminResponseDTO> updateLegalTopic(@PathVariable Long id, @RequestBody LegalTopic request) {
         return new ResponseEntity<>(legalTopicService.updateLegalTopic(id, request), HttpStatus.OK);
     }
 
