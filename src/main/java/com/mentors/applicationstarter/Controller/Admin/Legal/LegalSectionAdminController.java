@@ -57,12 +57,4 @@ public class LegalSectionAdminController {
         return new ResponseEntity<>(legalSectionService.bulkReorderSections(topicId, sectionIds), HttpStatus.OK);
     }
 
-    @PutMapping("/{sectionId}/move")
-    public ResponseEntity<LegalSectionAdminResponseDTO> moveSectionToPosition(
-            @PathVariable Long sectionId,
-            @RequestParam Integer position
-    ) {
-        return new ResponseEntity<>(legalSectionService.moveSectionToPosition(sectionId, position), HttpStatus.OK);
-    }
-
 }

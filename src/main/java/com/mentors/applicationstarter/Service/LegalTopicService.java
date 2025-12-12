@@ -1,6 +1,8 @@
 package com.mentors.applicationstarter.Service;
 
 import com.mentors.applicationstarter.DTO.Response.Admin.LegalTopicAdminResponseDTO;
+import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicResponseDTO;
+import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicSummaryResponseDTO;
 import com.mentors.applicationstarter.Model.LegalTopic;
 import org.springframework.stereotype.Service;
 
@@ -16,4 +18,8 @@ public interface LegalTopicService {
     LegalTopic deleteLegalTopic(Long id);
 
     LegalTopicAdminResponseDTO updateLegalTopic(Long id, LegalTopic request);
+
+    List<LegalTopicPublicResponseDTO> getAllPublicLegalTopics();
+
+    LegalTopicPublicResponseDTO getPublicLegalTopicById(Long id);
 }

@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 public class LegalItem extends BaseEntity {
+    @Column(columnDefinition = "TEXT")
     private String content;
     private Integer orderIndex;
 

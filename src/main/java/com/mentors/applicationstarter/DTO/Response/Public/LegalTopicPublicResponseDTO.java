@@ -24,6 +24,9 @@ public class LegalTopicPublicResponseDTO {
     private Instant updatedAt;
     private UUID updatedBy;
     private Instant effectiveAt;
+    private Instant publishedAt;
+    private UUID publishedBy;
+    private Boolean published;
     private Boolean showCta;
     private String footer;
     private List<LegalSectionAdminResponseDTO> sections;

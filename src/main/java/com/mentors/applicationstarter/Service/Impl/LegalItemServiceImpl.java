@@ -68,7 +68,6 @@ public class LegalItemServiceImpl implements LegalItemService {
 
         item.setUuid(UUID.randomUUID());
         item.setParent(parentItem);
-        item.setSection(parentItem.getSection()); // Inherit section from parent
         item.setCreatedAt(Instant.now());
 
         legalItemRepository.save(item);

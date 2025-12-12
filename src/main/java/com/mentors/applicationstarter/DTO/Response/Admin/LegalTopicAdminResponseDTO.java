@@ -22,6 +22,9 @@ public class LegalTopicAdminResponseDTO {
     private UUID createdBy;
     private Instant updatedAt;
     private UUID updatedBy;
+    private Instant publishedAt;
+    private UUID publishedBy;
+    private Boolean published;
     private Instant effectiveAt;
     private Boolean showCta;
     private String footer;

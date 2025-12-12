@@ -21,5 +21,4 @@ public interface LegalSectionService {
 
     List<LegalSectionAdminResponseDTO> bulkReorderSections(Long topicId, List<Long> sectionIds);
 
-    LegalSectionAdminResponseDTO moveSectionToPosition(Long sectionId, Integer position);
 }

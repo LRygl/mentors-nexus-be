@@ -1,6 +1,8 @@
 package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.DTO.Response.Admin.LegalTopicAdminResponseDTO;
+import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicResponseDTO;
+import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicSummaryResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.LegalMapper;
@@ -47,6 +49,8 @@ public class LegalTopicServiceImpl implements LegalTopicService {
                 .subtitle(request.getSubtitle())
                 .effectiveAt(request.getEffectiveAt())
                 .createdAt(Instant.now())
+                .published(request.getPublished())
+                .publishedAt(request.getPublishedAt())
                 .showCta(request.getShowCta())
                 .footer(request.getFooter())
                 .build();
@@ -77,8 +81,26 @@ public class LegalTopicServiceImpl implements LegalTopicService {
             topic.setEffectiveAt(request.getEffectiveAt());
         }
 
+        if(request.getPublished() != null) {
+            topic.setPublished(true);
+        }
+
         legalTopicRepository.save(topic);
         return legalDtoMapper.toTopicDTO(topic);
+    }
+
+    @Override
+    public List<LegalTopicPublicResponseDTO> getAllPublicLegalTopics() {
+        List<LegalTopic> publishedTopics = legalTopicRepository.findPublishedTopics();
+        return publishedTopics.stream()
+                .map(legalDtoMapper::toTopicPublicDTO)
+                .toList();
+    }
+
+    @Override
+    public LegalTopicPublicResponseDTO getPublicLegalTopicById(Long id) {
+        LegalTopic topic = legalTopicRepository.findPublishedTopicById(id);
+        return legalDtoMapper.toTopicPublicDTO(topic);
     }
 
 

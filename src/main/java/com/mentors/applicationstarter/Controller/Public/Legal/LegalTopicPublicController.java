@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Controller.Public.Legal;
 
+import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicResponseDTO;
 import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicSummaryResponseDTO;
 import com.mentors.applicationstarter.Service.LegalTopicService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,8 @@ public class LegalTopicPublicController {
 
     private final LegalTopicService legalTopicService;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<LegalTopicPublicSummaryResponseDTO>> getAllPublicLegalTopic() {
+    @GetMapping
+    public ResponseEntity<List<LegalTopicPublicResponseDTO>> getAllPublicLegalTopic() {
         return new ResponseEntity<>(legalTopicService.getAllPublicLegalTopics(), HttpStatus.OK);
     }
 
