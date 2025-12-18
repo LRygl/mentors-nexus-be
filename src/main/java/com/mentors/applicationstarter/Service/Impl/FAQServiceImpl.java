@@ -1,27 +1,36 @@
 package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.DTO.FAQ.FAQResponseDTO;
+import com.mentors.applicationstarter.DTO.FAQ.FAQVoteRequest;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQRequest;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
+import com.mentors.applicationstarter.Enum.FAQInteractionType;
 import com.mentors.applicationstarter.Enum.FAQPriority;
 import com.mentors.applicationstarter.Enum.FAQStatus;
 import com.mentors.applicationstarter.Exception.InvalidRequestException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Mapper.FAQCategoryMapper;
 import com.mentors.applicationstarter.Mapper.FAQMapper;
 import com.mentors.applicationstarter.Model.FAQ;
+import com.mentors.applicationstarter.Model.FAQAnalytics;
 import com.mentors.applicationstarter.Model.FAQCategory;
+import com.mentors.applicationstarter.Repository.FAQAnalyticsRepository;
 import com.mentors.applicationstarter.Repository.FAQCategoryRepository;
 import com.mentors.applicationstarter.Repository.FAQRepository;
 import com.mentors.applicationstarter.Service.FAQCategoryService;
 import com.mentors.applicationstarter.Service.FAQService;
 import com.mentors.applicationstarter.Utils.EntityLookupUtils;
 import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +44,7 @@ public class FAQServiceImpl implements FAQService {
     private final FAQRepository faqRepository;
     private final FAQCategoryRepository faqCategoryRepository;
     private final FAQCategoryService faqCategoryService;
+    private final FAQAnalyticsRepository faqAnalyticsRepository;
 
     // ================================
     // PUBLIC API METHODS
@@ -42,10 +52,21 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FAQResponseDTO> getAllPublishedFAQs() {
-        return faqRepository.findAllPublishedFAQs().stream()
-                .map(FAQMapper::toFaqResponseDto)
-                .collect(Collectors.toList());
+    public List<FAQCategoryPublicResponseDTO> getAllPublishedFAQs() {
+
+        List<FAQ> publishedFaqs = faqRepository.findAllPublishedWithCategory();
+
+        return publishedFaqs.stream()
+                .filter(faq -> faq.getCategory() != null)
+                .collect(Collectors.groupingBy(FAQ::getCategory))
+                .entrySet()
+                .stream()
+                .map(entry -> FAQCategoryMapper.toPublicResponseDTO(
+                        entry.getKey(),
+                        entry.getValue()
+                ))
+                .sorted(Comparator.comparing(FAQCategoryPublicResponseDTO::getDisplayOrder))
+                .toList();
 
     }
 
@@ -123,7 +144,7 @@ public class FAQServiceImpl implements FAQService {
     }
 
     @Override
-    public FAQ updateFAQ(UUID uuid, FAQRequest faq, UUID updatedBy) {
+    public FAQ updateFAQ(UUID uuid, FAQRequest faq) {
         log.debug("Updating FAQ: {}", uuid);
 
         FAQ existingFAQ = faqRepository.findByUuid(uuid)
@@ -140,13 +161,23 @@ public class FAQServiceImpl implements FAQService {
 
         existingFAQ.setQuestion(faq.getQuestion().trim());
         existingFAQ.setAnswer(faq.getAnswer().trim());
-        existingFAQ.setCategory(category);
+        if(faq.getCategoryId() != null) {
+            existingFAQ.setCategory(category);
+        }
+
+        if(faq.getIsPublished() != null) {
+            existingFAQ.setIsPublished(faq.getIsPublished());
+        }
+
+        if(faq.getIsFeatured() != null) {
+            existingFAQ.setIsFeatured(faq.getIsFeatured());
+        }
+
         existingFAQ.setDisplayOrder(faq.getDisplayOrder());
         existingFAQ.setSearchKeywords(faq.getSearchKeywords());
         existingFAQ.setMetaDescription(faq.getMetaDescription());
         existingFAQ.setSlug(slug);
         existingFAQ.setPriority(faq.getPriority() != null ? faq.getPriority() : FAQPriority.NORMAL);
-        existingFAQ.setUpdatedBy(updatedBy);
 
         // Only update featured status if provided
         if (faq.getIsFeatured() != null) {
@@ -262,6 +293,8 @@ public class FAQServiceImpl implements FAQService {
         return FAQMapper.toFaqResponseDto(savedFaq);
     }
 
+
+
     @Override
     public FAQResponseDTO linkFaqToCategory(UUID faqUuid, UUID categoryUuid) {
         FAQ faq = faqRepository.findByUuid(faqUuid).orElseThrow(()->new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
@@ -285,9 +318,137 @@ public class FAQServiceImpl implements FAQService {
     // ANALYTICS AND STATISTICS
     // ================================
 
+    @Override
+    @Transactional
+    public void recordFAQView(UUID faqUuid, HttpServletRequest request) {
+        FAQ faq = faqRepository.findByUuid(faqUuid)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
+
+        // Record detailed analytics
+        String sessionId = request.getSession().getId();
+        String ipAddress = request.getRemoteAddr();
+
+        Instant viewWindow = Instant.now().minus(1, ChronoUnit.HOURS);
+
+        Optional<FAQAnalytics> recentView = faqAnalyticsRepository.findRecentViewBySessionAndIpAndFaq(
+                sessionId, ipAddress, faqUuid, viewWindow
+        );
+
+        if (recentView.isPresent()) {
+            log.info("Recent view has been recorded: {}", recentView.get());
+            return;
+        }
+
+        // Update aggregated view count
+        faq.setViewCount(faq.getViewCount() + 1);
+        faqRepository.save(faq);
+
+        FAQAnalytics analytics = FAQAnalytics.builder()
+                .uuid(UUID.randomUUID())
+                .faqUuid(faqUuid)
+                .interactionType(FAQInteractionType.VIEW)
+                .sessionId(sessionId)
+                .ipAddress(ipAddress)
+                .build();
+
+        faqAnalyticsRepository.save(analytics);
+
+        log.info("Recorded view for FAQ: {} from session: {}, IP: {}", faqUuid, sessionId, ipAddress);
+    }
+
+    @Override
+    @Transactional
+    public FAQResponseDTO voteFAQ(UUID faqUuid, FAQVoteRequest requestBody, HttpServletRequest request) {
+
+        FAQ faq = faqRepository.findByUuid(faqUuid).orElseThrow(
+                () -> new ResourceNotFoundException(ErrorCodes.FAQ_NOT_FOUND));
+
+        String sessionId = request.getSession().getId();
+        String ipAddress = request.getRemoteAddr();
+
+        // 3. Determine new vote type
+        FAQInteractionType newVoteType = requestBody.isHelpful()
+                ? FAQInteractionType.VOTE_HELPFUL
+                : FAQInteractionType.VOTE_NOT_HELPFUL;
+
+        // 4. Check for existing vote
+        List<FAQInteractionType> voteTypes = List.of(
+                FAQInteractionType.VOTE_HELPFUL,
+                FAQInteractionType.VOTE_NOT_HELPFUL
+        );
+
+        Optional<FAQAnalytics> existingVote = faqAnalyticsRepository
+                .findFirstByFaqUuidAndSessionIdAndIpAddressAndInteractionTypeInOrderByTimestampDesc(
+                        faqUuid, sessionId, ipAddress, voteTypes
+                );
+
+        if (existingVote.isPresent()) {
+            FAQAnalytics previousVote = existingVote.get();
+
+            if (previousVote.getInteractionType() == newVoteType) {
+                // Same vote - idempotent, return without changes
+                log.info("Vote not counter - was counter in previous attempt: {}", previousVote);
+                return FAQMapper.toFaqResponseDto(faq);
+            }
+
+            // User is changing their vote
+            // 1. Decrement old vote counter
+            updateVoteCounter(faq, previousVote.getInteractionType(), false);
+
+            // 2. Increment new vote counter
+            updateVoteCounter(faq, newVoteType, true);
+
+            // 3. Record the vote change with history
+            FAQAnalytics voteChange = FAQAnalytics.builder()
+                    .uuid(UUID.randomUUID())
+                    .faqUuid(faqUuid)
+                    .interactionType(newVoteType)
+                    .previousInteractionType(previousVote.getInteractionType()) // Track what changed
+                    .sessionId(sessionId)
+                    .ipAddress(ipAddress)
+                    .build();
+
+            faqAnalyticsRepository.save(voteChange);
+
+        } else {
+            // New vote
+            updateVoteCounter(faq, newVoteType, true);
+
+            FAQAnalytics newVote = FAQAnalytics.builder()
+                    .uuid(UUID.randomUUID())
+                    .faqUuid(faqUuid)
+                    .interactionType(newVoteType)
+                    .previousInteractionType(null) // First vote
+                    .sessionId(sessionId)
+                    .ipAddress(ipAddress)
+                    .build();
+
+            faqAnalyticsRepository.save(newVote);
+        }
+
+        FAQ result = faqRepository.save(faq);
+
+        return FAQMapper.toFaqResponseDto(result);
+    }
+
+
     // ================================
     // PRIVATE HELPER METHODS
     // ================================
+
+    /**
+     * Update vote counters on FAQ entity
+     * Like Spring Boot's @Transactional - ensures atomic updates
+     */
+    private void updateVoteCounter(FAQ faq, FAQInteractionType voteType, boolean increment) {
+        int delta = increment ? 1 : -1;
+
+        if (voteType == FAQInteractionType.VOTE_HELPFUL) {
+            faq.setHelpfulVotes(Math.max(0, faq.getHelpfulVotes() + delta));
+        } else if (voteType == FAQInteractionType.VOTE_NOT_HELPFUL) {
+            faq.setNotHelpfulVotes(Math.max(0, faq.getNotHelpfulVotes() + delta));
+        }
+    }
 
     /**
      * Method accepts FAQCategory UUID and Optional list of FAQUUID in order

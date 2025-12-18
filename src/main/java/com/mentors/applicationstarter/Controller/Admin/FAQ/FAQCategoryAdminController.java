@@ -1,9 +1,8 @@
-package com.mentors.applicationstarter.Controller;
+package com.mentors.applicationstarter.Controller.Admin.FAQ;
 
 
 import com.mentors.applicationstarter.DTO.CategoryStats;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
-import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import com.mentors.applicationstarter.Service.FAQCategoryService;

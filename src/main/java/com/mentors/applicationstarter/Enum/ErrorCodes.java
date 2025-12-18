@@ -67,7 +67,9 @@ public enum ErrorCodes {
     LEGAL_ITEM_NOT_FOUND("LegalItemNotFound", "Legal Item was not found in the database", ""),
     LEGAL_SECTION_NOT_FOUND("LegalSectionNotFound", "Legal Section was not found in the database", ""),
 
-    LEGAL_TOPIC_NOT_FOUND("LegalTopicNotFound","Legal Topic was not found", "");
+    LEGAL_TOPIC_NOT_FOUND("LegalTopicNotFound","Legal Topic was not found", ""),
+    CONFIGRATION_ALREADY_EXISTS("ConfigurationAlreadyExists", "Configuration is already exists in this category" , "" ),
+    CONFIGURATION_JSON_NOT_VALID("ConfigurationJsonNotValid", "Configuration is not valid" , "Configuration is not valid" ),;
 
 
     @Getter

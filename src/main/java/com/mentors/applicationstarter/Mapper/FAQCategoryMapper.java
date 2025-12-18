@@ -3,8 +3,11 @@ package com.mentors.applicationstarter.Mapper;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseSimplifiedDTO;
+import com.mentors.applicationstarter.Model.FAQ;
 import com.mentors.applicationstarter.Model.FAQCategory;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class FAQCategoryMapper {
@@ -73,6 +76,30 @@ public class FAQCategoryMapper {
                 .faqs(faqCategory.getFaqs().stream()
                         .map(FAQMapper::toFaqSimplifiedResponseDto)
                         .collect(Collectors.toList())
+                )
+                .build();
+    }
+
+    public static FAQCategoryPublicResponseDTO toPublicResponseDTO(
+            FAQCategory category,
+            List<FAQ> faqs
+    ) {
+        if (category == null) return null;
+
+        return FAQCategoryPublicResponseDTO.builder()
+                .id(category.getId())
+                .uuid(category.getUuid())
+                .name(category.getName())
+                .description(category.getDescription())
+                .iconClass(category.getIconClass())
+                .colorCode(category.getColorCode())
+                .displayOrder(category.getDisplayOrder())
+                .isActive(category.getIsActive())
+                .faqs(
+                        faqs.stream()
+                                .sorted(Comparator.comparing(FAQ::getDisplayOrder))
+                                .map(FAQMapper::toFaqSimplifiedResponseDto)
+                                .toList()
                 )
                 .build();
     }

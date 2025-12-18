@@ -64,4 +64,10 @@ public class CustomExceptionHandler {
         return createErrorHttpResponse(HttpStatus.BAD_REQUEST, ex.getErrorCode().getCode(), ex.getMessage());
     }
 
+    @ExceptionHandler(ConfigurationException.class)
+    public ResponseEntity<HttpErrorResponse> handleConfigurationException(ConfigurationException ex) {
+        LOGGER.error(ex.getDeveloperMessage());
+        return createErrorHttpResponse(HttpStatus.BAD_REQUEST, ex.getErrorCode().getCode(), ex.getMessage());
+    }
+
 }

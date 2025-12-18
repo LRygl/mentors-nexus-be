@@ -1,11 +1,8 @@
-package com.mentors.applicationstarter.Controller;
+package com.mentors.applicationstarter.Controller.Admin.FAQ;
 
 
 import com.mentors.applicationstarter.DTO.FAQ.FAQResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQRequest;
-import com.mentors.applicationstarter.DTO.FAQStats;
-import com.mentors.applicationstarter.Enum.FAQPriority;
-import com.mentors.applicationstarter.Enum.FAQStatus;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.FAQ;
 import com.mentors.applicationstarter.Service.FAQService;
@@ -14,10 +11,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -65,11 +58,10 @@ public class FAQAdminController {
     @Operation(summary = "Update FAQ", description = "Updates an existing FAQ")
     public ResponseEntity<FAQ> updateFAQ(
             @Parameter(description = "FAQ UUID") @PathVariable UUID uuid,
-            @Parameter(description = "Updated FAQ data") @RequestBody FAQRequest faq,
-            @Parameter(description = "Admin user UUID") @RequestHeader("X-User-UUID") UUID adminUuid) {
+            @Parameter(description = "Updated FAQ data") @RequestBody FAQRequest faq) {
 
         try {
-            FAQ updatedFAQ = faqService.updateFAQ(uuid, faq, adminUuid);
+            FAQ updatedFAQ = faqService.updateFAQ(uuid, faq);
             return ResponseEntity.ok(updatedFAQ);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
