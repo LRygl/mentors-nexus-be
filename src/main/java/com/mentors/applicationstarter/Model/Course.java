@@ -87,6 +87,25 @@ public class Course extends BaseEntity{
     @Builder.Default
     private Set<CourseSection> sections = new HashSet<>();
 
+
+    @OneToMany(
+            mappedBy = "course",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("position ASC")
+    @Builder.Default
+    private Set<CourseGoals> goals = new HashSet<>();
+
+    @OneToMany(
+            mappedBy = "course",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("position ASC")
+    @Builder.Default
+    private Set<CourseRequirement> requirements = new HashSet<>();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

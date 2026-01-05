@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -24,4 +25,6 @@ public class CourseRequestDTO {
     private Long courseOwnerId;
     private Set<String> labels;  // Label names
     private Set<Long> categoryIds;
+    private List<String> goals;
+    private List<String> requirements;
 }

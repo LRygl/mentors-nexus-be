@@ -82,7 +82,7 @@ public class CourseServiceImpl implements CourseService {
         User owner = getCourseOwner(request.getCourseOwnerId());
 
         UUID courseUUID = UUID.randomUUID();
-        UUID authenticatedUserUuid = getAuthenticatedUserUuid();
+        //UUID authenticatedUserUuid = getAuthenticatedUserUuid();
 
         // Create Folder for course data and store the image
         fileStorageService.createEntityDirectory(COURSE_FOLDER, courseUUID.toString());
@@ -102,7 +102,7 @@ public class CourseServiceImpl implements CourseService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .createdAt(Instant.now())
-                .createdBy(authenticatedUserUuid)
+                //.createdBy(authenticatedUserUuid)
                 .status(CourseStatus.UNPUBLISHED)
                 .price(request.getPrice())
                 .categories((categories))
@@ -110,6 +110,37 @@ public class CourseServiceImpl implements CourseService {
                 .owner(owner)
                 .imageUrl(imagePath)
                 .build();
+
+        if (request.getGoals() != null) {
+            course.getGoals().clear();
+
+            int position = 0;
+            for (String outcome : request.getGoals()) {
+                course.getGoals().add(
+                        CourseGoals.builder()
+                                .description(outcome)
+                                .position(position++)
+                                .course(course)
+                                .build()
+                );
+            }
+        }
+
+        if (request.getRequirements() != null) {
+            course.getRequirements().clear();
+
+            int position = 0;
+            for (String req : request.getRequirements()) {
+                course.getRequirements().add(
+                        CourseRequirement.builder()
+                                .description(req)
+                                .position(position++)
+                                .course(course)
+                                .build()
+                );
+            }
+        }
+
 
         Course savedCourse = courseRepository.save(course);
         return CourseMapper.toDto(savedCourse);
@@ -174,6 +205,36 @@ public class CourseServiceImpl implements CourseService {
                     file
             );
             course.setImageUrl(path);
+        }
+
+        if (dto.getGoals() != null) {
+            course.getGoals().clear();
+
+            int position = 0;
+            for (String outcome : dto.getGoals()) {
+                course.getGoals().add(
+                        CourseGoals.builder()
+                                .description(outcome)
+                                .position(position++)
+                                .course(course)
+                                .build()
+                );
+            }
+        }
+
+        if (dto.getRequirements() != null) {
+            course.getRequirements().clear();
+
+            int position = 0;
+            for (String req : dto.getRequirements()) {
+                course.getRequirements().add(
+                        CourseRequirement.builder()
+                                .description(req)
+                                .position(position++)
+                                .course(course)
+                                .build()
+                );
+            }
         }
 
         Course updatedCourse = courseRepository.save(course);

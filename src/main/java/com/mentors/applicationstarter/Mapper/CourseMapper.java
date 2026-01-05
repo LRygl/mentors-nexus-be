@@ -3,6 +3,7 @@ package com.mentors.applicationstarter.Mapper;
 import com.mentors.applicationstarter.DTO.*;
 import com.mentors.applicationstarter.Model.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,6 +75,18 @@ public class CourseMapper {
                                 .collect(Collectors.toList())
                 )
                 .students(course.getStudents().size())
+                .goals(
+                        course.getGoals().stream()
+                                .sorted(Comparator.comparingInt(CourseGoals::getPosition))
+                                .map(CourseGoals::getDescription)
+                                .collect(Collectors.toList())
+                )
+                .requirements(
+                        course.getRequirements().stream()
+                                .sorted(Comparator.comparingInt(CourseRequirement::getPosition))
+                                .map(CourseRequirement::getDescription)
+                                .collect(Collectors.toList())
+                )
 
                 .build();
 

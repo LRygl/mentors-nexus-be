@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Model;
 
+import com.mentors.applicationstarter.Enum.LessonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,7 @@ public class Lesson extends BaseEntity{
     private String videoUrl;
     private Integer duration;
     private Integer orderIndex;
+    private LessonType type; //PAID or FREE
 
     @ManyToOne
     @JoinColumn(name = "section_id")

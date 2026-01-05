@@ -31,4 +31,6 @@ public class CourseResponseDTO extends BaseEntity {
     private int duration;
     private int students;
     private int rating;
+    private List<String> goals;
+    private List<String> requirements;
 }
