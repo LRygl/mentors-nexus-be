@@ -173,8 +173,8 @@ public class CourseServiceImpl implements CourseService {
             }
         }
         // TODO change to toggle
-        if (dto.getIsFeatured() != null) {
-            course.setFeatured(dto.getIsFeatured());
+        if (dto.getFeatured() != null) {
+            course.setFeatured(dto.getFeatured());
         }
 
         if (dto.getCourseOwnerId() != null) {

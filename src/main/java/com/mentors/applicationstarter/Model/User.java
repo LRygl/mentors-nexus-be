@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.*;
 
 @Data
@@ -41,6 +42,8 @@ public class User implements UserDetails {
     private String lightBg;
     private String darkBg;
 
+    private Instant updatedAt;
+
     @Builder.Default
     private Boolean isAccountNonLocked = false;
     @Builder.Default
@@ -65,6 +68,7 @@ public class User implements UserDetails {
     private Set<Course> joinedCourses = new HashSet<>();
 
     //Employee Company
+    // TODO Separate to distinct entities - Company owned account, and user billing to company
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;

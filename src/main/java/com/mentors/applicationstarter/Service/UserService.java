@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service;
 
+import com.mentors.applicationstarter.DTO.User.UserRequestDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.Course;
@@ -36,4 +37,6 @@ public interface UserService {
     Course getUserCourses(Long userId);
 
     UserResponseDTO getUserByUserId(Long userId);
+
+    UserResponseDTO updateUser(Long id, UserRequestDTO request);
 }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ public class CourseResponseDTO extends BaseEntity {
     private String imageUrl;
     private Boolean featured;
     private Boolean published;
+    private Instant publishedAt;
     private String level;
     private Set<String> labels;
     private Set<Long> categoryIds;

@@ -21,7 +21,7 @@ public class CourseRequestDTO {
     private BigDecimal price;
     private Boolean published;
     private Instant publishedAt;
-    private Boolean isFeatured;
+    private Boolean featured;
     private Long courseOwnerId;
     private Set<String> labels;  // Label names
     private Set<Long> categoryIds;

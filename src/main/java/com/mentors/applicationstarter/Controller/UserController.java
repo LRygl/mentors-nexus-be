@@ -1,5 +1,7 @@
 package com.mentors.applicationstarter.Controller;
 
+import com.mentors.applicationstarter.DTO.CourseResponseDTO;
+import com.mentors.applicationstarter.DTO.User.UserRequestDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.Course;
@@ -59,6 +61,10 @@ public class UserController {
         return new ResponseEntity<>(userService.getUserCourses(userId),HttpStatus.OK);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @RequestBody UserRequestDTO request) {
+        return new ResponseEntity<>(userService.updateUser(id,request), HttpStatus.OK);
+    }
 
     //TODO Consent Management Endpoint
     @PutMapping("/{id}/consent")

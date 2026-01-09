@@ -128,9 +128,10 @@ public class AuthenticationController {
         return new ResponseEntity<>(response, null, response.getHttpStatusCode());
     }
 
+    //TODO Store tokens in DB
     @GetMapping("/activate")
-    public ResponseEntity<HttpResponse> validateUserEmailAddress(@RequestParam String activationId) throws MessagingException, IOException {
-        HttpResponse response = authenticationService.activateNewUser(activationId);
+    public ResponseEntity<HttpResponse> validateUserEmailAddress(@RequestParam String token) throws MessagingException, IOException {
+        HttpResponse response = authenticationService.activateNewUser(token);
         return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getHttpStatusCode()));
     }
 

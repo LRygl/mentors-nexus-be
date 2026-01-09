@@ -89,7 +89,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private Boolean forcePasswordResetOnLogin;
 
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
 
+    @Value("${app.frontend.activation-endpoint}")
+    private String frontendActivationEndpoint;
+
+    @Value("${app.frontend.activation-token-expiry:24}")
+    private int tokenExpiryHours;
 
     /**
      * NEW METHOD: Refresh access token using refresh token from cookie
@@ -134,7 +141,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException, IOException {
         String passwordGenerationStrategy = "useProvidedPassword";
-        boolean requireUserEmailConfirmation = false;
+        boolean requireUserEmailConfirmation = true;
 
         if (userExistsByEmail(registeredUser.getEmail())) {
             throw new ResourceAlreadyExistsException(ErrorCodes.USER_ALREADY_REGISTERED, registeredUser.getEmail());
@@ -191,7 +198,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         Instant timestamp = Instant.now();
                         String userAccountActivationString = String.format("%s+%s", user.getUUID(), timestamp);
                         String base64EncodedActivationString = base64Utils.encodeStringToUrlSafeBase64(userAccountActivationString);
-                        String userAccountActivationUrl = String.format("%s/%s%s", APP_URL,"auth/activate?activationId=", base64EncodedActivationString);
+                        String userAccountActivationUrl = String.format("%s/%s%s", frontendBaseUrl,"auth/activate?token=", base64EncodedActivationString);
                         //TODO
                         //Send email with password and confirmation link - account remains blocked until activation link is used - separate method + endpoint
                         Map<String, String> providedPasswordTemplateVariables = new HashMap<>();
@@ -363,7 +370,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public HttpResponse activateNewUser(String activationString) throws MessagingException, IOException {
         //TODO implement user activation - this action should be only accessible by the admin
         String base64DecodedString = base64Utils.decodeUrlSafeBase64ToString(activationString);
-        LOGGER.debug("Activation stirng - {} ", base64DecodedString);
+        LOGGER.debug("Activation string - {} ", base64DecodedString);
         String[] securityString = base64DecodedString.split("\\+",2);
         String activationUUID = securityString[0];
         String activationTimestamp = securityString[1];

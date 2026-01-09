@@ -41,6 +41,7 @@ public class CourseMapper {
                                         .build()
                 )
                 .published(course.getPublished())
+                .publishedAt(course.getPublishedAt())
                 .duration(course.getTotalDuration())
                 .featured(course.getFeatured())
                 .imageUrl(course.getImageUrl())
@@ -49,6 +50,7 @@ public class CourseMapper {
                 .updatedBy(course.getUpdatedBy())
                 .updatedAt(course.getUpdatedAt())
                 .status(String.valueOf(course.getStatus()))
+                .featured(course.getFeatured())
                 .price(course.getPrice())
                 .sections(course.getSections() == null ? null :
                         course.getSections().stream()
