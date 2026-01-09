@@ -2,15 +2,23 @@ package com.mentors.applicationstarter.Mapper;
 
 import com.mentors.applicationstarter.DTO.*;
 import com.mentors.applicationstarter.Model.*;
+import com.mentors.applicationstarter.Repository.CourseEnrollmentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+@Component
+@RequiredArgsConstructor
 public class CourseMapper {
 
-    public static CourseResponseDTO toDto(Course course) {
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
+
+    public CourseResponseDTO toDto(Course course) {
+
+        int studentCount = courseEnrollmentRepository.countByCourseId(course.getId());
 
         int totalDuration = course.getSections() == null ? 0 :
                 course.getSections().stream()
@@ -76,7 +84,7 @@ public class CourseMapper {
                                         .build())
                                 .collect(Collectors.toList())
                 )
-                .students(course.getStudents().size())
+                .students(studentCount)
                 .goals(
                         course.getGoals().stream()
                                 .sorted(Comparator.comparingInt(CourseGoals::getPosition))

@@ -36,7 +36,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final CookieService cookieService;
     private final UserRepository userRepository;
-
+    private final UserMapper userMapper;
 
 
     @Value("${allowPublicUserRegistration}")
@@ -85,8 +85,6 @@ public class AuthenticationController {
         ));
     }
 
-
-
     /**
      * Logout endpoint - clears cookies
      */
@@ -117,7 +115,7 @@ public class AuthenticationController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
 
-        UserResponseDTO responseUser = UserMapper.mapUserToDto(user);
+        UserResponseDTO responseUser = userMapper.mapUserToDto(user);
         return ResponseEntity.ok(responseUser);
     }
 

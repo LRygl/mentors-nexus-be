@@ -34,6 +34,14 @@ public class SecurityConfiguration {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    /*
+    *         .authorizeHttpRequests(auth -> auth
+    *        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")  // ✅ All admin endpoints
+    *        .requestMatchers("/api/v1/enrollments/**").authenticated()
+    *        .requestMatchers("/api/v1/public/**").permitAll()
+    *        // ... other rules
+    */
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

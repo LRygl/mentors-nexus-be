@@ -69,12 +69,6 @@ public class CourseController {
         return new ResponseEntity<>(courseService.getCourseById(id), HttpStatus.OK);
     }
 
-    @PostMapping("/{courseId}/enroll")
-    public ResponseEntity<Void> enrollCourse(@PathVariable Long courseId, @RequestParam UUID userUUID) {
-        courseService.enrollUserToCourse(courseId,userUUID);
-        return null;
-    }
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CourseResponseDTO> createNewCourseMultipart(
             @RequestPart(value = "course") CourseRequestDTO courseRequestDTO,

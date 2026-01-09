@@ -69,7 +69,10 @@ public enum ErrorCodes {
 
     LEGAL_TOPIC_NOT_FOUND("LegalTopicNotFound","Legal Topic was not found", ""),
     CONFIGRATION_ALREADY_EXISTS("ConfigurationAlreadyExists", "Configuration is already exists in this category" , "" ),
-    CONFIGURATION_JSON_NOT_VALID("ConfigurationJsonNotValid", "Configuration is not valid" , "Configuration is not valid" ),;
+    CONFIGURATION_JSON_NOT_VALID("ConfigurationJsonNotValid", "Configuration is not valid" , "Configuration is not valid" ),
+    USER_ALREADY_ENROLLED_TO_COURSE("UserAlreadyEnrolledToCourse","" ,"" ),
+    USER_NOT_ENROLLED_TO_COURSE("UserNotEnrolledToCourse","" ,"" );
+
 
 
     @Getter

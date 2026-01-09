@@ -44,6 +44,7 @@ public class CourseServiceImpl implements CourseService {
     private final CategoryRepository categoryRepository;
     private final LessonRepository lessonRepository;
     private final FileStorageService fileStorageService;
+    private final CourseMapper courseMapper;
 
     @Override
     public Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryName, Pageable pageable) {
@@ -51,20 +52,20 @@ public class CourseServiceImpl implements CourseService {
                 .and(CourseSpecification.hasCategories(categoryName));
         Page<Course> coursePage = courseRepository.findAll(specification, pageable);
 
-        return coursePage.map(CourseMapper::toDto);
+        return coursePage.map(courseMapper::toDto);
     }
 
     @Override
     public List<CourseResponseDTO> getAllCourses() {
         return courseRepository.findAll().stream()
-                .map(CourseMapper::toDto)
+                .map(courseMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CourseResponseDTO> getAllFeaturedCourses() {
         return courseRepository.findByFeaturedTrue().stream()
-                .map(CourseMapper::toDto)
+                .map(courseMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +73,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public CourseResponseDTO getCourseById(Long courseId) {
         Course course = findCourseById(courseId);
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
     }
 
     @Override
@@ -143,7 +144,7 @@ public class CourseServiceImpl implements CourseService {
 
 
         Course savedCourse = courseRepository.save(course);
-        return CourseMapper.toDto(savedCourse);
+        return courseMapper.toDto(savedCourse);
     }
 
     @Override
@@ -239,7 +240,7 @@ public class CourseServiceImpl implements CourseService {
 
         Course updatedCourse = courseRepository.save(course);
 
-        return CourseMapper.toDto(updatedCourse);
+        return courseMapper.toDto(updatedCourse);
     }
 
     @Override
@@ -250,7 +251,7 @@ public class CourseServiceImpl implements CourseService {
         detachCourseAssociations(course);
         courseRepository.delete(course);
 
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
     }
 
     @Override
@@ -259,7 +260,7 @@ public class CourseServiceImpl implements CourseService {
         CourseStatus newStatus = courseStatusDTO.getStatus();
 
         if(course.getStatus() == CourseStatus.PUBLISHED && newStatus == CourseStatus.PUBLISHED){
-            return CourseMapper.toDto(course);
+            return courseMapper.toDto(course);
         }
 
         //TODO Course has to have a category when published
@@ -277,22 +278,8 @@ public class CourseServiceImpl implements CourseService {
         course.setPublishedAt(courseStatusDTO.getPublishedAt());
 
         courseRepository.save(course);
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
 
-    }
-
-
-
-    @Override
-    @Transactional
-    public void enrollUserToCourse(Long courseId, UUID userUUID) {
-        Course course = findCourseById(courseId);
-
-        User user = userRepository.findByUUID(userUUID)
-                .orElseThrow( () -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
-
-        course.getStudents().add(user);
-        courseRepository.save(course);
     }
 
     // TODO Reorder sections
@@ -319,7 +306,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(section.getCourse().getId()).orElseThrow(
                 () -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
 
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
 
     }
 
@@ -334,7 +321,7 @@ public class CourseServiceImpl implements CourseService {
         lesson.setOrderIndex(null);
         lessonRepository.save(lesson);
 
-        return CourseMapper.toDto(findCourseById(section.getCourse().getId()));
+        return courseMapper.toDto(findCourseById(section.getCourse().getId()));
 
     }
 
@@ -380,7 +367,7 @@ public class CourseServiceImpl implements CourseService {
         course.setSections(new HashSet<>(orderedSections));
         courseRepository.save(course);
 
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
     }
 
 
@@ -421,7 +408,7 @@ public class CourseServiceImpl implements CourseService {
         course.getSections().add(section);
         courseRepository.save(course);
 
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
     }
 
     @Override
@@ -436,7 +423,7 @@ public class CourseServiceImpl implements CourseService {
 
         courseSectionRepository.deleteById(id);
 
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
     }
 
 
@@ -446,7 +433,7 @@ public class CourseServiceImpl implements CourseService {
 
         course.setFeatured(true);
         courseRepository.save(course);
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
     }
 
     @Override
@@ -456,7 +443,7 @@ public class CourseServiceImpl implements CourseService {
         course.setFeatured(false);
         courseRepository.save(course);
 
-        return CourseMapper.toDto(course);
+        return courseMapper.toDto(course);
     }
 
 

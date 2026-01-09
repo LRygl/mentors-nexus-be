@@ -1,7 +1,6 @@
-package com.mentors.applicationstarter.Controller.Public.Legal;
+package com.mentors.applicationstarter.Controller.Public;
 
 import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicResponseDTO;
-import com.mentors.applicationstarter.DTO.Response.Public.LegalTopicPublicSummaryResponseDTO;
 import com.mentors.applicationstarter.Service.LegalTopicService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

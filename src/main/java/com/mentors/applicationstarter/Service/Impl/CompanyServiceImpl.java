@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,17 +32,18 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final AresService aresService;
+    private final CompanyMapper companyMapper;
 
     @Override
     public List<CompanyResponseDTO> getAllCourses() {
         return companyRepository.findAll().stream()
-                .map(CompanyMapper::toCompanyDto)
+                .map(companyMapper::toCompanyDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Page<CompanyResponseDTO> getPagedCompanies(Pageable pageable) {
-        Page<CompanyResponseDTO> companyPage = companyRepository.findAll(pageable).map(CompanyMapper::toCompanyDto);
+        Page<CompanyResponseDTO> companyPage = companyRepository.findAll(pageable).map(companyMapper::toCompanyDto);
         return companyPage;
     }
 
@@ -59,14 +59,14 @@ public class CompanyServiceImpl implements CompanyService {
         company.getCompanyMembers().add(user);
         companyRepository.save(company);
 
-        return CompanyMapper.toCompanyDto(company);
+        return companyMapper.toCompanyDto(company);
 
     }
 
     @Override
     public CompanyResponseDTO getCompanyById(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COMPANY_DOES_NOT_EXIST));
-        return CompanyMapper.toCompanyDto(company);
+        return companyMapper.toCompanyDto(company);
     }
 
     @Override
@@ -82,14 +82,14 @@ public class CompanyServiceImpl implements CompanyService {
                 .billingAddress(response.getSidlo().getTextovaAdresa())
                 .build();
 
-        return CompanyMapper.toCompanyDto(company);
+        return companyMapper.toCompanyDto(company);
     }
 
     @Override
     public CompanyResponseDTO deleteCompany(Long companyId) {
         Company company = findCompany(companyId);
         companyRepository.delete(company);
-        return CompanyMapper.toCompanyDto(company);
+        return companyMapper.toCompanyDto(company);
     }
 
     //1. Get company data from ARES
@@ -115,7 +115,7 @@ public class CompanyServiceImpl implements CompanyService {
                 .registrationNumber(request.getRegistrationNumber())
                 .build();
 
-        return CompanyMapper.toCompanyDto(companyRepository.save(company));
+        return companyMapper.toCompanyDto(companyRepository.save(company));
     }
 
     @Override
@@ -134,7 +134,7 @@ public class CompanyServiceImpl implements CompanyService {
         }
 
         company.setUpdatedDate(Instant.now());
-        return CompanyMapper.toCompanyDto(companyRepository.save(company));
+        return companyMapper.toCompanyDto(companyRepository.save(company));
     }
 
     private <T> Company findCompany(T identifier) {

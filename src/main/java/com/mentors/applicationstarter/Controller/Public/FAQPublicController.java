@@ -1,10 +1,8 @@
-package com.mentors.applicationstarter.Controller.Public.FAQ;
+package com.mentors.applicationstarter.Controller.Public;
 
 import com.mentors.applicationstarter.DTO.FAQ.FAQResponseDTO;
 import com.mentors.applicationstarter.DTO.FAQ.FAQVoteRequest;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
-import com.mentors.applicationstarter.Mapper.FAQMapper;
-import com.mentors.applicationstarter.Model.FAQ;
 import com.mentors.applicationstarter.Service.FAQService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

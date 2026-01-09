@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mentors.applicationstarter.Enum.Role;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -63,9 +65,10 @@ public class User implements UserDetails {
     @Builder.Default
     private Set<Course> ownedCourses = new HashSet<>();
 
-    @ManyToMany(mappedBy = "students")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<Course> joinedCourses = new HashSet<>();
+    @JsonIgnore
+    private Set<CourseEnrollment> enrollments = new HashSet<>();
 
     //Employee Company
     // TODO Separate to distinct entities - Company owned account, and user billing to company
@@ -112,9 +115,43 @@ public class User implements UserDetails {
         return true;
     }
 
+    public Set<Long> getEnrolledCourseIds() {
+        return enrollments != null
+                ? enrollments.stream()
+                .map(e -> e.getCourse().getId())
+                .collect(Collectors.toSet())
+                : new HashSet<>();
+    }
+
+    public boolean isEnrolledIn(Long courseId) {
+        return enrollments != null && enrollments.stream()
+                .anyMatch(e -> e.getCourse().getId().equals(courseId));
+    }
+
+    public Set<Course> getJoinedCourses() {
+        return enrollments != null
+                ? enrollments.stream()
+                .map(CourseEnrollment::getCourse)
+                .collect(Collectors.toSet())
+                : new HashSet<>();
+    }
+
     @JsonProperty("role")
     public String getRoleName() {
         return role != null ? role.name() : null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User user)) return false;
+        return id != null && id.equals(user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        // Use constant hashCode for entities - Hibernate best practice
+        return getClass().hashCode();
     }
 
 }

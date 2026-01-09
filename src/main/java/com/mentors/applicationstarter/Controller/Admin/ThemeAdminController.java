@@ -1,4 +1,4 @@
-package com.mentors.applicationstarter.Controller.Admin.Theme;
+package com.mentors.applicationstarter.Controller.Admin;
 
 import com.mentors.applicationstarter.DTO.Theme.ThemeCreateRequestDTO;
 import com.mentors.applicationstarter.DTO.Theme.ThemeDTO;

@@ -1,4 +1,4 @@
-package com.mentors.applicationstarter.Controller.Admin.FAQ;
+package com.mentors.applicationstarter.Controller.Admin;
 
 
 import com.mentors.applicationstarter.DTO.FAQ.FAQResponseDTO;

@@ -67,6 +67,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailServiceUtils emailServiceUtils;
     private final EventService eventService;
     private final Base64Utils base64Utils;
+    private final UserMapper userMapper;
 
     //TODO Load from AWS PARAMETER STORE
     @Value("${generateUserPasswordOnRegistration}")
@@ -288,7 +289,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
         //Remap user -> Response user DTO
-        UserResponseDTO remapUser = UserMapper.mapUserToDto(user);
+        UserResponseDTO remapUser = userMapper.mapUserToDto(user);
 
         // Return user data (NO TOKEN IN RESPONSE BODY!)
         return Map.of(

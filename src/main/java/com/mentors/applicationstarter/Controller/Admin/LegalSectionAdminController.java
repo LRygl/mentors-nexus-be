@@ -1,4 +1,4 @@
-package com.mentors.applicationstarter.Controller.Admin.Legal;
+package com.mentors.applicationstarter.Controller.Admin;
 
 import com.mentors.applicationstarter.DTO.Response.Admin.LegalSectionAdminResponseDTO;
 import com.mentors.applicationstarter.Model.LegalSection;

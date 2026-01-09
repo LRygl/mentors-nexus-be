@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
 @SuperBuilder
@@ -70,15 +71,10 @@ public class Course extends BaseEntity{
     @JsonIgnore
     private User owner;
 
-    //STUDENTS JOIN - MANYTOMANY
-    @ManyToMany
-    @JoinTable(
-            name = "course_student",
-            joinColumns = @JoinColumn(name = "course_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<User> students = new HashSet<>();
+    @JsonIgnore
+    private Set<CourseEnrollment> enrollments = new HashSet<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CourseRating> ratings = new HashSet<>();
@@ -115,7 +111,7 @@ public class Course extends BaseEntity{
 
     @Override
     public int hashCode() {
-        return 31;
+        return getClass().hashCode();
     }
 
     public int getTotalDuration() {
@@ -125,6 +121,15 @@ public class Course extends BaseEntity{
                         .flatMap(sec -> sec.getLessons().stream())
                         .mapToInt(Lesson::getDuration)
                         .sum();
+    }
+
+    public int getStudentCount() {
+        return enrollments != null ? enrollments.size() : 0;
+    }
+
+    public boolean hasStudent(Long userId) {
+        return enrollments != null && enrollments.stream()
+                .anyMatch(e -> e.getUser().getId().equals(userId));
     }
 
     public double getAverageRating() {
