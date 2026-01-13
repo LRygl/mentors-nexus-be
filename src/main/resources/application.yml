@@ -19,6 +19,12 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
   # Email Configuration (if using email features)
   mail:
     host: smtp.gmail.com

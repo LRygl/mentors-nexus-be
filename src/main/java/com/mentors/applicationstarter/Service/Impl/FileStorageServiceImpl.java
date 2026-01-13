@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.Constant.FileConstant;
 import com.mentors.applicationstarter.Service.FileStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,10 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public String storeFile(String entityType, String fileType, UUID entityUUID, MultipartFile file) {
         if (file == null || file.isEmpty()) return null;
+
+        // Validate if the file is not larger than allowed limit
+        validateFileSize(fileType, file);
+        validateMimeType(fileType, file);
 
         String nomalizedEntityType = entityType.toLowerCase();
         String normalizedFileType = fileType.toLowerCase();
@@ -130,6 +135,9 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
+    //
+    // PRIVATE
+    //
 
     private String sanitizeFilename(String filename) {
         String nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
@@ -141,5 +149,49 @@ public class FileStorageServiceImpl implements FileStorageService {
                 .toLowerCase();
 
         return sanitized + extension;
+    }
+
+    private void validateFileSize(String fileType, MultipartFile file) {
+        long size = file.getSize();
+
+        switch (fileType.toLowerCase()) {
+            case "image" -> {
+                if (size > FileConstant.IMAGE_MAX_SIZE) {
+                    throw new IllegalArgumentException("Image file exceeds 5 MB limit");
+                }
+            }
+            case "video" -> {
+                if (size > FileConstant.VIDEO_MAX_SIZE) {
+                    throw new IllegalArgumentException("Video file exceeds 200 MB limit");
+                }
+            }
+            case "document" -> {
+                if (size > FileConstant.DOCUMENT_MAX_SIZE) {
+                    throw new IllegalArgumentException("Document file exceeds 10 MB limit");
+                }
+            }
+            default -> throw new IllegalArgumentException("Unsupported file type: " + fileType);
+        }
+    }
+
+    private void validateMimeType(String fileType, MultipartFile file) {
+        String contentType = file.getContentType();
+
+        if (contentType == null) {
+            throw new IllegalArgumentException("Missing content type");
+        }
+
+        switch (fileType.toLowerCase()) {
+            case "image" -> {
+                if (!contentType.startsWith("image/")) {
+                    throw new IllegalArgumentException("Invalid image file type");
+                }
+            }
+            case "video" -> {
+                if (!contentType.startsWith("video/")) {
+                    throw new IllegalArgumentException("Invalid video file type");
+                }
+            }
+        }
     }
 }

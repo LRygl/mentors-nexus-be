@@ -23,6 +23,8 @@ public class FileConstant {
     public static final String TEMP_IMAGE_BACKGROUND_COLOR = "background=2B4168";
     public static final String TEMP_IMAGE_TEXT_COLOR = "color=FFFFFF";
 
-
+    public static final long IMAGE_MAX_SIZE = 5L * 1024 * 1024;
+    public static final long VIDEO_MAX_SIZE = 200L * 1024 * 1024;
+    public static final long DOCUMENT_MAX_SIZE = 10L * 1024 * 1024;
 
 }

@@ -20,6 +20,8 @@ public class LessonMapper {
                 .createdBy(lesson.getCreatedBy())
                 .updatedAt(lesson.getUpdatedAt())
                 .updatedBy(lesson.getUpdatedBy())
+                .type(lesson.getType())
+                .category(lesson.getCategory())
                 .build();
     }
 
@@ -43,6 +45,8 @@ public class LessonMapper {
                 .createdBy(lesson.getCreatedBy())
                 .updatedAt(lesson.getUpdatedAt())
                 .updatedBy(lesson.getUpdatedBy())
+                .category(lesson.getCategory())
+                .type(lesson.getType())
                 .section(section == null ? null : CourseSectionSummaryDTO.builder()
                         .id(section.getId())
                         .uuid(section.getUuid())

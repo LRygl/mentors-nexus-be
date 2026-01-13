@@ -59,6 +59,7 @@ public class CourseMapper {
                 .updatedAt(course.getUpdatedAt())
                 .status(String.valueOf(course.getStatus()))
                 .featured(course.getFeatured())
+                .level(String.valueOf(course.getLevel()))
                 .price(course.getPrice())
                 .sections(course.getSections() == null ? null :
                         course.getSections().stream()
@@ -78,6 +79,8 @@ public class CourseMapper {
                                                                 .videoUrl(lesson.getVideoUrl())
                                                                 .duration(lesson.getDuration())
                                                                 .orderIndex(lesson.getOrderIndex())
+                                                                .type(lesson.getType())
+                                                                .category(lesson.getCategory())
                                                                 .build())
                                                         .collect(Collectors.toList())
                                         )

@@ -108,6 +108,7 @@ public class CourseServiceImpl implements CourseService {
                 .price(request.getPrice())
                 .categories((categories))
                 .labels(labels)
+                .level(request.getLevel())
                 .owner(owner)
                 .imageUrl(imagePath)
                 .build();
@@ -206,6 +207,10 @@ public class CourseServiceImpl implements CourseService {
                     file
             );
             course.setImageUrl(path);
+        }
+
+        if(dto.getLevel() != null){
+            course.setLevel(dto.getLevel());
         }
 
         if (dto.getGoals() != null) {

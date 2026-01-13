@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.DTO;
 
+import com.mentors.applicationstarter.Enum.CourseLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,7 @@ public class CourseRequestDTO {
     private Boolean published;
     private Instant publishedAt;
     private Boolean featured;
+    private CourseLevel level;
     private Long courseOwnerId;
     private Set<String> labels;  // Label names
     private Set<Long> categoryIds;

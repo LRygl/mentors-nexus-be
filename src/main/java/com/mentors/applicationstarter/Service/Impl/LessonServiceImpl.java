@@ -89,6 +89,14 @@ public class LessonServiceImpl implements LessonService {
             existingLesson.setDuration(lesson.getDuration());
         }
 
+        if(lesson.getType() != null) {
+            existingLesson.setType(lesson.getType());
+        }
+
+        if(lesson.getCategory() != null) {
+            existingLesson.setCategory(lesson.getCategory());
+        }
+
         if(image != null) {
             String path = fileStorageService.storeFile(
                     LESSON_FOLDER,
