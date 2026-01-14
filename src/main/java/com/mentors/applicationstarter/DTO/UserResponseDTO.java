@@ -39,7 +39,8 @@ public class UserResponseDTO {
     private String darkBg;
 
     private String role;
-
+    // Provide list of enrolled courses for caching
+    private Set<Long> enrolledCourseIds;
     // To avoid recursion and infinite loops:
     private Set<CourseSummaryDTO> ownedCourses;
     private Set<CourseSummaryDTO> joinedCourses;

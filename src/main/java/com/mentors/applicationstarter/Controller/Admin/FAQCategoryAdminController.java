@@ -1,9 +1,8 @@
-package com.mentors.applicationstarter.Controller;
+package com.mentors.applicationstarter.Controller.Admin;
 
 
 import com.mentors.applicationstarter.DTO.CategoryStats;
 import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryResponseDTO;
-import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import com.mentors.applicationstarter.Service.FAQCategoryService;
@@ -32,7 +31,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "FAQ Category Admin API", description = "Admin FAQ category operations for content management")
 public class FAQCategoryAdminController {
-
 
     private final FAQCategoryService faqCategoryService;
 
@@ -81,23 +79,15 @@ public class FAQCategoryAdminController {
             return ResponseEntity.ok(updatedCategory);
     }
 
-    @DeleteMapping("/{uuid}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Delete category", description = "Deletes an FAQ category")
     public ResponseEntity<Void> deleteCategory(
-            @Parameter(description = "Category UUID") @PathVariable UUID uuid) {
+            @Parameter(description = "Category ID") @PathVariable Long id) {
 
-        log.debug("DELETE /api/v1/admin/faq-category/{} - Deleting category", uuid);
 
-        try {
-            faqCategoryService.deleteCategory(uuid);
+            faqCategoryService.deleteCategory(id);
             return ResponseEntity.noContent().build();
-        } catch (ResourceNotFoundException e) {
-            log.warn("Category deletion failed - not found: {}", uuid);
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            log.warn("Category deletion failed - has dependencies: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+
     }
 
     @PatchMapping("/{uuid}/activate")
@@ -138,9 +128,6 @@ public class FAQCategoryAdminController {
     @Operation(summary = "Reorder categories", description = "Updates the display order of FAQ categories")
     public ResponseEntity<Void> reorderCategories(
             @Parameter(description = "Ordered list of category UUIDs") @RequestBody List<UUID> orderedUuids) {
-
-        log.debug("PUT /api/v1/admin/faq-category/reorder - Reordering {} categories", orderedUuids.size());
-
         faqCategoryService.reorderCategories(orderedUuids);
         return ResponseEntity.ok().build();
     }

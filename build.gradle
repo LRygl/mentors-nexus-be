@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.3'
+	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -8,7 +8,7 @@ group = 'com.mentors'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '21'
+	sourceCompatibility = '23'
 }
 
 configurations {
@@ -31,9 +31,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	implementation 'io.jsonwebtoken:jjwt:0.12.5'
+	implementation 'io.jsonwebtoken:jjwt:0.13.0'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
-	implementation 'org.postgresql:postgresql:42.7.3'
+	implementation 'org.postgresql:postgresql'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -41,7 +41,8 @@ dependencies {
 	testImplementation 'org.springframework.graphql:spring-graphql-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	implementation("jakarta.validation:jakarta.validation-api:3.1.1")
-	implementation("io.swagger.core.v3:swagger-annotations:2.2.34")
+	implementation("io.swagger.core.v3:swagger-annotations:2.2.38")
+	implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.13.3")
 }
 
 tasks.named('test') {

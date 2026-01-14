@@ -3,14 +3,18 @@ package com.mentors.applicationstarter.Mapper;
 import com.mentors.applicationstarter.DTO.CompanyResponseDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Model.Company;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
-
+@Component
+@RequiredArgsConstructor
 public class CompanyMapper {
 
+    private final UserMapper userMapper;
 
-    public static CompanyResponseDTO toCompanyDto(Company company) {
+    public CompanyResponseDTO toCompanyDto(Company company) {
         return CompanyResponseDTO.builder()
                 .id(company.getId())
                 .name(company.getName())
@@ -20,7 +24,7 @@ public class CompanyMapper {
                 .billingAddress(company.getBillingAddress())
                 .createdDate(company.getCreatedDate())
                 .companyMembers(company.getCompanyMembers().stream()
-                        .map(UserMapper::mapUserToDto)
+                        .map(userMapper::mapUserToDto)
                         .collect(Collectors.toList())
                 )
                 .build();

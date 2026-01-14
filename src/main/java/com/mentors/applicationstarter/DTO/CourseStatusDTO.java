@@ -8,5 +8,5 @@ import java.time.Instant;
 @Data
 public class CourseStatusDTO {
     private CourseStatus status;
-    private Instant published;
+    private Instant publishedAt;
 }

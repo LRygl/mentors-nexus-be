@@ -1,11 +1,13 @@
 package com.mentors.applicationstarter.DTO;
 
+import com.mentors.applicationstarter.Enum.CourseLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -14,11 +16,17 @@ import java.util.Set;
 public class CourseRequestDTO {
     private Long id;
     private String name;
+    private String description;
     private String category;
     private String status;
     private BigDecimal price;
-    private Instant published;
+    private Boolean published;
+    private Instant publishedAt;
+    private Boolean featured;
+    private CourseLevel level;
     private Long courseOwnerId;
     private Set<String> labels;  // Label names
-    private Set<String> categories;
+    private Set<Long> categoryIds;
+    private List<String> goals;
+    private List<String> requirements;
 }

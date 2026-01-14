@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -9,26 +10,15 @@ import java.util.Set;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Setter
-@Getter
 @Entity
-public class Category {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "categoryGenerator")
-    @SequenceGenerator(name = "categoryGenerator", sequenceName = "application_category_sequence", allocationSize = 1)
-    @Column(nullable = false, updatable = false)
-    private Long id;
-    private UUID UUID;
+public class Category extends BaseEntity {
 
     @Column(unique = true, nullable = false)
     private String name;
     private String description;
-    private Instant created;
-    private Instant updated;
     private String color;
 
     @ManyToMany(mappedBy = "categories")
@@ -41,7 +31,7 @@ public class Category {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Category category = (Category) o;
-        return id != null && id.equals(category.id);
+        return getId() != null && getId().equals(category.getId());
     }
 
     @Override
@@ -49,16 +39,5 @@ public class Category {
         return 31;
     }
 
-    @PrePersist
-    public void onCreate() {
-        Instant now = Instant.now();
-        this.created = now;
-        this.updated = now;
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updated = Instant.now();
-    }
 
 }

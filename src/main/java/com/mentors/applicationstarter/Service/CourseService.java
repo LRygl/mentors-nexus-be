@@ -4,9 +4,11 @@ import com.mentors.applicationstarter.DTO.CourseRequestDTO;
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseStatusDTO;
 import com.mentors.applicationstarter.Model.Course;
+import com.mentors.applicationstarter.Model.CourseSection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -14,13 +16,13 @@ import java.util.UUID;
 
 @Service
 public interface CourseService {
-    CourseResponseDTO createCourse(CourseRequestDTO course);
 
     CourseResponseDTO getCourseById(Long courseId);
 
     List<CourseResponseDTO> getAllCourses();
 
-    CourseResponseDTO updateCourse(CourseRequestDTO courseRequestDTO);
+    CourseResponseDTO createCourse(CourseRequestDTO course, MultipartFile file);
+    CourseResponseDTO updateCourse(Long courseId, CourseRequestDTO courseRequestDTO, MultipartFile image);
 
     CourseResponseDTO deleteCourse(Long courseId);
 
@@ -28,7 +30,19 @@ public interface CourseService {
 
     Page<CourseResponseDTO> getPagedCourses(String name, Set<String> categoryNames, Pageable pageable);
 
-    void enrollUserToCourse(Long courseId, UUID userUUID);
+    CourseResponseDTO createCourseSection(CourseSection section, Long courseId);
 
-    CourseResponseDTO addLessonToCourse(Long courseId, Long lessonId);
+    CourseResponseDTO delteCourseSection(Long id);
+
+    CourseResponseDTO addLessonToCourseSection(Long sectionId, Long lessonId);
+
+    CourseResponseDTO reorderCourseSections(List<Long> sectionOrder);
+
+    CourseResponseDTO removeLessonFromCourse(Long sectionId, Long lessonId);
+
+    CourseResponseDTO featureCourse(Long id);
+
+    CourseResponseDTO unfeatureCourse(Long id);
+
+    List<CourseResponseDTO> getAllFeaturedCourses();
 }

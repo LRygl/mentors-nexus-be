@@ -1,6 +1,6 @@
 package com.mentors.applicationstarter.Repository;
 
-import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPageResponseDTO;
+import com.mentors.applicationstarter.DTO.FAQCategory.FAQCategoryPublicResponseDTO;
 import com.mentors.applicationstarter.Model.FAQCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

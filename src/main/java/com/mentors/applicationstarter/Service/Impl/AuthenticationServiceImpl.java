@@ -1,23 +1,28 @@
 package com.mentors.applicationstarter.Service.Impl;
 
+import com.mentors.applicationstarter.Configuration.JwtProperties;
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.EventCategory;
 import com.mentors.applicationstarter.Enum.EventType;
 import com.mentors.applicationstarter.Exception.ResourceAlreadyExistsException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Mapper.UserMapper;
 import com.mentors.applicationstarter.Model.Response.HttpResponse;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.UserRepository;
 import com.mentors.applicationstarter.Service.AuthenticationService;
+import com.mentors.applicationstarter.Service.CookieService;
 import com.mentors.applicationstarter.Service.EventService;
-import com.mentors.applicationstarter.Service.JwtService;
 import com.mentors.applicationstarter.Enum.Role;
+import com.mentors.applicationstarter.Service.JwtService;
 import com.mentors.applicationstarter.Utils.Base64Utils;
 import com.mentors.applicationstarter.Utils.EmailServiceUtils;
 import com.mentors.applicationstarter.Utils.HttpResponseFactory;
 import com.mentors.applicationstarter.Utils.UserColorGenerator;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -56,10 +61,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final CookieService cookieService;  // ADD THIS
+    private final JwtProperties jwtProperties;  // ADD THIS
     private final AuthenticationManager authenticationManager;
     private final EmailServiceUtils emailServiceUtils;
     private final EventService eventService;
     private final Base64Utils base64Utils;
+    private final UserMapper userMapper;
 
     //TODO Load from AWS PARAMETER STORE
     @Value("${generateUserPasswordOnRegistration}")
@@ -82,10 +90,59 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private Boolean forcePasswordResetOnLogin;
 
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
+
+    @Value("${app.frontend.activation-endpoint}")
+    private String frontendActivationEndpoint;
+
+    @Value("${app.frontend.activation-token-expiry:24}")
+    private int tokenExpiryHours;
+
+    /**
+     * NEW METHOD: Refresh access token using refresh token from cookie
+     */
+    @Override
+    public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response)
+            throws ResourceNotFoundException {
+
+        // Extract refresh token from cookie
+        String refreshToken = cookieService.extractRefreshToken(request)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.TOKEN_NOT_FOUND));
+
+        LOGGER.debug("Refresh token found, validating...");
+
+        // Extract username from refresh token
+        String userEmail = jwtService.extractUsername(refreshToken);
+
+        if (userEmail != null) {
+            // Load user from database
+            var user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+            // Validate refresh token
+            if (jwtService.isTokenValid(refreshToken, user)) {
+                // Generate new access token
+                String newAccessToken = jwtService.generateToken(user);
+
+                // Set new access token as cookie
+                cookieService.addAccessTokenCookie(response, newAccessToken);
+
+                LOGGER.info("Access token refreshed successfully for user: {}", userEmail);
+            } else {
+                LOGGER.warn("Invalid refresh token for user: {}", userEmail);
+                throw new ResourceNotFoundException(ErrorCodes.INVALID_TOKEN);
+            }
+        } else {
+            throw new ResourceNotFoundException(ErrorCodes.INVALID_TOKEN);
+        }
+    }
+
+
     @Override
     public ResponseEntity<HttpResponse> handleUserRegistrationRequest(User registeredUser, HttpServletRequest request) throws ResourceAlreadyExistsException, IOException {
         String passwordGenerationStrategy = "useProvidedPassword";
-        boolean requireUserEmailConfirmation = false;
+        boolean requireUserEmailConfirmation = true;
 
         if (userExistsByEmail(registeredUser.getEmail())) {
             throw new ResourceAlreadyExistsException(ErrorCodes.USER_ALREADY_REGISTERED, registeredUser.getEmail());
@@ -142,7 +199,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         Instant timestamp = Instant.now();
                         String userAccountActivationString = String.format("%s+%s", user.getUUID(), timestamp);
                         String base64EncodedActivationString = base64Utils.encodeStringToUrlSafeBase64(userAccountActivationString);
-                        String userAccountActivationUrl = String.format("%s/%s%s", APP_URL,"auth/activate?activationId=", base64EncodedActivationString);
+                        String userAccountActivationUrl = String.format("%s/%s%s", frontendBaseUrl,"auth/activate?token=", base64EncodedActivationString);
                         //TODO
                         //Send email with password and confirmation link - account remains blocked until activation link is used - separate method + endpoint
                         Map<String, String> providedPasswordTemplateVariables = new HashMap<>();
@@ -188,22 +245,57 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
+    /**
+     * UPDATED METHOD: Authenticate user and set cookies
+     * Now returns Map with user data instead of JWT token string
+     */
     @Override
-    public String authenticate(User authenticateUser) {
+    public Map<String, Object> authenticate(User authenticateUser, HttpServletResponse response) {
+        // Authenticate credentials
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authenticateUser.getEmail(),
                         authenticateUser.getPassword()
                 )
         );
+
+        // Load user from database
         var user = userRepository.findByEmail(authenticateUser.getEmail()).orElseThrow();
+
+        // Update login timestamps
         user.setLastLoginDateDisplay(user.getLastLoginDate());
         user.setLastLoginDate(new Date());
         userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        eventService.generateEvent(user.getUUID(),"User Authentication Request",user.getEmail(),EventCategory.USER,EventType.AUTH,this.getClass().getSimpleName());
 
-        return jwtToken;
+        // Generate both access token and refresh token
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        LOGGER.info("Generated tokens for user: {}", user.getEmail());
+
+        // Set tokens as HttpOnly cookies
+        cookieService.addAccessTokenCookie(response, accessToken);
+        cookieService.addRefreshTokenCookie(response, refreshToken);
+
+        // Log event
+        eventService.generateEvent(
+                user.getUUID(),
+                "User Authentication Request",
+                user.getEmail(),
+                EventCategory.USER,
+                EventType.AUTH,
+                this.getClass().getSimpleName()
+        );
+
+
+        //Remap user -> Response user DTO
+        UserResponseDTO remapUser = userMapper.mapUserToDto(user);
+
+        // Return user data (NO TOKEN IN RESPONSE BODY!)
+        return Map.of(
+                "user", remapUser,
+                "expiresIn", jwtProperties.getAccessTokenExpiration() / 1000 // seconds
+        );
     }
 
     @Override
@@ -279,7 +371,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public HttpResponse activateNewUser(String activationString) throws MessagingException, IOException {
         //TODO implement user activation - this action should be only accessible by the admin
         String base64DecodedString = base64Utils.decodeUrlSafeBase64ToString(activationString);
-        LOGGER.debug("Activation stirng - {} ", base64DecodedString);
+        LOGGER.debug("Activation string - {} ", base64DecodedString);
         String[] securityString = base64DecodedString.split("\\+",2);
         String activationUUID = securityString[0];
         String activationTimestamp = securityString[1];

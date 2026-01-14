@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -14,10 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryDTO {
     private Long id;
+    private UUID uuid;
     private String name;
     private String description;
-    private Instant created;
-    private Instant updated;
+    private Instant createdAt;
+    private UUID createdBy;
+    private Instant updatedAt;
+    private UUID updatedBy;
     private String color;
     private List<CourseSummaryDTO> courses;
 

@@ -1,27 +1,29 @@
 package com.mentors.applicationstarter.Controller;
 
+import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.ResourceImmutableException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
+import com.mentors.applicationstarter.Mapper.UserMapper;
 import com.mentors.applicationstarter.Model.Response.HttpResponse;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.UserRepository;
 import com.mentors.applicationstarter.Service.AuthenticationService;
+import com.mentors.applicationstarter.Service.CookieService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -32,35 +34,91 @@ public class AuthenticationController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationController.class);
 
     private final AuthenticationService authenticationService;
+    private final CookieService cookieService;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
+
 
     @Value("${allowPublicUserRegistration}")
     private Boolean allowPublicUserRegistration;
 
     @PostMapping("/register")
-    public ResponseEntity<HttpResponse> register(@RequestBody User user, HttpServletRequest request) throws Exception {
-        if(allowPublicUserRegistration) {
+    public ResponseEntity<HttpResponse> register(
+            @RequestBody User user,
+            HttpServletRequest request
+    ) throws Exception {
+        if (allowPublicUserRegistration) {
             return authenticationService.handleUserRegistrationRequest(user, request);
         } else {
             throw new ResourceImmutableException(ErrorCodes.REGISTRATION_NOT_ALLOWED);
         }
     }
 
+    /**
+     * Login endpoint - sets JWT tokens as HttpOnly cookies
+     */
     @PostMapping("/login")
-    public ResponseEntity<User> authenticate(@RequestBody User authenticateUser) {
-        String jwtToken = authenticationService.authenticate(authenticateUser);
-        Optional<User> loggedInUser = userRepository.findByEmail(authenticateUser.getEmail());
-        LOGGER.info("User login request received");
-        if (loggedInUser.isPresent()) {
-            HttpHeaders jwtHeader = new HttpHeaders();
-            jwtHeader.add("X-JWT-TOKEN", jwtToken);
+    public ResponseEntity<Map<String, Object>> authenticate(
+            @RequestBody User authenticateUser,
+            HttpServletResponse response
+    ) {
+        LOGGER.info("User login request received for: {}", authenticateUser.getEmail());
+        // Authenticate and set cookies
+        Map<String, Object> authResponse = authenticationService.authenticate(authenticateUser, response);
 
-            return new ResponseEntity<>(loggedInUser.get(), jwtHeader, HttpStatus.OK);
-        } else {
-            // Handle the case where the user is not found, for example, return 404 Not Found
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return ResponseEntity.ok(authResponse);
     }
+
+    /**
+     * Refresh access token using refresh token cookie
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ResourceNotFoundException {
+        LOGGER.info("Token refresh request received");
+
+        authenticationService.refreshAccessToken(request, response);
+        return ResponseEntity.ok(Map.of(
+                "message", "Token refreshed successfully"
+        ));
+    }
+
+    /**
+     * Logout endpoint - clears cookies
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletResponse response) {
+        LOGGER.info("User logout request received");
+
+        // Delete all auth cookies
+        cookieService.deleteAllAuthCookies(response);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Logged out successfully"
+        ));
+    }
+
+    /**
+     * Get current user - validates cookie automatically via filter
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> getCurrentUser(HttpServletRequest request) throws ResourceNotFoundException {
+        // JWT filter already authenticated the user
+        // Extract email from security context
+        String email = org.springframework.security.core.context.SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+        UserResponseDTO responseUser = userMapper.mapUserToDto(user);
+        return ResponseEntity.ok(responseUser);
+    }
+
 
     @PostMapping("/reset-password")
     public ResponseEntity<HttpResponse> requestResetPassword(@RequestBody User user) throws MessagingException, IOException, ResourceNotFoundException {
@@ -68,9 +126,10 @@ public class AuthenticationController {
         return new ResponseEntity<>(response, null, response.getHttpStatusCode());
     }
 
+    //TODO Store tokens in DB
     @GetMapping("/activate")
-    public ResponseEntity<HttpResponse> validateUserEmailAddress(@RequestParam String activationId) throws MessagingException, IOException {
-        HttpResponse response = authenticationService.activateNewUser(activationId);
+    public ResponseEntity<HttpResponse> validateUserEmailAddress(@RequestParam String token) throws MessagingException, IOException {
+        HttpResponse response = authenticationService.activateNewUser(token);
         return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getHttpStatusCode()));
     }
 

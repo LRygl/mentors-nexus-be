@@ -15,8 +15,10 @@ import java.util.UUID;
 public class CourseSummaryDTO {
     private Long id;
     private String name;
+    private String description;
     private String status;
     private UUID uuid;
     private BigDecimal price;
+    private UserSummaryDTO owner;
     //private Float courseRating
 }

@@ -24,6 +24,9 @@ public class FAQResponseSimplifiedDTO {
     private Boolean isPublished;
     private Boolean isFeatured;
     private FAQPriority priority;
+    private Long viewCount;
+    private Integer helpfulVotes;
+    private Integer notHelpfulVotes;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -1,30 +1,30 @@
 package com.mentors.applicationstarter.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mentors.applicationstarter.DTO.CourseSectionDTO;
+import com.mentors.applicationstarter.Enum.CourseLevel;
 import com.mentors.applicationstarter.Enum.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Course {
+public class Course extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "courseGenerator")
-    @SequenceGenerator(name = "courseGenerator", sequenceName = "application_course_sequence", allocationSize = 50)
-    @Column(nullable = false, updatable = false)
-    private Long id;
-    private UUID uuid;
     private String name;
+    private String description;
+    private String imageUrl;
 
     //TODO Create CRUD for Category Management
     private String category;
@@ -32,16 +32,19 @@ public class Course {
     private CourseStatus status;
     @Column(nullable = false)
     private BigDecimal price;
-
-    private Instant created;
-    private Instant updated;
-    private Instant published;
+    private Instant publishedAt;
+    private Boolean published;
     private Boolean featured;
+
+
+    @Enumerated(EnumType.STRING)
+    private CourseLevel level;
+
 
     // RELATIONS Definitions
 
     // LABEL JOIN
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "course_label",
             joinColumns = @JoinColumn(name = "course_id"),
@@ -52,7 +55,7 @@ public class Course {
     private Set<Label> labels = new HashSet<>();
 
     // CATEGORY JOIN
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "course_category",
             joinColumns = @JoinColumn(name = "course_id"),
@@ -68,32 +71,70 @@ public class Course {
     @JsonIgnore
     private User owner;
 
-    //STUDENTS JOIN - MANYTOMANY
-    @ManyToMany
-    @JoinTable(
-            name = "course_student",
-            joinColumns = @JoinColumn(name = "course_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     @Builder.Default
-    private Set<User> students = new HashSet<>();
+    @JsonIgnore
+    private Set<CourseEnrollment> enrollments = new HashSet<>();
 
-    //LESSONS JOIN - ONETOMANY
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CourseRating> ratings = new HashSet<>();
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<Lesson> lessons = new HashSet<>();
+    private Set<CourseSection> sections = new HashSet<>();
 
+
+    @OneToMany(
+            mappedBy = "course",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("position ASC")
+    @Builder.Default
+    private Set<CourseGoals> goals = new HashSet<>();
+
+    @OneToMany(
+            mappedBy = "course",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("position ASC")
+    @Builder.Default
+    private Set<CourseRequirement> requirements = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Course course = (Course) o;
-        return id != null && id.equals(course.id);
+        if (!(o instanceof Course course)) return false;
+        return getId() != null && getId().equals(course.getId());
     }
 
     @Override
     public int hashCode() {
-        return 31;
+        return getClass().hashCode();
+    }
+
+    public int getTotalDuration() {
+        return sections == null ? 0 :
+                sections.stream()
+                        .filter(sec -> sec.getLessons() != null)
+                        .flatMap(sec -> sec.getLessons().stream())
+                        .mapToInt(Lesson::getDuration)
+                        .sum();
+    }
+
+    public int getStudentCount() {
+        return enrollments != null ? enrollments.size() : 0;
+    }
+
+    public boolean hasStudent(Long userId) {
+        return enrollments != null && enrollments.stream()
+                .anyMatch(e -> e.getUser().getId().equals(userId));
+    }
+
+    public double getAverageRating() {
+        return ratings.isEmpty()
+                ? 0
+                : ratings.stream().mapToInt(CourseRating::getRating).average().orElse(0);
     }
 }

@@ -47,7 +47,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+    public ResponseEntity<CategoryDTO> createCategory(@RequestBody Category category) {
         return new ResponseEntity<>(categoryService.createCategory(category),HttpStatus.CREATED);
     }
 
@@ -60,7 +60,8 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Category> deleteCategory(@PathVariable Long id) {
-        return new ResponseEntity<>(categoryService.deleteCategory(id),HttpStatus.GONE);
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 }

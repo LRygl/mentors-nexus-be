@@ -7,9 +7,12 @@ import com.mentors.applicationstarter.Exception.ResourceNotEmptyException;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.CategoryMapper;
 import com.mentors.applicationstarter.Model.Category;
+import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Repository.CategoryRepository;
+import com.mentors.applicationstarter.Repository.CourseRepository;
 import com.mentors.applicationstarter.Service.CategoryService;
 import com.mentors.applicationstarter.Specification.CategorySpecification;
+import com.mentors.applicationstarter.Utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     public Page<CategoryDTO> getPagedCategories(String name, Pageable pageable) {
@@ -50,8 +54,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category createCategory(Category createdCategory) {
+    public CategoryDTO createCategory(Category createdCategory) {
         String categoryName = createdCategory.getName().toUpperCase().trim();
+
+        UUID courseCategoryUUID = UUID.randomUUID();
+        UUID authenticatedUserUuid = AuthUtils.getAuthenticatedUserUuid();
 
         if(categoryName.isEmpty()) {
             throw new ResourceNotEmptyException(ErrorCodes.CATEGORY_EMPTY);
@@ -62,8 +69,10 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category category = Category.builder()
-                .UUID(UUID.randomUUID())
+                .uuid(courseCategoryUUID)
                 .name(categoryName)
+                .createdAt(Instant.now())
+                .createdBy(authenticatedUserUuid)
                 .description(createdCategory.getDescription())
                 .color(createdCategory.getColor())
                 .build();
@@ -71,7 +80,8 @@ public class CategoryServiceImpl implements CategoryService {
         if(category.getName().isEmpty()){
             throw new RuntimeException("Category name cannot be empty string");
         } else {
-            return saveCategory(category);
+            saveCategory(category);
+            return CategoryMapper.toCategoryWithCoursesDto(category);
         }
     }
 
@@ -79,6 +89,10 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(Long id, Category updatedCategory) {
         Category category = findCategoryById(id);
 
+        UUID authenticatedUserUuid = AuthUtils.getAuthenticatedUserUuid();
+
+        category.setUpdatedBy(authenticatedUserUuid);
+        category.setUpdatedAt(Instant.now());
         category.setName(updatedCategory.getName().toUpperCase().trim());
         category.setDescription(updatedCategory.getDescription());
         category.setColor(updatedCategory.getColor());
@@ -90,12 +104,13 @@ public class CategoryServiceImpl implements CategoryService {
     public Category deleteCategory(Long id) {
         Category category = findCategoryById(id);
 
-        try {
-            categoryRepository.deleteById(id);
-        } catch (Exception e) {
-            return null;
+        List<Course> courses = courseRepository.findAllByCategoriesContaining(category);
+
+        for (Course course : courses) {
+            course.getCategories().remove(category);
         }
 
+        categoryRepository.delete(category);
         return category;
     }
 
@@ -111,4 +126,5 @@ public class CategoryServiceImpl implements CategoryService {
             return null;
         }
     }
+
 }

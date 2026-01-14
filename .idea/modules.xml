@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/application-starter.main.iml" filepath="$PROJECT_DIR$/.idea/modules/application-starter.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.mentors.application-starter.main.iml" filepath="$PROJECT_DIR$/.idea/modules/com.mentors.application-starter.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mentors-nexus-be.application-starter.main.iml" filepath="$PROJECT_DIR$/.idea/modules/mentors-nexus-be.application-starter.main.iml" />
     </modules>
   </component>
 </project>

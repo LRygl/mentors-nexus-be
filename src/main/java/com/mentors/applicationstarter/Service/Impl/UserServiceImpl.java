@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
+import com.mentors.applicationstarter.DTO.User.UserRequestDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Enum.EventCategory;
@@ -23,11 +24,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.mentors.applicationstarter.Utils.AuthUtils.getAuthenticatedUserUuid;
 
 @Service
 @RequiredArgsConstructor
@@ -172,6 +176,42 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getUserByUserId(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+        return mapUserToDTO(user);
+    }
+
+    @Override
+    public UserResponseDTO updateUser(Long id, UserRequestDTO request) {
+        User user = findUser(id);
+        //UUID authenticatedUserUUID = getAuthenticatedUserUuid();
+
+        user.setUpdatedAt(Instant.now());
+
+        if (request.getTelephoneNumber() != null) {
+            user.setTelephoneNumber(request.getTelephoneNumber());
+        }
+
+        if (request.getRole() != null) {
+            user.setRole(Role.valueOf(request.getRole()));
+        }
+
+        // Update Consents
+        if (request.getMarketing() != null) {
+            user.setMarketing(request.getMarketing());
+        }
+
+        if (request.getCookiePolicyConsent() != null) {
+            user.setCookiePolicyConsent(request.getCookiePolicyConsent());
+        }
+
+        if (request.getPersonalDataProcessing() != null) {
+            user.setPersonalDataProcessing(request.getPersonalDataProcessing());
+        }
+
+        if (request.getPersonalDataPublishing() != null) {
+            user.setPersonalDataPublishing(request.getPersonalDataPublishing());
+        }
+
+        userRepository.save(user);
         return mapUserToDTO(user);
     }
 
