@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.mentors.applicationstarter.Constant.FileConstant.LESSON_ENTITY;
 import static com.mentors.applicationstarter.Constant.FileConstant.LESSON_FOLDER;
 
 @Service
@@ -73,7 +74,7 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-    public LessonDTO updateLesson(Long lessonId, Lesson lesson, MultipartFile image) {
+    public LessonDTO updateLesson(Long lessonId, Lesson lesson, MultipartFile image, MultipartFile video) {
         Lesson existingLesson = lessonRepository.findById(lessonId).orElseThrow(
                 ()-> new ResourceNotFoundException(ErrorCodes.LESSON_NOT_FOUND));
 
@@ -97,14 +98,24 @@ public class LessonServiceImpl implements LessonService {
             existingLesson.setCategory(lesson.getCategory());
         }
 
-        if(image != null) {
-            String path = fileStorageService.storeFile(
-                    LESSON_FOLDER,
+        if(image != null && !image.isEmpty()) {
+            String imagePath = fileStorageService.storeFile(
+                    LESSON_ENTITY,
                     "Image",
                     existingLesson.getUuid(),
                     image
             );
-            existingLesson.setImageUrl(path);
+            existingLesson.setImageUrl(imagePath);
+        }
+
+        if(video != null && !video.isEmpty()) {
+            String videoPath = fileStorageService.storeFile(
+                    LESSON_ENTITY,
+                    "Video",
+                    existingLesson.getUuid(),
+                    video
+            );
+            existingLesson.setVideoUrl(videoPath);
         }
 
         Lesson updatedLesson = lessonRepository.save(existingLesson);

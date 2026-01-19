@@ -68,10 +68,22 @@ public class SecurityConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
 
         List<String> origins = List.of(allowedOrigins.split(","));
+
+        // Add debug logging
+        LOGGER.info("=== CORS Configuration ===");
+        LOGGER.info("Allowed Origins: {}", origins);
+        LOGGER.info("Allowed Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
+        LOGGER.info("Exposed Headers: X-JWT-TOKEN, Content-Range, Accept-Ranges, Content-Length, Content-Type");
+        LOGGER.info("==========================");
+
         configuration.setAllowedOrigins(origins);;
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.addAllowedHeader("*");
         configuration.addExposedHeader("X-JWT-TOKEN");
+        configuration.addExposedHeader("Content-Range");      // For partial content responses
+        configuration.addExposedHeader("Accept-Ranges");      // Tells browser we support Range requests
+        configuration.addExposedHeader("Content-Length");     // Total content length
+        configuration.addExposedHeader("Content-Type");       // MIME type of video
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
