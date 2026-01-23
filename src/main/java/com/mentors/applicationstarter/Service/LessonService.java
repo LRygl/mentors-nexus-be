@@ -20,7 +20,7 @@ public interface LessonService {
 
     LessonDTO createLesson(Lesson lesson);
 
-    LessonDTO updateLesson(Long lessonId, Lesson lesson, MultipartFile image);
+    LessonDTO updateLesson(Long lessonId, Lesson lesson, MultipartFile image, MultipartFile video);
 
     LessonDTO deleteLesson(Long lessonId);
 }

@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.mentors.applicationstarter.Constant.FileConstant.COURSE_ENTITY;
 import static com.mentors.applicationstarter.Constant.FileConstant.COURSE_FOLDER;
 
 @Service
@@ -91,7 +92,7 @@ public class CourseServiceImpl implements CourseService {
         String imagePath = null;
         if (file != null) {
             imagePath = fileStorageService.storeFile(
-                    COURSE_FOLDER,
+                    COURSE_ENTITY,
                     "Image",
                     courseUUID,
                     file
@@ -201,8 +202,8 @@ public class CourseServiceImpl implements CourseService {
 
         if (file != null) {
             String path = fileStorageService.storeFile(
-                    COURSE_FOLDER,
-                    "Image",
+                    COURSE_ENTITY,
+                    "image",
                     course.getUuid(),
                     file
             );

@@ -54,9 +54,10 @@ public class LessonController {
     public ResponseEntity<LessonDTO> updateLessonMultipart(
             @PathVariable Long lessonId,
             @RequestPart(value="lesson") Lesson lesson,
-            @RequestPart(value = "image", required = false) MultipartFile image
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestPart(value = "video", required = false) MultipartFile video
             ) {
-        return new ResponseEntity<>(lessonService.updateLesson(lessonId, lesson, image),HttpStatus.OK);
+        return new ResponseEntity<>(lessonService.updateLesson(lessonId, lesson, image, video),HttpStatus.OK);
     }
 
     @PutMapping(value = "/{lessonId}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -64,7 +65,7 @@ public class LessonController {
             @PathVariable Long lessonId,
             @RequestBody Lesson lesson
     ) {
-        return new ResponseEntity<>(lessonService.updateLesson(lessonId, lesson, null),HttpStatus.OK);
+        return new ResponseEntity<>(lessonService.updateLesson(lessonId, lesson, null, null),HttpStatus.OK);
     }
 
 

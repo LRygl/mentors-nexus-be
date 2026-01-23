@@ -3,14 +3,17 @@ package com.mentors.applicationstarter.Service.Impl;
 import com.mentors.applicationstarter.DTO.LessonDTO;
 import com.mentors.applicationstarter.DTO.LessonDetailDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
+import com.mentors.applicationstarter.Enum.VideoStatus;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Mapper.LessonMapper;
 import com.mentors.applicationstarter.Model.Lesson;
 import com.mentors.applicationstarter.Repository.LessonRepository;
 import com.mentors.applicationstarter.Service.FileStorageService;
 import com.mentors.applicationstarter.Service.LessonService;
+import com.mentors.applicationstarter.Service.VideoConversionService;
 import com.mentors.applicationstarter.Utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,15 +25,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.mentors.applicationstarter.Constant.FileConstant.LESSON_ENTITY;
 import static com.mentors.applicationstarter.Constant.FileConstant.LESSON_FOLDER;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LessonServiceImpl implements LessonService {
 
     private final LessonRepository lessonRepository;
     private final FileStorageService fileStorageService;
-
+    private final VideoConversionService videoConversionService;
 
     @Override
     public List<LessonDetailDTO> getAllLessons() {
@@ -73,7 +78,7 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-    public LessonDTO updateLesson(Long lessonId, Lesson lesson, MultipartFile image) {
+    public LessonDTO updateLesson(Long lessonId, Lesson lesson, MultipartFile image, MultipartFile video) {
         Lesson existingLesson = lessonRepository.findById(lessonId).orElseThrow(
                 ()-> new ResourceNotFoundException(ErrorCodes.LESSON_NOT_FOUND));
 
@@ -97,14 +102,52 @@ public class LessonServiceImpl implements LessonService {
             existingLesson.setCategory(lesson.getCategory());
         }
 
-        if(image != null) {
-            String path = fileStorageService.storeFile(
-                    LESSON_FOLDER,
-                    "Image",
+        if(image != null && !image.isEmpty()) {
+            String imagePath = fileStorageService.storeFile(
+                    LESSON_ENTITY,
+                    "image",
                     existingLesson.getUuid(),
                     image
             );
-            existingLesson.setImageUrl(path);
+            existingLesson.setImageUrl(imagePath);
+        }
+
+        if (video != null && !video.isEmpty()) {
+            // Store original video
+            String videoPath = fileStorageService.storeFile(
+                    LESSON_ENTITY,
+                    "video",
+                    existingLesson.getUuid(),
+                    video
+            );
+
+            existingLesson.setOriginalVideoUrl(videoPath);
+
+            // Check if video is already MP4
+            String contentType = video.getContentType();
+            boolean isAlreadyMp4 = "video/mp4".equals(contentType) ||
+                    videoPath.toLowerCase().endsWith(".mp4");
+
+            if (isAlreadyMp4) {
+                // Already MP4 - no conversion needed
+                existingLesson.setVideoUrl(videoPath);
+                existingLesson.setVideoStatus(VideoStatus.READY);
+                log.info("Video is already MP4, no conversion needed: {}", videoPath);
+            } else {
+                // Needs conversion
+                existingLesson.setVideoStatus(VideoStatus.UPLOADING);
+
+                // Save first to get the ID
+                Lesson savedLesson = lessonRepository.save(existingLesson);
+
+                // Queue for conversion (happens in background)
+                videoConversionService.queueVideoConversion(savedLesson.getId());
+
+                log.info("Video uploaded and queued for conversion: {} ({})",
+                        videoPath, contentType);
+
+                return LessonMapper.toLessonDto(savedLesson);
+            }
         }
 
         Lesson updatedLesson = lessonRepository.save(existingLesson);

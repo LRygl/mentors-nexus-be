@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Model;
 
 import com.mentors.applicationstarter.Enum.LessonCategory;
 import com.mentors.applicationstarter.Enum.LessonType;
+import com.mentors.applicationstarter.Enum.VideoStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,8 +29,15 @@ public class Lesson extends BaseEntity{
     private UUID uuid;
     private String title;
     private String description;
+
     private String imageUrl;
     private String videoUrl;
+    private String originalVideoUrl;
+
+    @Enumerated(EnumType.STRING)
+    private VideoStatus videoStatus;
+    private String conversionError;
+
     private Integer duration;
     private Integer orderIndex;
     private LessonType type; //PAID or FREE

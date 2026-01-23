@@ -10,6 +10,12 @@ public class FileConstant {
     public static final String COURSE_FOLDER = APPLICATION_ROOT_PATH + "/course/";
     public static final String LESSON_FOLDER = APPLICATION_ROOT_PATH + "/lesson/";
 
+    // ADD THESE NEW CONSTANTS for entity type names
+    public static final String USER_ENTITY = "user";
+    public static final String COURSE_ENTITY = "course";
+    public static final String LESSON_ENTITY = "lesson";
+
+
     public static final String DIRECTORY_CREATED = "Created directory for: ";
     public static final String DEFAULT_USER_IMAGE_PATH = "/user/image/";
     public static final String FILE_SAVED_IN_FILE_SYSTEM = "SAVED FILE IN FILE SYSTEM BY NAME: ";

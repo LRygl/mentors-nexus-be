@@ -33,7 +33,6 @@ public class FileStorageServiceImpl implements FileStorageService {
             System.getProperty("user.home") + "/mentors"
     ).toAbsolutePath().normalize();
 
-
     /**
      * Store file with full relative path
      *
@@ -41,17 +40,16 @@ public class FileStorageServiceImpl implements FileStorageService {
      * @param entityUUID the entity's UUID
      * @param fileType e.g., "image", "document", "video"
      * @param file the uploaded file
-     * @return relative path from storage root: "course/{uuid}/image/filename.png"
+     * @return relative path from storage root: "/lesson/{uuid}/video/filename.avi"
      */
     @Override
     public String storeFile(String entityType, String fileType, UUID entityUUID, MultipartFile file) {
         if (file == null || file.isEmpty()) return null;
 
-        // Validate if the file is not larger than allowed limit
         validateFileSize(fileType, file);
         validateMimeType(fileType, file);
 
-        String nomalizedEntityType = entityType.toLowerCase();
+        String normalizedEntityType = entityType.toLowerCase();
         String normalizedFileType = fileType.toLowerCase();
 
         try {
@@ -65,40 +63,52 @@ public class FileStorageServiceImpl implements FileStorageService {
                 );
             }
 
-            // Build target directory path: e.g. /uploads/{uuid}/images/
-            Path targetDir = Paths.get(nomalizedEntityType, String.valueOf(entityUUID), normalizedFileType);
+            // Build target directory: /home/user/mentors/lesson/{uuid}/video/
+            Path targetDir = rootStorageLocation.resolve(
+                    Paths.get(normalizedEntityType, String.valueOf(entityUUID), normalizedFileType)
+            );
+
             Files.createDirectories(targetDir);
+            LOGGER.info("Target directory: {}", targetDir);
 
-            // Get sanitized file name
             String sanitizedFileName = sanitizeFilename(file.getOriginalFilename());
+            Path targetFile = targetDir.resolve(sanitizedFileName);
 
-            // Resolve full file path
-            Path targetFile = targetDir.resolve(StringUtils.cleanPath(sanitizedFileName));
-
-            // Save file to disk
             Files.copy(file.getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+            LOGGER.info("File stored at: {}", targetFile);
 
-            return String.format("/%s/%s/%s", entityUUID, normalizedFileType, sanitizedFileName);
+            // IMPORTANT: Build the relative path manually using string formatting
+            // DO NOT use targetFile.toString() as it returns absolute path
+            String relativePath = String.format("/%s/%s/%s/%s",
+                    normalizedEntityType,   // "lesson"
+                    entityUUID,             // "4ba1e3b7-9f7a-46ac-b4d9-bee9e3ca4af6"
+                    normalizedFileType,     // "video"
+                    sanitizedFileName);     // "c-erveny-trpasli-k-01-konec.avi"
+
+            // Result: /lesson/4ba1e3b7-9f7a-46ac-b4d9-bee9e3ca4af6/video/c-erveny-trpasli-k-01-konec.avi
+
+            LOGGER.info("Relative path to store in DB: {}", relativePath);
+            return relativePath;
 
         } catch (IOException e) {
-            throw new RuntimeException("Exception");
+            LOGGER.error("Failed to store file: {}", file.getOriginalFilename(), e);
+            throw new RuntimeException("Failed to store file: " + file.getOriginalFilename(), e);
         }
-
     }
 
     @Override
     public void createEntityDirectory(String entityName, String entityDescription) {
-
-        Path path = Paths.get(entityName + "/" + entityDescription).toAbsolutePath().normalize();
+        Path path = rootStorageLocation.resolve(
+                Paths.get(entityName, entityDescription)
+        ).toAbsolutePath().normalize();
 
         try {
             Files.createDirectories(path);
-            System.out.println("Directory created: " + path);
+            LOGGER.info("Directory created: {}", path);
         } catch (IOException e) {
             throw new RuntimeException("Failed to create directory for entity: " + path, e);
         }
     }
-
 
     /**
      * Load file as Resource for serving
@@ -106,31 +116,43 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public Resource loadFileAsResource(String relativePath) {
         try {
-            // Remove leading slash if present
             String cleanPath = relativePath.startsWith("/")
                     ? relativePath.substring(1)
                     : relativePath;
 
+            LOGGER.info("Loading resource - Clean path: {}", cleanPath);
+            LOGGER.info("Root storage: {}", rootStorageLocation);
+
             Path filePath = rootStorageLocation
                     .resolve(cleanPath)
                     .normalize();
+
+            LOGGER.info("Full file path: {}", filePath);
 
             // Security check
             if (!filePath.startsWith(rootStorageLocation)) {
                 throw new SecurityException("Cannot access file outside storage directory");
             }
 
+            if (!Files.exists(filePath)) {
+                LOGGER.error("File does not exist: {}", filePath);
+                throw new FileNotFoundException("File not found: " + relativePath);
+            }
+
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
+                LOGGER.info("Resource loaded successfully");
                 return resource;
             } else {
                 throw new FileNotFoundException("File not found: " + relativePath);
             }
 
         } catch (MalformedURLException e) {
+            LOGGER.error("Malformed URL for path: {}", relativePath, e);
             throw new RuntimeException("Error loading file", e);
         } catch (FileNotFoundException e) {
+            LOGGER.error("File not found: {}", relativePath, e);
             throw new RuntimeException("File not found: " + relativePath, e);
         }
     }

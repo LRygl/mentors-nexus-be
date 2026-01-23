@@ -20,6 +20,7 @@ public class LessonMapper {
                 .createdBy(lesson.getCreatedBy())
                 .updatedAt(lesson.getUpdatedAt())
                 .updatedBy(lesson.getUpdatedBy())
+                .videoStatus(lesson.getVideoStatus())
                 .type(lesson.getType())
                 .category(lesson.getCategory())
                 .build();

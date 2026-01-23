@@ -98,3 +98,8 @@ logging:
     root: INFO
 
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info
