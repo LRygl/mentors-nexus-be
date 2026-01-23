@@ -8,8 +8,8 @@ on:
 env:
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: mentors-nexus
-  ECS_SERVICE: mentors-nexus-service
-  ECS_CLUSTER: mentors-nexus-cluster
+  ECS_SERVICE: mentors-nexus-task-service-f1diicfw
+  ECS_CLUSTER: mentors-nexus-cluster-a
 
 jobs:
   deploy:
