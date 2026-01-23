@@ -38,7 +38,7 @@ public class CourseEnrollmentPublicController {
     public ResponseEntity<List<EnrolledCourseDTO>> getEnrollments(
             @AuthenticationPrincipal User user
     ) {
-        List<EnrolledCourseDTO> enrollments = courseEnrollmentService.getEnrollments(user.getId());
+        List<EnrolledCourseDTO> enrollments = courseEnrollmentService.getUserEnrolledCourseIds(user.getId());
         return ResponseEntity.ok(enrollments);
     }
 
@@ -54,28 +54,6 @@ public class CourseEnrollmentPublicController {
         return ResponseEntity.ok(Map.of("enrolled", enrolled));
     }
 
-    /**
-     * Enroll current user in a course.
-     */
-    @PostMapping("/courses/{courseId}/enroll")
-    public ResponseEntity<EnrolledCourseDTO> enroll(
-            @AuthenticationPrincipal User user,
-            @PathVariable Long courseId
-    ) {
-        EnrolledCourseDTO enrollment = courseEnrollmentService.enroll(user, courseId);
-        return ResponseEntity.ok(enrollment);
-    }
 
-    /**
-     * Unenroll current user from a course.
-     */
-    @DeleteMapping("/courses/{courseId}/enroll")
-    public ResponseEntity<Void> unenroll(
-            @AuthenticationPrincipal User user,
-            @PathVariable Long courseId
-    ) {
-        courseEnrollmentService.unenroll(user.getId(), courseId);
-        return ResponseEntity.noContent().build();
-    }
 
 }

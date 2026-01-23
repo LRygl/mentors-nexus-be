@@ -3,11 +3,13 @@ package com.mentors.applicationstarter.Service.Impl;
 import com.mentors.applicationstarter.DTO.Course.EnrolledCourseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
 import com.mentors.applicationstarter.Exception.BusinessRuleViolationException;
+import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
 import com.mentors.applicationstarter.Model.Course;
 import com.mentors.applicationstarter.Model.CourseEnrollment;
 import com.mentors.applicationstarter.Model.User;
 import com.mentors.applicationstarter.Repository.CourseEnrollmentRepository;
 import com.mentors.applicationstarter.Repository.CourseRepository;
+import com.mentors.applicationstarter.Repository.UserRepository;
 import com.mentors.applicationstarter.Service.CourseEnrollmentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import java.util.Set;
 public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
 
     private final CourseEnrollmentRepository courseEnrollmentRepository;
+    private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
     /**
@@ -38,12 +41,11 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
     /**
      * Get detailed enrollment info for a user.
      */
-    public List<EnrolledCourseDTO> getEnrollments(Long userId) {
+    public List<EnrolledCourseDTO> getUserEnrolledCourseIds(Long userId) {
         return courseEnrollmentRepository.findByUserId(userId).stream()
                 .map(this::toDTO)
                 .toList();
     }
-
 
     /**
      * Check if user is enrolled in a specific course.
@@ -52,8 +54,49 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
         return courseEnrollmentRepository.existsByUserIdAndCourseId(userId, courseId);
     }
 
+
+    @Override
+    public EnrolledCourseDTO enrollByAdmin(Long userId, Long courseId, CourseEnrollment.EnrollmentType type) {
+        if (courseEnrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
+            throw new BusinessRuleViolationException(ErrorCodes.USER_ALREADY_ENROLLED_TO_COURSE);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.COURSE_DOES_NOT_EXIST));
+
+
+        CourseEnrollment enrollment = CourseEnrollment.builder()
+                .user(user)
+                .course(course)
+                .type(type)
+                .enrolledAt(Instant.now())
+                .progressPercent(0.0)
+                .build();
+
+        enrollment = courseEnrollmentRepository.save(enrollment);
+
+        return toDTO(enrollment);
+
+    }
     /**
-     * Enroll a user in a course.
+     * Unenroll a user from a course.
+     */
+    @Transactional
+    public void unenroll(Long userId, Long courseId) {
+        if (!courseEnrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
+            throw new BusinessRuleViolationException(ErrorCodes.USER_NOT_ENROLLED_TO_COURSE);
+        }
+
+        courseEnrollmentRepository.deleteByUserIdAndCourseId(userId, courseId);
+        log.info("User {} unenrolled from course {}", userId, courseId);
+    }
+
+
+    /**
+     * Enroll a user in a course. This method is only used internally to enroll user after purchase
      */
     @Transactional
     public EnrolledCourseDTO enroll(User user, Long courseId, CourseEnrollment.EnrollmentType type) {
@@ -88,19 +131,6 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
     @Transactional
     public EnrolledCourseDTO enroll(User user, Long courseId) {
         return enroll(user, courseId, CourseEnrollment.EnrollmentType.PURCHASED);
-    }
-
-    /**
-     * Unenroll a user from a course.
-     */
-    @Transactional
-    public void unenroll(Long userId, Long courseId) {
-        if (!courseEnrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
-            throw new BusinessRuleViolationException(ErrorCodes.USER_NOT_ENROLLED_TO_COURSE);
-        }
-
-        courseEnrollmentRepository.deleteByUserIdAndCourseId(userId, courseId);
-        log.info("User {} unenrolled from course {}", userId, courseId);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.DTO;
 
 import com.mentors.applicationstarter.Enum.LessonCategory;
 import com.mentors.applicationstarter.Enum.LessonType;
+import com.mentors.applicationstarter.Enum.VideoStatus;
 import com.mentors.applicationstarter.Model.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,7 @@ public class LessonDTO extends BaseEntity {
     private Integer orderIndex;
     private Instant createdAt;
     private Instant updatedAt;
+    private VideoStatus videoStatus;
     private LessonType type;
     private LessonCategory category;
 }
