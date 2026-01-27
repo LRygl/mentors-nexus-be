@@ -8,9 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -23,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("Category Controller Integration Tests")
+@WithMockUser(username = "testuser", roles = {"USER", "ADMIN"})  // Add mock security user
 class CategoryControllerIntegrationTest {
 
     @Autowired
@@ -43,18 +47,21 @@ class CategoryControllerIntegrationTest {
         // Clean database
         categoryRepository.deleteAll();
 
-        // Create test data
+        // Create test data with UUID
         category1 = Category.builder()
+                .uuid(UUID.randomUUID())  // Add UUID
                 .name("Programming")
                 .description("Programming courses")
                 .build();
 
         category2 = Category.builder()
+                .uuid(UUID.randomUUID())  // Add UUID
                 .name("Design")
                 .description("Design courses")
                 .build();
 
         category3 = Category.builder()
+                .uuid(UUID.randomUUID())  // Add UUID
                 .name("Marketing")
                 .description("Marketing courses")
                 .build();
@@ -144,6 +151,7 @@ class CategoryControllerIntegrationTest {
         Category saved = categoryRepository.save(category1);
 
         Category updateData = Category.builder()
+                .uuid(saved.getUuid())  // Keep existing UUID
                 .name("Advanced Programming")
                 .description("Advanced programming courses")
                 .build();
