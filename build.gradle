@@ -2,15 +2,29 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
 }
 
 group = 'com.mentors'
 version = project.findProperty("revision") ?: "0.0.0-SNAPSHOT"
 
+
+
+
 bootJar {
     // Use project property for application name or default
     def appName = project.findProperty("appName") ?: "application-starter"
     archiveFileName = "${appName}-${version}.jar"
+
+	manifest {
+		attributes(
+				'Implementation-Title': appName,
+				'Implementation-Version': version,
+				'Built-By': System.getProperty('user.name'),
+				'Built-JDK': System.getProperty('java.version'),
+				'Build-Time': new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'")
+		)
+	}
 }
 
 
@@ -19,7 +33,14 @@ java {
 }
 
 springBoot {
-    buildInfo()
+	buildInfo {
+		properties {
+			additional = [
+					'revision': version,
+					'app.name': project.findProperty("appName") ?: "application-starter"
+			]
+		}
+	}
 }
 
 configurations {
@@ -31,6 +52,7 @@ configurations {
 repositories {
 	mavenCentral()
 }
+
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
@@ -45,18 +67,163 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt:0.13.0'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	implementation 'org.postgresql:postgresql'
+	implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
+	implementation 'io.swagger.core.v3:swagger-annotations:2.2.38'
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.13.3'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test dependencies
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework:spring-webflux'
 	testImplementation 'org.springframework.graphql:spring-graphql-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	implementation("jakarta.validation:jakarta.validation-api:3.1.1")
-	implementation("io.swagger.core.v3:swagger-annotations:2.2.38")
-	implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.13.3")
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	testImplementation 'com.h2database:h2'
+
+	// Lombok for tests
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+// JaCoCo configuration
+jacoco {
+	toolVersion = "0.8.12"
+}
+
+
+// Configure test task
 tasks.named('test') {
 	useJUnitPlatform()
+
+	// Show test results in console
+	testLogging {
+		events "passed", "skipped", "failed"
+		exceptionFormat "full"
+		showStandardStreams = false
+		showStackTraces = true
+	}
+
+	// Fail fast on first test failure (optional)
+	// failFast = true
+
+	// Set max parallel forks for faster test execution
+	maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+
+	// Generate coverage report after tests
+	finalizedBy jacocoTestReport
 }
+
+// Separate integration tests (optional but recommended)
+sourceSets {
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/test/java')
+		}
+		resources.srcDir file('src/test/resources')
+	}
+}
+
+configurations {
+	integrationTestImplementation.extendsFrom testImplementation
+	integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+// Create integration test task
+task integrationTest(type: Test) {
+	description = 'Runs integration tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+
+	// Only run integration tests
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+
+	shouldRunAfter test
+
+	testLogging {
+		events "passed", "skipped", "failed"
+		exceptionFormat "full"
+		showStandardStreams = false
+	}
+}
+
+
+jacocoTestReport {
+	dependsOn test
+
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
+
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+					'**/config/**',
+					'**/entity/**',
+					'**/dto/**',
+					'**/DTO/**',
+					'**/Model/**',
+					'**/*Application.class',
+					'**/ApplicationStartupLogger.class'
+			])
+		}))
+	}
+}
+
+// Coverage verification
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.60  // 60% minimum coverage
+			}
+		}
+
+		rule {
+			element = 'CLASS'
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.50  // 50% per class
+			}
+			excludes = [
+					'*.config.*',
+					'*.dto.*',
+					'*.DTO.*',
+					'*.Model.*',
+					'*Application'
+			]
+		}
+	}
+}
+
+
+// Make check depend on coverage verification (optional)
+// check.dependsOn jacocoTestCoverageVerification
+
+// Task to run all tests
+task testAll {
+	description = 'Runs all tests including integration tests'
+	group = 'verification'
+
+	dependsOn test, integrationTest
+}
+
+// ============================================
+// BUILD LIFECYCLE HOOKS
+// ============================================
+
+// Ensure tests run before building
+build.dependsOn test
+
+// Clean test results before running tests
+test.mustRunAfter clean
