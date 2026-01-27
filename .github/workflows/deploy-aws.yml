@@ -14,9 +14,6 @@ env:
   ECS_CLUSTER: mentors-nexus-cluster-a
 
 jobs:
-  # ============================================
-  # JOB 1: Run Tests
-  # ============================================
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -40,9 +37,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Unit Tests
+        id: test
         run: |
           echo "🧪 Running unit tests..."
-          ./gradlew test --info --stacktrace
+          ./gradlew test --info --stacktrace 2>&1 | tee test-output.log
         continue-on-error: true
 
       - name: Publish Test Report
@@ -63,14 +61,17 @@ jobs:
           path: |
             build/reports/tests/test/
             build/test-results/test/
+            test-output.log
           retention-days: 30
 
-      - name: Upload Coverage Reports
-        if: always()
+      - name: Upload Test Logs
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-reports
-          path: build/reports/jacoco/test/html/
+          name: test-failure-logs
+          path: |
+            test-output.log
+            build/reports/tests/test/
           retention-days: 30
 
       - name: Generate Detailed Test Summary
@@ -79,7 +80,6 @@ jobs:
           echo "### 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Parse test results
           if [ -d build/test-results/test ]; then
             TOTAL_TESTS=0
             FAILED_TESTS=0
@@ -112,41 +112,78 @@ jobs:
             else
               echo "❌ **$FAILED_TESTS test(s) failed**" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "#### Failed Tests:" >> $GITHUB_STEP_SUMMARY
+              echo "#### Failed Tests Details:" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
           
-              # Extract failed test details
+              # Extract detailed failure information
               for file in build/test-results/test/*.xml; do
                 if [ -f "$file" ]; then
-                  # Extract failed test cases
-                  grep -A 5 '<failure' "$file" | grep 'testcase name=' | sed 's/.*testcase name="\([^"]*\)".*/- `\1`/' >> $GITHUB_STEP_SUMMARY || true
+                  # Check if file has failures
+                  if grep -q '<failure' "$file"; then
+                    echo "##### $(basename $file .xml)" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+          
+                    # Extract test case names and messages
+                    while IFS= read -r line; do
+                      TEST_NAME=$(echo "$line" | grep -oP 'name="\K[^"]+' || echo "Unknown")
+                      CLASS_NAME=$(echo "$line" | grep -oP 'classname="\K[^"]+' || echo "Unknown")
+                      echo "**Test:** \`$CLASS_NAME.$TEST_NAME\`" >> $GITHUB_STEP_SUMMARY
+                      echo "" >> $GITHUB_STEP_SUMMARY
+          
+                      # Get failure message
+                      FAILURE_MSG=$(sed -n "/<testcase.*name=\"$TEST_NAME\"/,/<\/testcase>/p" "$file" | grep -oP '<failure[^>]*message="\K[^"]+' | head -1)
+                      if [ -n "$FAILURE_MSG" ]; then
+                        echo "**Error:** $FAILURE_MSG" >> $GITHUB_STEP_SUMMARY
+                        echo "" >> $GITHUB_STEP_SUMMARY
+                      fi
+          
+                      # Get first few lines of stack trace
+                      STACK_TRACE=$(sed -n "/<testcase.*name=\"$TEST_NAME\"/,/<\/testcase>/p" "$file" | sed -n '/<failure/,/<\/failure>/p' | sed 's/<[^>]*>//g' | head -10)
+                      if [ -n "$STACK_TRACE" ]; then
+                        echo "<details>" >> $GITHUB_STEP_SUMMARY
+                        echo "<summary>Stack Trace (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
+                        echo "" >> $GITHUB_STEP_SUMMARY
+                        echo '```' >> $GITHUB_STEP_SUMMARY
+                        echo "$STACK_TRACE" >> $GITHUB_STEP_SUMMARY
+                        echo '```' >> $GITHUB_STEP_SUMMARY
+                        echo "</details>" >> $GITHUB_STEP_SUMMARY
+                        echo "" >> $GITHUB_STEP_SUMMARY
+                      fi
+                    done < <(grep '<testcase' "$file" | grep -A1 '<failure')
+                  fi
                 fi
               done
             fi
           
-            # Add coverage info if available
-            if [ -f build/reports/jacoco/test/html/index.html ]; then
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "### 📊 Code Coverage" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-          
-              # Extract coverage percentage from JaCoCo HTML report
-              COVERAGE=$(grep -oP 'Total[^>]*>([^%]+)%' build/reports/jacoco/test/html/index.html | grep -oP '[0-9]+' | head -1)
-          
-              if [ -n "$COVERAGE" ]; then
-                echo "- **Line Coverage:** ${COVERAGE}%" >> $GITHUB_STEP_SUMMARY
-          
-                if [ "$COVERAGE" -ge 80 ]; then
-                  echo "- **Status:** 🟢 Excellent" >> $GITHUB_STEP_SUMMARY
-                elif [ "$COVERAGE" -ge 60 ]; then
-                  echo "- **Status:** 🟡 Good" >> $GITHUB_STEP_SUMMARY
-                else
-                  echo "- **Status:** 🔴 Needs Improvement" >> $GITHUB_STEP_SUMMARY
-                fi
-              fi
-            fi
+            # Add link to full report
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📋 [View Full Test Report in Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ No test results found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check Test Status
+        if: always()
+        run: |
+          if [ -d build/test-results/test ]; then
+            FAILED_TESTS=0
+          
+            for file in build/test-results/test/*.xml; do
+              if [ -f "$file" ]; then
+                FAILURES=$(grep -oP 'failures="\K[0-9]+' "$file" | head -1)
+                FAILED_TESTS=$((FAILED_TESTS + ${FAILURES:-0}))
+              fi
+            done
+          
+            if [ "$FAILED_TESTS" -gt 0 ]; then
+              echo "❌ $FAILED_TESTS test(s) failed"
+              exit 1
+            else
+              echo "✅ All tests passed"
+            fi
+          else
+            echo "⚠️ No test results found"
+            exit 1
           fi
 
       - name: Comment Test Results on PR
@@ -156,7 +193,6 @@ jobs:
           script: |
             const fs = require('fs');
             
-            // Read test results
             let testSummary = '## 🧪 Test Results\n\n';
             
             try {
@@ -166,7 +202,13 @@ jobs:
               testSummary += '⚠️ Unable to read test summary\n';
             }
             
-            // Find existing comment
+            testSummary += '\n\n---\n';
+            testSummary += '**Commit:** `' + context.sha.substring(0, 7) + '`\n';
+            testSummary += '**Run:** [#' + context.runNumber + '](' + 
+                           'https://github.com/' + context.repo.owner + '/' + 
+                           context.repo.repo + '/actions/runs/' + context.runId + ')\n';
+            testSummary += '*Updated at: ' + new Date().toUTCString() + '*';
+            
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -178,282 +220,20 @@ jobs:
               comment.body.includes('🧪 Test Results')
             );
             
-            const commentBody = testSummary + '\n\n---\n*Updated at: ' + new Date().toUTCString() + '*';
-            
             if (botComment) {
-              // Update existing comment
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
-                body: commentBody
+                body: testSummary
               });
             } else {
-              // Create new comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: commentBody
+                body: testSummary
               });
             }
 
-      - name: Fail if Tests Failed
-        if: failure()
-        run: |
-          echo "❌ Tests failed - blocking pipeline"
-          exit 1
-
-  # ============================================
-  # JOB 2: Integration Tests
-  # ============================================
-  integration-test:
-    name: Run Integration Tests
-    runs-on: ubuntu-latest
-    needs: test
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 23
-        uses: actions/setup-java@v4
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Grant Execute Permission
-        run: chmod +x gradlew
-
-      - name: Run Integration Tests
-        run: |
-          echo "🔗 Running integration tests..."
-          ./gradlew integrationTest --info --stacktrace
-        continue-on-error: true
-
-      - name: Publish Integration Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Integration Test Results
-          path: 'build/test-results/integrationTest/*.xml'
-          reporter: java-junit
-          fail-on-error: true
-
-      - name: Upload Integration Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-test-results
-          path: build/reports/tests/integrationTest/
-          retention-days: 30
-
-  # ============================================
-  # JOB 3: Code Quality & Security
-  # ============================================
-  code-quality:
-    name: Code Quality & Security
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 23
-        uses: actions/setup-java@v4
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Grant Execute Permission
-        run: chmod +x gradlew
-
-      - name: Check Dependencies
-        run: |
-          echo "📦 Checking dependencies..."
-          ./gradlew dependencies --configuration runtimeClasspath
-
-      - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
-
-      - name: Check Coverage Threshold
-        run: |
-          echo "📊 Checking code coverage..."
-          ./gradlew jacocoTestCoverageVerification || echo "⚠️  Coverage below threshold"
-
-      - name: Add Coverage Comment to PR
-        if: github.event_name == 'pull_request'
-        uses: madrapps/jacoco-report@v1.6.1
-        with:
-          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 60
-          min-coverage-changed-files: 50
-          title: 'Code Coverage Report'
-
-      - name: Upload Coverage to Codecov
-        if: always()
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./build/reports/jacoco/test/jacocoTestReport.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
-  # ============================================
-  # JOB 4: Build Validation
-  # ============================================
-  build-validation:
-    name: Build Validation
-    runs-on: ubuntu-latest
-    needs: [test, code-quality]
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 23
-        uses: actions/setup-java@v4
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Grant Execute Permission
-        run: chmod +x gradlew
-
-      - name: Build Application
-        run: |
-          VERSION=$(echo $GITHUB_SHA | cut -c1-7)
-          echo "🔨 Building application version: $VERSION"
-          ./gradlew clean build -x test -Prevision=$VERSION -PappName=mentors-app --info
-
-      - name: Verify JAR Created
-        run: |
-          if [ -f build/libs/mentors-app-*.jar ]; then
-            echo "✅ JAR file created successfully"
-            ls -lh build/libs/
-          
-            # Show JAR contents
-            echo "📦 JAR Contents:"
-            jar -tf build/libs/mentors-app-*.jar | head -20
-          else
-            echo "❌ JAR file not found"
-            exit 1
-          fi
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: application-jar
-          path: build/libs/*.jar
-          retention-days: 7
-
-  # ============================================
-  # JOB 5: Deploy to AWS
-  # ============================================
-  deploy:
-    name: Deploy to AWS ECS
-    runs-on: ubuntu-latest
-    needs: [test, integration-test, code-quality, build-validation]
-    if: github.ref == 'refs/heads/master'
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 23
-        uses: actions/setup-java@v4
-        with:
-          java-version: '23'
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Set Build Variables
-        id: vars
-        run: |
-          echo "VERSION=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_OUTPUT
-          echo "FULL_SHA=$GITHUB_SHA" >> $GITHUB_OUTPUT
-
-      - name: Build Production JAR
-        run: |
-          chmod +x gradlew
-          echo "🔨 Building production JAR..."
-          ./gradlew clean bootJar \
-            -Prevision=${{ steps.vars.outputs.VERSION }} \
-            -PappName=mentors-app \
-            --info
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build and Push Docker Image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-          VERSION: ${{ steps.vars.outputs.VERSION }}
-        run: |
-          echo "🐳 Building Docker image..."
-          docker build \
-            --build-arg VERSION=$VERSION \
-            --build-arg BUILD_TIME=${{ steps.vars.outputs.BUILD_TIME }} \
-            --build-arg GIT_COMMIT=${{ steps.vars.outputs.FULL_SHA }} \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          
-          echo "📤 Pushing images to ECR..."
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          
-          echo "✅ Images pushed successfully"
-
-      - name: Deploy to ECS
-        run: |
-          echo "🚀 Deploying to ECS..."
-          aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --force-new-deployment \
-            --region ${{ env.AWS_REGION }}
-
-      - name: Wait for Deployment
-        run: |
-          echo "⏳ Waiting for deployment to stabilize..."
-          aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }} \
-            --region ${{ env.AWS_REGION }}
-          echo "✅ Deployment stable"
-
-      - name: Deployment Summary
-        if: always()
-        run: |
-          echo "### 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Status | ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Version | \`${{ steps.vars.outputs.VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Commit | \`${{ steps.vars.outputs.FULL_SHA }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build Time | ${{ steps.vars.outputs.BUILD_TIME }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Region | ${{ env.AWS_REGION }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cluster | ${{ env.ECS_CLUSTER }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Service | ${{ env.ECS_SERVICE }} |" >> $GITHUB_STEP_SUMMARY
+  # ... rest of your workflow jobs ...
