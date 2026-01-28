@@ -1,0 +1,23 @@
+# Production-specific overrides
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Don't auto-update schema in prod
+    show-sql: false
+
+jwt:
+  cookie:
+    secure: true  # Always HTTPS in production
+    same-site: None  # For cross-site cookies
+
+app:
+  send-email-on-registration: true
+  register-admin-user-on-startup: false  # Only create admin once
+
+# Less verbose logging in production
+logging:
+  level:
+    com.mentors.applicationstarter: INFO
+    org.springframework.security: INFO
+    org.springframework.web.cors: INFO
+    root: WARN

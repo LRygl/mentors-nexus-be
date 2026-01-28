@@ -1,0 +1,93 @@
+{
+  "family": "mentors-nexus-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "mentors-app",
+      "image": "${IMAGE_URI}",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "DATABASE_URL",
+          "value": "jdbc:postgresql://${RDS_ENDPOINT}:5432/mentors"
+        },
+        {
+          "name": "DATABASE_USERNAME",
+          "value": "postgres"
+        },
+        {
+          "name": "FRONTEND_URL",
+          "value": "https://mentors.cz"
+        },
+        {
+          "name": "CORS_ALLOWED_ORIGINS",
+          "value": "https://mentors.cz,https://www.mentors.cz"
+        },
+        {
+          "name": "COOKIE_DOMAIN",
+          "value": "mentors.cz"
+        },
+        {
+          "name": "COOKIE_SECURE",
+          "value": "true"
+        },
+        {
+          "name": "COOKIE_SAME_SITE",
+          "value": "None"
+        },
+        {
+          "name": "EMAIL_USERNAME",
+          "value": "lubomir.rygl@gmail.com"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:eu-central-1:${AWS_ACCOUNT_ID}:secret:mentors/db-password"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:eu-central-1:${AWS_ACCOUNT_ID}:secret:mentors/jwt-secret"
+        },
+        {
+          "name": "EMAIL_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:eu-central-1:${AWS_ACCOUNT_ID}:secret:mentors/email-password"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8080/api/v1/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 90
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mentors-nexus",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}
