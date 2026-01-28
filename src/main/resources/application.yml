@@ -103,7 +103,7 @@ management:
     web:
       exposure:
         include: health
-      base-path: /actuator
+      base-path: /api/v1/actuator
   endpoint:
     health:
       show-details: always

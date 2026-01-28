@@ -7,11 +7,6 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-		"spring.autoconfigure.exclude=" +
-				"org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration," +
-				"org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration"
-})
 class ApplicationStarterApplicationTests {
 
 	@Test

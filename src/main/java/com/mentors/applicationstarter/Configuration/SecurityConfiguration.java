@@ -51,7 +51,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         // Explicitly permit actuator health
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
-                        .requestMatchers("**")
+                        .requestMatchers("/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated()

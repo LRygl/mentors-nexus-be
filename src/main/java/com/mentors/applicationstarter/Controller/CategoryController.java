@@ -2,9 +2,7 @@ package com.mentors.applicationstarter.Controller;
 
 import com.mentors.applicationstarter.DTO.CategoryDTO;
 import com.mentors.applicationstarter.Model.Category;
-import com.mentors.applicationstarter.Model.Response.HttpResponse;
 import com.mentors.applicationstarter.Service.CategoryService;
-import com.mentors.applicationstarter.Service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,7 +46,19 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryDTO> createCategory(@RequestBody Category category) {
-        return new ResponseEntity<>(categoryService.createCategory(category),HttpStatus.CREATED);
+
+        CategoryDTO result = categoryService.createCategory(category);
+        ResponseEntity<CategoryDTO> response = new ResponseEntity<>(result, HttpStatus.CREATED);
+
+        // Debug logging
+        System.out.println("=== CONTROLLER DEBUG ===");
+        System.out.println("Response Status: " + response.getStatusCode());
+        System.out.println("Response Status Value: " + response.getStatusCodeValue());
+        System.out.println("Response Body: " + response.getBody());
+
+        return response;
+
+        //return new ResponseEntity<>(categoryService.createCategory(category),HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
