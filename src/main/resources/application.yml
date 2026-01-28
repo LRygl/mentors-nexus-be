@@ -61,7 +61,7 @@ app:
 
   # CORS Configuration
   cors:
-    allowed-origins: http://localhost:5173,http://localhost:3000
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,https://d3h9a9ix8i8ml8.cloudfront.net}
   
   # Email Configuration
   send-email-on-registration: false
