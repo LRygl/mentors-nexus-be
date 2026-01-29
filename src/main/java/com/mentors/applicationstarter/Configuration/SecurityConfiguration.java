@@ -49,10 +49,38 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Explicitly permit actuator health
-                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
-                        .requestMatchers("/**")
-                        .permitAll()
+                        // Public endpoints (no authentication needed)
+                        .requestMatchers(
+                                "/actuator/**",
+                                "/api/v1/actuator/**"
+                        ).permitAll()
+
+                        // Auth endpoints (login, register, refresh)
+                        .requestMatchers(
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/refresh",
+                                "/api/v1/auth/forgot-password",
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/auth/activate"
+                        ).permitAll()
+
+                        // Public content endpoints (if needed)
+                        .requestMatchers(
+                                "/api/v1/legal/public/**",
+                                "/api/v1/faq/public/**"
+                        ).permitAll()
+
+                        // Admin endpoints require ADMIN role
+                        .requestMatchers(
+                                "/api/v1/admin/**",
+                                "/api/v1/user/**"  // If user management is admin-only
+                        ).hasAnyRole("ADMIN", "ROLE_ADMIN")
+
+                        // /auth/me REQUIRES authentication (critical!)
+                        .requestMatchers("/api/v1/auth/me").authenticated()
+
+                        // Everything else requires authentication
                         .anyRequest()
                         .authenticated()
                 )
