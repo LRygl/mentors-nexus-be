@@ -4,6 +4,7 @@ import com.mentors.applicationstarter.Service.CookieService;
 import com.mentors.applicationstarter.Service.Impl.JwtServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -33,8 +36,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
+        String method = request.getMethod();
+
         // Skip JWT filter for actuator health endpoints
-        return path.startsWith("/actuator/health");
+        if (path.startsWith("/actuator/health")) {
+            return true;
+        }
+
+        // Skip OPTIONS requests (CORS preflight)
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            return true;
+        }
     }
 
     @Override
@@ -44,11 +56,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
+        // debug logging to see which endpoint is being called
+        String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+
+        LOGGER.debug("Processing {} {}", method, requestURI);
+
         // Extract JWT from cookie instead of Authorization header
         String jwt = cookieService.extractAccessToken(request).orElse(null);
 
         if (jwt == null) {
-            LOGGER.info("No JWT token found in cookies");
+            // ✅ More detailed logging
+            LOGGER.warn("No JWT token found for {} {} - cookies present: {}",
+                    method,
+                    requestURI,
+                    request.getCookies() != null ?
+                            Arrays.stream(request.getCookies())
+                                    .map(Cookie::getName)
+                                    .collect(Collectors.joining(", "))
+                            : "none"
+            );
             filterChain.doFilter(request, response);
             return;
         }
@@ -70,7 +97,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    LOGGER.info("User {} authenticated successfully", userEmail);
+
+                    // Only log on first authentication, not every request
+                    LOGGER.debug("User {} authenticated for {} {}", userEmail, method, requestURI);
                 } else {
                     LOGGER.warn("JWT token validation failed for user {}", userEmail);
                 }
