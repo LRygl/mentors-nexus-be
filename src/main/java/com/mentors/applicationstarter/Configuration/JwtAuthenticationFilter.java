@@ -47,6 +47,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if ("OPTIONS".equalsIgnoreCase(method)) {
             return true;
         }
+
+        return false;
     }
 
     @Override
