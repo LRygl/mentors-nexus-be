@@ -17,8 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -104,19 +109,41 @@ public class AuthenticationController {
      * Get current user - validates cookie automatically via filter
      */
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getCurrentUser(HttpServletRequest request) throws ResourceNotFoundException {
-        // JWT filter already authenticated the user
-        // Extract email from security context
-        String email = org.springframework.security.core.context.SecurityContextHolder
+    public ResponseEntity<UserResponseDTO> getCurrentUser() {
+        // Get authentication from security context
+        Authentication authentication = SecurityContextHolder
                 .getContext()
-                .getAuthentication()
-                .getName();
+                .getAuthentication();
 
+        // Authentication exists
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Not anonymous user
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Get email (getName() for our User object returns email)
+        String email = authentication.getName();
+        if (email == null || email.isEmpty() || "anonymousUser".equals(email)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Find user in database
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
 
+        // Map to DTO
         UserResponseDTO responseUser = userMapper.mapUserToDto(user);
-        return ResponseEntity.ok(responseUser);
+
+        // Return with cache-control headers to prevent 304 responses
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noCache().noStore().mustRevalidate())
+                .header("Pragma", "no-cache")
+                .header("Expires", "0")
+                .body(responseUser);
     }
 
 
