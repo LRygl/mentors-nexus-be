@@ -75,7 +75,7 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 "/api/v1/admin/**",
                                 "/api/v1/user/**"  // If user management is admin-only
-                        ).hasAnyRole("ADMIN", "ROLE_ADMIN")
+                        ).hasAnyRole("ADMIN")
 
                         // /auth/me REQUIRES authentication (critical!)
                         .requestMatchers("/api/v1/auth/me").authenticated()
