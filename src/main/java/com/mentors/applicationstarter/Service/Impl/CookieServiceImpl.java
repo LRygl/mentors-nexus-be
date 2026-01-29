@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -26,14 +27,21 @@ public class CookieServiceImpl implements CookieService {
      */
     @Override
     public void addAccessTokenCookie(HttpServletResponse response, String token) {
-        int maxAge = (int) (jwtProperties.getAccessTokenExpiration() / 1000); // Convert to seconds
-        Cookie cookie = createSecureCookie(
+        int maxAge = (int) (jwtProperties.getAccessTokenExpiration() / 1000);
+
+        // ✅ CALLED HERE - Creates the ResponseCookie
+        ResponseCookie cookie = createSecureResponseCookie(
                 jwtProperties.getCookie().getAccessTokenName(),
                 token,
                 maxAge
         );
-        response.addCookie(cookie);
-        LOGGER.debug("Access token cookie added with maxAge: {} seconds", maxAge);
+
+        // Then adds it to response
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        LOGGER.info("Access token cookie added: secure={}, sameSite={}",
+                jwtProperties.getCookie().getSecure(),
+                jwtProperties.getCookie().getSameSite());
     }
 
     /**
@@ -41,36 +49,44 @@ public class CookieServiceImpl implements CookieService {
      */
     @Override
     public void addRefreshTokenCookie(HttpServletResponse response, String token) {
-        int maxAge = (int) (jwtProperties.getRefreshTokenExpiration() / 1000); // Convert to seconds
-        Cookie cookie = createSecureCookie(
+        int maxAge = (int) (jwtProperties.getRefreshTokenExpiration() / 1000);
+
+        // ✅ CALLED HERE TOO - Creates the ResponseCookie
+        ResponseCookie cookie = createSecureResponseCookie(
                 jwtProperties.getCookie().getRefreshTokenName(),
                 token,
                 maxAge
         );
-        response.addCookie(cookie);
-        LOGGER.debug("Refresh token cookie added with maxAge: {} seconds", maxAge);
+
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        LOGGER.info("Refresh token cookie added: secure={}, sameSite={}",
+                jwtProperties.getCookie().getSecure(),
+                jwtProperties.getCookie().getSameSite());
     }
 
-    /**
-     * Create a secure cookie with standard security settings
-     */
-    private Cookie createSecureCookie(String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);  // Prevents JavaScript access (XSS protection)
-        cookie.setSecure(jwtProperties.getCookie().getSecure()); // HTTPS only in production
-        cookie.setPath(jwtProperties.getCookie().getPath());
-        cookie.setMaxAge(maxAge);
+
+    private ResponseCookie createSecureResponseCookie(String name, String value, int maxAge) {
+        // Spring's fluent builder API
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(jwtProperties.getCookie().getSecure())
+                .path(jwtProperties.getCookie().getPath())
+                .maxAge(maxAge)
+                .sameSite(jwtProperties.getCookie().getSameSite());  // ✅ Works reliably
 
         // Set domain if configured
-        if (jwtProperties.getCookie().getDomain() != null) {
-            cookie.setDomain(jwtProperties.getCookie().getDomain());
+        String domain = jwtProperties.getCookie().getDomain();
+        if (domain != null && !domain.isEmpty()) {
+            builder.domain(domain);
         }
 
-        // Set SameSite attribute (Spring Boot 3.2+)
-        cookie.setAttribute("SameSite", jwtProperties.getCookie().getSameSite());
-
-        return cookie;
+        return builder.build();
     }
+
+    // =========================================================================
+    // READING COOKIES - Still uses Cookie (this part works fine)
+    // =========================================================================
 
     /**
      * Extract access token from cookie
@@ -89,38 +105,47 @@ public class CookieServiceImpl implements CookieService {
     }
 
     /**
-     * Helper method to extract token from cookie by name
+     * Reading cookies from request works fine with Cookie class
+     * The issue is only when WRITING cookies to response
      */
     private Optional<String> extractTokenFromCookie(HttpServletRequest request, String cookieName) {
         if (request.getCookies() == null) {
+            LOGGER.debug("No cookies in request");
             return Optional.empty();
         }
 
-        return Arrays.stream(request.getCookies())
+        Optional<String> token = Arrays.stream(request.getCookies())
                 .filter(cookie -> cookieName.equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .findFirst();
+
+        if (token.isEmpty()) {
+            LOGGER.debug("Cookie '{}' not found. Available: {}",
+                    cookieName,
+                    Arrays.stream(request.getCookies())
+                            .map(Cookie::getName)
+                            .reduce((a, b) -> a + ", " + b)
+                            .orElse("none")
+            );
+        }
+
+        return token;
     }
 
-    /**
-     * Delete access token cookie (logout)
-     */
+    // =========================================================================
+    // DELETING COOKIES - Also needs ResponseCookie
+    // =========================================================================
+
     @Override
     public void deleteAccessTokenCookie(HttpServletResponse response) {
-        deleteCookie(response, jwtProperties.getCookie().getAccessTokenName());
+        deleteResponseCookie(response, jwtProperties.getCookie().getAccessTokenName());
     }
 
-    /**
-     * Delete refresh token cookie (logout)
-     */
     @Override
     public void deleteRefreshTokenCookie(HttpServletResponse response) {
-        deleteCookie(response, jwtProperties.getCookie().getRefreshTokenName());
+        deleteResponseCookie(response, jwtProperties.getCookie().getRefreshTokenName());
     }
 
-    /**
-     * Delete all authentication cookies
-     */
     @Override
     public void deleteAllAuthCookies(HttpServletResponse response) {
         deleteAccessTokenCookie(response);
@@ -131,17 +156,20 @@ public class CookieServiceImpl implements CookieService {
     /**
      * Helper method to delete a cookie
      */
-    private void deleteCookie(HttpServletResponse response, String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setPath(jwtProperties.getCookie().getPath());
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);  // Delete immediately
+    private void deleteResponseCookie(HttpServletResponse response, String cookieName) {
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(cookieName, "")
+                .httpOnly(true)
+                .secure(jwtProperties.getCookie().getSecure())
+                .path(jwtProperties.getCookie().getPath())
+                .maxAge(0)  // Delete immediately
+                .sameSite(jwtProperties.getCookie().getSameSite());  // ✅ Must match
 
-        if (jwtProperties.getCookie().getDomain() != null) {
-            cookie.setDomain(jwtProperties.getCookie().getDomain());
+        String domain = jwtProperties.getCookie().getDomain();
+        if (domain != null && !domain.isEmpty()) {
+            builder.domain(domain);
         }
 
-        response.addCookie(cookie);
-        LOGGER.debug("Cookie {} deleted", cookieName);
+        response.addHeader("Set-Cookie", builder.build().toString());
+        LOGGER.debug("Cookie '{}' deleted", cookieName);
     }
 }

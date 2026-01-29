@@ -6,13 +6,22 @@ spring:
     show-sql: false
 
 jwt:
+  secret: ${JWT_SECRET}  # Load from AWS Secrets Manager/Parameter Store
+  access-token-expiration: 900000      # 15 minutes
+  refresh-token-expiration: 604800000  # 7 days
   cookie:
-    secure: true  # Always HTTPS in production
-    same-site: None  # For cross-site cookies
+    access-token-name: access_token
+    refresh-token-name: refresh_token
+    domain: ""                         # ✅ Empty = CloudFront domain
+    secure: true                       # ✅ REQUIRED for HTTPS
+    same-site: None                    # ✅ REQUIRED for cross-origin
+    path: /
 
 app:
   send-email-on-registration: true
   register-admin-user-on-startup: false  # Only create admin once
+  cors:
+    allowed-origins: https://d3h9a9ix8i8ml8.cloudfront.net
 
 # Less verbose logging in production
 logging:
