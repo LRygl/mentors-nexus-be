@@ -39,12 +39,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         // Skip JWT filter for actuator health endpoints
-        if (path.startsWith("/actuator/health")) {
+        if (path.contains("/actuator/")) {
             return true;
         }
 
         // Skip OPTIONS requests (CORS preflight)
         if ("OPTIONS".equalsIgnoreCase(method)) {
+            return true;
+        }
+
+        // Skip all AUTH paths
+        if (path.contains("/auth/")) {
             return true;
         }
 
