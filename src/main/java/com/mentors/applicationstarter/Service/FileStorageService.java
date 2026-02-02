@@ -14,13 +14,34 @@ public interface FileStorageService {
      * @param file multipart file to store
      * @return public URL to the stored file
      */
-
     String storeFile(String filePath, String fileType, UUID entityUUID, MultipartFile file);
 
     /**
-     * Create base directory for a new entity
+     * Generate URL for accessing file
+     *
+     * For local storage: returns the relative path
+     * For S3: returns presigned URL that expires
+     *
+     * @param filePath the file path/S3 key
+     * @param expirationMinutes how long the URL should be valid (ignored for local)
+     * @return URL or path to access the file
      */
-    void createEntityDirectory(String entityName, String entityDescription);
+    String generatePresignedUrl(String filePath, int expirationMinutes);
 
-    Resource loadFileAsResource(String decodedPath);
+    /**
+     * Delete file from storage
+     *
+     * @param filePath the file path/S3 key
+     */
+    void deleteFile(String filePath);
+
+    /**
+     * Check if file exists in storage
+     *
+     * @param filePath the file path/S3 key
+     * @return true if file exists
+     */
+    boolean fileExists(String filePath);
+
+
 }

@@ -2,8 +2,10 @@ package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.Constant.FileConstant;
 import com.mentors.applicationstarter.Service.FileStorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.mentors.applicationstarter.Constant.FileConstant.APPLICATION_ROOT_PATH;
-import static com.mentors.applicationstarter.Constant.FileConstant.USER_FOLDER;
-
+@Profile("dev")
 @Service
-public class FileStorageServiceImpl implements FileStorageService {
+@Slf4j
+public class LocalFileStorageServiceImpl extends AbstractFileStorageService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageServiceImpl.class);
 
     // Base storage directory
     private final Path rootStorageLocation = Paths.get(
@@ -69,13 +69,13 @@ public class FileStorageServiceImpl implements FileStorageService {
             );
 
             Files.createDirectories(targetDir);
-            LOGGER.info("Target directory: {}", targetDir);
+            log.info("Target directory: {}", targetDir);
 
             String sanitizedFileName = sanitizeFilename(file.getOriginalFilename());
             Path targetFile = targetDir.resolve(sanitizedFileName);
 
             Files.copy(file.getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
-            LOGGER.info("File stored at: {}", targetFile);
+            log.info("File stored at: {}", targetFile);
 
             // IMPORTANT: Build the relative path manually using string formatting
             // DO NOT use targetFile.toString() as it returns absolute path
@@ -87,47 +87,28 @@ public class FileStorageServiceImpl implements FileStorageService {
 
             // Result: /lesson/4ba1e3b7-9f7a-46ac-b4d9-bee9e3ca4af6/video/c-erveny-trpasli-k-01-konec.avi
 
-            LOGGER.info("Relative path to store in DB: {}", relativePath);
+            log.info("Relative path to store in DB: {}", relativePath);
             return relativePath;
 
         } catch (IOException e) {
-            LOGGER.error("Failed to store file: {}", file.getOriginalFilename(), e);
+            log.error("Failed to store file: {}", file.getOriginalFilename(), e);
             throw new RuntimeException("Failed to store file: " + file.getOriginalFilename(), e);
         }
     }
 
-    @Override
-    public void createEntityDirectory(String entityName, String entityDescription) {
-        Path path = rootStorageLocation.resolve(
-                Paths.get(entityName, entityDescription)
-        ).toAbsolutePath().normalize();
-
-        try {
-            Files.createDirectories(path);
-            LOGGER.info("Directory created: {}", path);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create directory for entity: " + path, e);
-        }
-    }
-
     /**
-     * Load file as Resource for serving
+     * Load file as Resource for serving (used by video streaming)
+     * This is a BONUS method specific to local storage - not in interface
      */
-    @Override
     public Resource loadFileAsResource(String relativePath) {
         try {
             String cleanPath = relativePath.startsWith("/")
                     ? relativePath.substring(1)
                     : relativePath;
 
-            LOGGER.info("Loading resource - Clean path: {}", cleanPath);
-            LOGGER.info("Root storage: {}", rootStorageLocation);
-
             Path filePath = rootStorageLocation
                     .resolve(cleanPath)
                     .normalize();
-
-            LOGGER.info("Full file path: {}", filePath);
 
             // Security check
             if (!filePath.startsWith(rootStorageLocation)) {
@@ -135,85 +116,70 @@ public class FileStorageServiceImpl implements FileStorageService {
             }
 
             if (!Files.exists(filePath)) {
-                LOGGER.error("File does not exist: {}", filePath);
                 throw new FileNotFoundException("File not found: " + relativePath);
             }
 
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
-                LOGGER.info("Resource loaded successfully");
                 return resource;
             } else {
                 throw new FileNotFoundException("File not found: " + relativePath);
             }
 
         } catch (MalformedURLException e) {
-            LOGGER.error("Malformed URL for path: {}", relativePath, e);
             throw new RuntimeException("Error loading file", e);
         } catch (FileNotFoundException e) {
-            LOGGER.error("File not found: {}", relativePath, e);
             throw new RuntimeException("File not found: " + relativePath, e);
         }
     }
 
-    //
-    // PRIVATE
-    //
-
-    private String sanitizeFilename(String filename) {
-        String nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
-        String extension = filename.substring(filename.lastIndexOf('.'));
-
-        String sanitized = nameWithoutExt
-                .replaceAll("[^a-zA-Z0-9.-]", "-")
-                .replaceAll("-+", "-")
-                .toLowerCase();
-
-        return sanitized + extension;
+    @Override
+    public String generatePresignedUrl(String filePath, int expirationMinutes) {
+        // For local development, just return the relative path
+        // Your controller will serve it directly
+        log.debug("Local storage - returning path directly: {}", filePath);
+        return filePath;
     }
 
-    private void validateFileSize(String fileType, MultipartFile file) {
-        long size = file.getSize();
+    @Override
+    public void deleteFile(String filePath) {
+        try {
+            String cleanPath = filePath.startsWith("/")
+                    ? filePath.substring(1)
+                    : filePath;
 
-        switch (fileType.toLowerCase()) {
-            case "image" -> {
-                if (size > FileConstant.IMAGE_MAX_SIZE) {
-                    throw new IllegalArgumentException("Image file exceeds 5 MB limit");
-                }
+            Path fileToDelete = rootStorageLocation.resolve(cleanPath).normalize();
+
+            // Security check
+            if (!fileToDelete.startsWith(rootStorageLocation)) {
+                throw new SecurityException("Cannot delete file outside storage directory");
             }
-            case "video" -> {
-                if (size > FileConstant.VIDEO_MAX_SIZE) {
-                    throw new IllegalArgumentException("Video file exceeds 200 MB limit");
-                }
-            }
-            case "document" -> {
-                if (size > FileConstant.DOCUMENT_MAX_SIZE) {
-                    throw new IllegalArgumentException("Document file exceeds 10 MB limit");
-                }
-            }
-            default -> throw new IllegalArgumentException("Unsupported file type: " + fileType);
+
+            Files.deleteIfExists(fileToDelete);
+            log.info("Deleted local file: {}", fileToDelete);
+
+        } catch (IOException e) {
+            log.error("Failed to delete file: {}", filePath, e);
+            throw new RuntimeException("Failed to delete file", e);
         }
     }
 
-    private void validateMimeType(String fileType, MultipartFile file) {
-        String contentType = file.getContentType();
+    @Override
+    public boolean fileExists(String filePath) {
+        try {
+            String cleanPath = filePath.startsWith("/")
+                    ? filePath.substring(1)
+                    : filePath;
 
-        if (contentType == null) {
-            throw new IllegalArgumentException("Missing content type");
-        }
+            Path file = rootStorageLocation.resolve(cleanPath).normalize();
+            return Files.exists(file);
 
-        switch (fileType.toLowerCase()) {
-            case "image" -> {
-                if (!contentType.startsWith("image/")) {
-                    throw new IllegalArgumentException("Invalid image file type");
-                }
-            }
-            case "video" -> {
-                if (!contentType.startsWith("video/")) {
-                    throw new IllegalArgumentException("Invalid video file type");
-                }
-            }
+        } catch (Exception e) {
+            log.error("Error checking if file exists: {}", filePath, e);
+            return false;
         }
     }
+
+
 }

@@ -1,5 +1,7 @@
 # Production-specific overrides
 spring:
+  profiles:
+    active: prod
   jpa:
     hibernate:
       ddl-auto: validate  # Don't auto-update schema in prod
@@ -12,9 +14,9 @@ jwt:
   cookie:
     access-token-name: access_token
     refresh-token-name: refresh_token
-    domain: ""                         # ✅ Empty = CloudFront domain
-    secure: true                       # ✅ REQUIRED for HTTPS
-    same-site: None                    # ✅ REQUIRED for cross-origin
+    domain: ""                         # Empty = CloudFront domain
+    secure: true                       # REQUIRED for HTTPS
+    same-site: None                    # REQUIRED for cross-origin
     path: /
 
 app:

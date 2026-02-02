@@ -86,14 +86,11 @@ public class CourseServiceImpl implements CourseService {
         UUID courseUUID = UUID.randomUUID();
         //UUID authenticatedUserUuid = getAuthenticatedUserUuid();
 
-        // Create Folder for course data and store the image
-        fileStorageService.createEntityDirectory(COURSE_FOLDER, courseUUID.toString());
-
         String imagePath = null;
         if (file != null) {
             imagePath = fileStorageService.storeFile(
                     COURSE_ENTITY,
-                    "Image",
+                    "image",
                     courseUUID,
                     file
             );

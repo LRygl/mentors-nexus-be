@@ -37,6 +37,15 @@ spring:
           auth: true
           starttls:
             enable: true
+  profiles:
+    active: dev
+
+
+# AWS Configuration
+aws:
+  region: eu-central-1
+  s3:
+      bucket-name: ${S3_BUCKET_NAME:mentors-storage}
 
 # JWT Configuration
 jwt:
@@ -55,7 +64,7 @@ jwt:
 app:
 
   frontend:
-    base-url: http://localhost:5173
+    base-url: http://localhost:5173,
     activation-endpoint: /auth/activate
     activation-token-expiry: 24
 

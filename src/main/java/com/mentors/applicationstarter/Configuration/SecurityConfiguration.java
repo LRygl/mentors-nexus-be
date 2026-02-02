@@ -64,7 +64,6 @@ public class SecurityConfiguration {
                                 "/api/v1/auth/reset-password",
                                 "/api/v1/auth/activate"
                         ).permitAll()
-
                         // Public content endpoints (if needed)
                         .requestMatchers(
                                 "/api/v1/legal/public/**",
