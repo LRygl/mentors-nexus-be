@@ -1,7 +1,5 @@
 # Production-specific overrides
 spring:
-  profiles:
-    active: prod
   jpa:
     hibernate:
       ddl-auto: validate  # Don't auto-update schema in prod

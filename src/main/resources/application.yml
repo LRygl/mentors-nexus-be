@@ -37,9 +37,6 @@ spring:
           auth: true
           starttls:
             enable: true
-  profiles:
-    active: dev
-
 
 # AWS Configuration
 aws:
