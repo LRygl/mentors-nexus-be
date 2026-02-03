@@ -36,6 +36,7 @@ public class S3FileStorageServiceImpl extends AbstractFileStorageService {
 
     @Override
     public String storeFile(String entityType, String fileType, UUID entityUUID, MultipartFile file) {
+        log.info("Storing file at {}", file.getOriginalFilename());
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File cannot be null or empty");
         }

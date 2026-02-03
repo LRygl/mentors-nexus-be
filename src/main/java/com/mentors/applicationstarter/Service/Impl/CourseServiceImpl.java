@@ -17,6 +17,7 @@ import com.mentors.applicationstarter.Service.FileStorageService;
 import com.mentors.applicationstarter.Specification.CourseSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -35,8 +36,8 @@ import static com.mentors.applicationstarter.Constant.FileConstant.COURSE_FOLDER
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CourseServiceImpl implements CourseService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CourseServiceImpl.class);
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
@@ -148,6 +149,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDTO updateCourse(Long courseId, CourseRequestDTO dto, MultipartFile file) {
+        log.info("Updating course with id {}", courseId);
         Course course = findCourseById(courseId);
 
         UUID userUuid = getAuthenticatedUserUuid();
@@ -493,7 +495,7 @@ public class CourseServiceImpl implements CourseService {
             return new HashSet<>();
         }
 
-        LOGGER.info("Resolving categories by IDs: {}", categoryIds);
+        log.info("Resolving categories by IDs: {}", categoryIds);
 
         List<Category> categories = categoryRepository.findAllById(categoryIds);
 
@@ -507,11 +509,11 @@ public class CourseServiceImpl implements CourseService {
                     .filter(id -> !foundIds.contains(id))
                     .collect(Collectors.toSet());
 
-            LOGGER.warn("Some category IDs not found: {}", missingIds);
+            log.warn("Some category IDs not found: {}", missingIds);
             throw new ResourceNotFoundException(ErrorCodes.CATEGORY_DOES_NOT_EXIST);
         }
 
-        LOGGER.info("Resolved {} categories", categories.size());
+        log.info("Resolved {} categories", categories.size());
         return new HashSet<>(categories);
     }
 

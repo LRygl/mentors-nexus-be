@@ -4,6 +4,7 @@ import com.mentors.applicationstarter.Service.FileStorageService;
 import com.mentors.applicationstarter.Service.Impl.LocalFileStorageServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -16,6 +17,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/files")
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class FileController {
 
     @GetMapping("/**")
     public ResponseEntity<?> serveFile(HttpServletRequest request) {
+        log.info("Serving file at {}", request.getRequestURI());
         try {
             // Extract file path from URL
             // Example: /api/v1/files/lesson/uuid/video/file.mp4 → lesson/uuid/video/file.mp4
