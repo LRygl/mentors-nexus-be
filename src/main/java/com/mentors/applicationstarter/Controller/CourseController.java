@@ -9,6 +9,7 @@ import com.mentors.applicationstarter.Model.CourseSection;
 import com.mentors.applicationstarter.Service.CourseService;
 import com.mentors.applicationstarter.Service.Impl.CourseServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.parser.HttpParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +32,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/course")
 @RequiredArgsConstructor
+@Slf4j
 public class CourseController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CourseController.class);
-
 
     private final CourseService courseService;
     private final ObjectMapper objectMapper;
@@ -116,6 +115,7 @@ public class CourseController {
             @RequestPart(value = "image", required = false) MultipartFile image
             ) throws IOException {
 
+        log.info("Updating course (multipart) with id {}", courseId);
         return new ResponseEntity<>(courseService.updateCourse(courseId, courseRequestDTO, image), HttpStatus.OK);
     }
 
@@ -125,6 +125,7 @@ public class CourseController {
             @RequestBody CourseRequestDTO course
     ) throws IOException {
 
+        log.info("Updating course with id {}", courseId);
         return new ResponseEntity<>(courseService.updateCourse(courseId, course, null), HttpStatus.OK);
     }
 
