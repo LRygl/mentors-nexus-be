@@ -115,7 +115,14 @@ public class CourseController {
             @RequestPart(value = "image", required = false) MultipartFile image
             ) throws IOException {
 
-        log.info("Updating course (multipart) with id {}", courseId);
+        if (image != null) {
+            log.info("Received file: name={}, originalFilename={}, contentType={}, size={}",
+                    image.getName(),
+                    image.getOriginalFilename(),
+                    image.getContentType(),
+                    image.getSize()
+            );
+        }
         return new ResponseEntity<>(courseService.updateCourse(courseId, courseRequestDTO, image), HttpStatus.OK);
     }
 
