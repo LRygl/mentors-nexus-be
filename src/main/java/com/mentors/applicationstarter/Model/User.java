@@ -51,6 +51,12 @@ public class User implements UserDetails {
     @Builder.Default
     private Boolean forcePasswordChangeOnLogin = false;
 
+    // ADDRESS DETAILS
+    private String street;
+    private String city;
+    private String postalCode;
+    private String country;
+
     //USER CONSENT DETAILS
     @Builder.Default
     private Boolean personalDataProcessing = false;

@@ -5,6 +5,8 @@ spring:
       ddl-auto: validate  # Don't auto-update schema in prod
     show-sql: false
 
+  profiles:
+    default: prod
 jwt:
   secret: ${JWT_SECRET}  # Load from AWS Secrets Manager/Parameter Store
   access-token-expiration: 900000      # 15 minutes

@@ -72,9 +72,13 @@ public class SecurityConfiguration {
 
                         // Admin endpoints require ADMIN role
                         .requestMatchers(
-                                "/api/v1/admin/**",
-                                "/api/v1/user/**"  // If user management is admin-only
+                                "/api/v1/admin/**"
                         ).hasAnyRole("ADMIN")
+
+                        // User is logged in
+                        .requestMatchers(
+                                "/api/v1/user/**"
+                        ).hasAnyAuthority("USER")
 
                         // /auth/me REQUIRES authentication (critical!)
                         .requestMatchers("/api/v1/auth/me").authenticated()

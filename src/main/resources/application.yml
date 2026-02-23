@@ -2,6 +2,8 @@
 spring:
   application:
     name: application-starter
+  profiles:
+    default: dev
   
   # Database Configuration (adjust to your database)
   datasource:
@@ -61,7 +63,7 @@ jwt:
 app:
 
   frontend:
-    base-url: http://localhost:5173,
+    base-url: http://localhost:5173
     activation-endpoint: /auth/activate
     activation-token-expiry: 24
 

@@ -4,6 +4,7 @@ import com.mentors.applicationstarter.Model.Invoice;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +13,8 @@ public class InvoiceSpecification {
 
     public static Specification<Invoice> withFilters(
             String invoiceNumber,
-            Float minTotalAmount,
-            Float maxTotalAmount,
+            BigDecimal minTotalAmount,
+            BigDecimal maxTotalAmount,
             Instant issuedFrom,
             Instant issuedTo,
             Boolean paid

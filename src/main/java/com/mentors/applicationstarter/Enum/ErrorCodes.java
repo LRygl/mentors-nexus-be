@@ -71,7 +71,14 @@ public enum ErrorCodes {
     CONFIGRATION_ALREADY_EXISTS("ConfigurationAlreadyExists", "Configuration is already exists in this category" , "" ),
     CONFIGURATION_JSON_NOT_VALID("ConfigurationJsonNotValid", "Configuration is not valid" , "Configuration is not valid" ),
     USER_ALREADY_ENROLLED_TO_COURSE("UserAlreadyEnrolledToCourse","" ,"" ),
-    USER_NOT_ENROLLED_TO_COURSE("UserNotEnrolledToCourse","" ,"" );
+    USER_NOT_ENROLLED_TO_COURSE("UserNotEnrolledToCourse","" ,"" ),
+
+    // Order error codes
+    ORDER_DOES_NOT_EXIST("OrderDoesNotExist", "Order was not found", "Could not find order with the provided ID"),
+    ORDER_EMPTY_CART("OrderEmptyCart", "Cart is empty", "Cannot create an order with no items"),
+    ORDER_COURSE_ALREADY_ENROLLED("OrderCourseAlreadyEnrolled", "You are already enrolled in one or more selected courses", "User attempted to purchase a course they are already enrolled in"),
+    ORDER_TERMS_NOT_ACCEPTED("OrderTermsNotAccepted", "You must accept the terms and conditions", "Checkout attempted without accepting terms"),
+    ORDER_CHECKOUT_FAILED("OrderCheckoutFailed", "Checkout failed. Please try again.", "An error occurred during the checkout process");
 
 
 
