@@ -14,6 +14,7 @@ import com.mentors.applicationstarter.Repository.UserRepository;
 import com.mentors.applicationstarter.Service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
@@ -45,6 +47,7 @@ public class UserController {
      */
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getCurrentUser() {
+        log.info("Getting current user");
         // Get authentication from security context
         Authentication authentication = SecurityContextHolder
                 .getContext()
@@ -72,7 +75,7 @@ public class UserController {
 
         // Map to DTO
         UserResponseDTO responseUser = userMapper.mapUserToDto(user);
-
+log.info("Getting logged in user with email: {}", email);
         // Return with cache-control headers to prevent 304 responses
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noCache().noStore().mustRevalidate())

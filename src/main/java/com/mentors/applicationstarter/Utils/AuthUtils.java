@@ -13,4 +13,19 @@ public class AuthUtils {
                 .getPrincipal())
                 .getUUID();
     }
+
+    public static User getAuthenticatedUser() {
+        return (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+    }
+
+    public static Long getAuthenticatedUserId() {
+        return ((User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal())
+                .getId();
+    }
 }

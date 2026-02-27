@@ -34,6 +34,14 @@ public class User implements UserDetails {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    //Billing
+    private String billingFirstName;
+    private String billingLastName;
+    private String billingStreet;
+    private String billingCity;
+    private String billingPostalCode;
+    private String billingCountry;
+
     //SUBJECT DETAILS
     private Date lastLoginDate;
     private Date lastLoginDateDisplay;

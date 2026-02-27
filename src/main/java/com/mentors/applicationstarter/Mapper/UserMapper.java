@@ -22,10 +22,23 @@ public class UserMapper {
                 .id(user.getId())
                 .UUID(user.getUUID())
                 .email(user.getEmail())
+                .telephoneNumber(user.getTelephoneNumber())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .role(user.getRoleName())
                 .enrolledCourseIds(user.getEnrolledCourseIds())
+                // Billing - now matches actual entity field names
+                .billingFirstName(user.getBillingFirstName())
+                .billingLastName(user.getBillingLastName())
+                .billingStreet(user.getBillingStreet())
+                .billingCity(user.getBillingCity())
+                .billingPostalCode(user.getBillingPostalCode())
+                .billingCountry(user.getBillingCountry())
+                // Consent - were missing entirely
+                .personalDataProcessing(user.getPersonalDataProcessing())
+                .personalDataPublishing(user.getPersonalDataPublishing())
+                .marketing(user.getMarketing())
+                .cookiePolicyConsent(user.getCookiePolicyConsent())
                 .build();
     }
 

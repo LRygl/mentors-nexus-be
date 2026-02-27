@@ -54,6 +54,4 @@ public class CourseEnrollmentPublicController {
         return ResponseEntity.ok(Map.of("enrolled", enrolled));
     }
 
-
-
 }

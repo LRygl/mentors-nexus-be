@@ -1,5 +1,6 @@
 package com.mentors.applicationstarter.Service;
 
+import com.mentors.applicationstarter.DTO.User.PublicUpdateUserProfileRequestDTO;
 import com.mentors.applicationstarter.DTO.User.UserRequestDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Exception.ResourceNotFoundException;
@@ -8,6 +9,8 @@ import com.mentors.applicationstarter.Model.Event;
 import com.mentors.applicationstarter.Model.Request.UserConsentUpdateRequest;
 import com.mentors.applicationstarter.Model.User;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +19,11 @@ import java.util.UUID;
 
 @Service
 public interface UserService {
+    // Authenticated user operations
+    UserResponseDTO updateUserProfile(Long id, @Valid PublicUpdateUserProfileRequestDTO publicUpdateUserProfileRequestDTO);
+
+
+    // Administrator operations
     List<UserResponseDTO> getUserList();
 
     Optional<User> getUserByEmail(String userEmail);
@@ -39,4 +47,5 @@ public interface UserService {
     UserResponseDTO getUserByUserId(Long userId);
 
     UserResponseDTO updateUser(Long id, UserRequestDTO request);
+
 }

@@ -2,6 +2,7 @@ package com.mentors.applicationstarter.Service.Impl;
 
 import com.mentors.applicationstarter.DTO.CourseResponseDTO;
 import com.mentors.applicationstarter.DTO.CourseSummaryDTO;
+import com.mentors.applicationstarter.DTO.User.PublicUpdateUserProfileRequestDTO;
 import com.mentors.applicationstarter.DTO.User.UserRequestDTO;
 import com.mentors.applicationstarter.DTO.UserResponseDTO;
 import com.mentors.applicationstarter.Enum.ErrorCodes;
@@ -180,6 +181,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseDTO updateUserProfile(Long id, PublicUpdateUserProfileRequestDTO dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USER_DOES_NOT_EXIST));
+
+        // Personal info - only update if non-null
+        if (dto.getFirstName() != null) user.setFirstName(dto.getFirstName());
+        if (dto.getLastName() != null) user.setLastName(dto.getLastName());
+        if (dto.getTelephoneNumber() != null) user.setTelephoneNumber(dto.getTelephoneNumber());
+
+        // Billing address
+        if (dto.getBillingFirstName() != null) user.setBillingFirstName(dto.getBillingFirstName());
+        if (dto.getBillingLastName() != null) user.setBillingLastName(dto.getBillingLastName());
+        if (dto.getBillingStreet() != null) user.setBillingStreet(dto.getBillingStreet());
+        if (dto.getBillingCity() != null) user.setBillingCity(dto.getBillingCity());
+        if (dto.getBillingPostalCode() != null) user.setBillingPostalCode(dto.getBillingPostalCode());
+        if (dto.getBillingCountry() != null) user.setBillingCountry(dto.getBillingCountry());
+
+        // Consent flags
+        if (dto.getPersonalDataProcessing() != null) user.setPersonalDataProcessing(dto.getPersonalDataProcessing());
+        if (dto.getPersonalDataPublishing() != null) user.setPersonalDataPublishing(dto.getPersonalDataPublishing());
+        if (dto.getMarketing() != null) user.setMarketing(dto.getMarketing());
+        if (dto.getCookiePolicyConsent() != null) user.setCookiePolicyConsent(dto.getCookiePolicyConsent());
+
+        user.setUpdatedAt(Instant.now());
+
+        userRepository.save(user);
+        return mapUserToDTO(user);
+
+    }
+
+    @Override
     public UserResponseDTO updateUser(Long id, UserRequestDTO request) {
         User user = findUser(id);
         //UUID authenticatedUserUUID = getAuthenticatedUserUuid();
@@ -246,6 +278,12 @@ public class UserServiceImpl implements UserService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .telephoneNumber(user.getTelephoneNumber())
+                .billingFirstName(user.getBillingFirstName())
+                .billingLastName(user.getBillingLastName())
+                .billingStreet(user.getStreet())
+                .billingCity(user.getCity())
+                .billingPostalCode(user.getPostalCode())
+                .billingCountry(user.getCountry())
                 .lastLoginDateDisplay(user.getLastLoginDateDisplay())
                 .registerDate(user.getRegisterDate())
                 .lastUpdatedDate(user.getLastUpdatedDate())

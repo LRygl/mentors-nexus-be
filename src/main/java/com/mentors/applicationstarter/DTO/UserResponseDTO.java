@@ -24,6 +24,17 @@ public class UserResponseDTO {
     private String lastName;
     private String email;
     private String telephoneNumber;
+
+    private String billingFirstName;
+    private String billingLastName;
+    private Boolean billingCompany;
+    private String billingCompanyName;
+    private String billingCompanyTaxId;
+    private String billingStreet;
+    private String billingCity;
+    private String billingPostalCode;
+    private String billingCountry;
+
     private Date lastLoginDateDisplay;
     private Date registerDate;
     private Date lastUpdatedDate;
